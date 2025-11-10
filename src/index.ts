@@ -281,8 +281,11 @@ export class Result<T, E = Error> {
    * @returns U
    *
    * @example
-   * const result = Result.ok(21).mapOr(0, x => x * 2)
-   * result.unwrap() // => 42
+   * const value = Result.ok(21).mapOr(0, (x) => x * 2)
+   * // => 42
+   *
+   * const errorValue = Result.err(new Error('fail')).mapOr(0, (x) => x * 2)
+   * // => 0
    */
   mapOr<U>(defaultValue: U, fn: (value: T) => U): U {
     return this.#success ? fn(this.#value as T) : defaultValue
