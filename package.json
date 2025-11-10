@@ -1,5 +1,5 @@
 {
-  "name": "result.js",
+  "name": "@eriveltonsilva/result.js",
   "description": "A lightweight, Rust-inspired Result type for JavaScript and TypeScript — handle success and error cases without exceptions.",
   "version": "1.0.0",
   "keywords": [
@@ -29,7 +29,8 @@
     "node": ">=22.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "sideEffects": false,
   "files": [
@@ -51,25 +52,72 @@
     },
     "./package.json": "./package.json"
   },
+  "x-comments": {
+    "limpeza": {
+      "clean": "Remove a pasta de distribuição (dist) para garantir uma build limpa.",
+      "clean:dev": "Remove a pasta de distribuição (dist) e a pasta de relatórios do Vitest para desenvolvimento."
+    },
+    "compilação": {
+      "build": "Compila e minifica o código para produção.",
+      "prebuild": "Garante que a pasta dist esteja limpa antes da construção.",
+      "build:dev": "Compila o código TypeScript para JavaScript sem minificação para desenvolvimento."
+    },
+    "publicação": {
+      "prepublishOnly": "Garante que o código esteja construído antes da publicação.",
+      "postversion": "Empurra as tags de versão para o repositório remoto após a atualização da versão."
+    },
+    "desenvolvimento": {
+      "start": "Inicia a aplicação a partir do código compilado na pasta dist.",
+      "dev": "Inicia o ambiente de desenvolvimento com recarga automática usando tsx."
+    },
+    "qualidade do código": {
+      "fmt": "Formata o código usando Biome.",
+      "lint": "Verifica e corrige problemas de linting no código com Biome.",
+      "check": "Verifica problemas de qualidade de código com Biome.",
+      "types": "Verifica os tipos TypeScript sem emitir arquivos."
+    },
+    "testes": {
+      "test": "Executa os testes unitários uma vez.",
+      "test:watch": "Executa os testes unitários em modo de observação.",
+      "test:coverage": "Executa os testes e gera um relatório de cobertura.",
+      "test:ui": "Inicia a interface de usuário do Vitest para visualização de testes e cobertura.",
+      "test:report": "Gera um relatório de cobertura em HTML.",
+      "test:report:preview": "Gera o relatório de cobertura e inicia um servidor para visualizá-lo."
+    },
+    "integração contínua": {
+      "ci": "Executa verificações de tipos, qualidade de código e testes para integração contínua."
+    }
+  },
   "scripts": {
-    "clean": "rm -rf ./dist",
-    "build": "npm run clean && tsup",
-    "build:release": "npm run clean && tsup --minify",
-    "prepublishOnly": "npm run build:release",
-    "dev": "tsx src/index.ts",
+    "clean": "rimraf dist",
+    "clean:dev": "rimraf dist vitest",
+    "build": "tsup --minify",
+    "prebuild": "npm run clean",
+    "build:dev": "tsup --clean",
+    "prepublishOnly": "npm run ci && npm run build",
+    "postversion": "git push origin main --follow-tags",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
     "fmt": "biome format --write --verbose",
     "lint": "biome lint --write --verbose",
     "check": "biome check --write --verbose",
     "types": "tsc --noEmit",
-    "ci": "biome ci",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --coverage --ui",
+    "test:report": "vitest run --reporter=html --outputFile=vitest/report/index.html",
+    "test:report:preview": "npm run test:report && npx vite preview --outDir vitest/report",
+    "ci": "npm run types && biome ci && npm run test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.4",
     "@tsconfig/node22": "^22.0.2",
     "@tsconfig/strictest": "^2.0.7",
     "@types/node": "^24.10.0",
+    "@vitest/coverage-v8": "^4.0.8",
+    "@vitest/ui": "^4.0.8",
+    "rimraf": "^6.1.0",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
