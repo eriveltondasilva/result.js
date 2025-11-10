@@ -394,19 +394,30 @@ export class Result<T, E = Error> {
    * const promises = [fetchUser(1), fetchUser(2)]
    * const result = await Result.sequenceAsync(promises)
    */
-  static async sequenceAsync<T, E>(promises: Promise<Result<T, E>>[]): Promise<Result<T[], E>> {
-    const results = (await Promise.all(promises)) as Result<T, E>[]
-    const values: T[] = []
+  static async sequenceAsync<const T extends readonly Promise<Result<unknown, unknown>>[]>(
+    promises: T
+  ): Promise<
+    Result<
+      { -readonly [K in keyof T]: T[K] extends Promise<Result<infer U, unknown>> ? U : never },
+      T[number] extends Promise<Result<unknown, infer E>> ? E : never
+    >
+  > {
+    const results = await Promise.all(promises)
+    const values: unknown[] = []
 
     for (const result of results) {
       if (result.isErr()) {
-        return Result.err(result.unwrapErr())
+        return Result.err(result.unwrapErr()) as Result<
+          never,
+          T[number] extends Promise<Result<unknown, infer E>> ? E : never
+        >
       }
 
       values.push(result.unwrap())
     }
 
-    return Result.ok(values)
+    // biome-ignore lint/suspicious/noExplicitAny: cast final
+    return Result.ok(values) as any
   }
 
   /**
