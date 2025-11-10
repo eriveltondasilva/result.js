@@ -53,9 +53,9 @@
     "allowUnreachableCode": false,
 
     // Build
-    "incremental": true,
+    // "incremental": true,
     // "tsBuildInfoFile": "./tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts"]
 }
