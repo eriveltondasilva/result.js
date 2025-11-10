@@ -17,10 +17,8 @@ export class Result<T, E = Error> {
 
   /** Indicates if this Result is successful (true) or failed (false) */
   readonly #success: boolean
-
   /** Holds the success value when #success is true, null otherwise */
   readonly #value: T | null
-
   /** Holds the error value when #success is false, null otherwise */
   readonly #error: E | null
 
@@ -159,17 +157,24 @@ export class Result<T, E = Error> {
   }
 
   /**
-   * Unwraps the success value. Throws if Result is an error.
+   * Unwraps the success value. Throws the original error if Result is an error.
    *
    * @returns T
-   * @throws {Error} If Result is Err
+   * @throws {E} The original error if Result is Err
    *
    * @example
    * const value = Result.ok(42)
    * value.unwrap() // => 42
+   *
+   * const error = Result.err(new Error('Failed'))
+   * error.unwrap() // => Throws Error('Failed')
    */
   unwrap(): T {
-    return this.expect('Called unwrap on an Err value')
+    if (!this.#success) {
+      throw this.#error
+    }
+
+    return this.#value as T
   }
 
   /**
@@ -224,7 +229,7 @@ export class Result<T, E = Error> {
    */
   expect(message: string): T {
     if (!this.#success) {
-      throw new Error(message)
+      throw new Error(message, { cause: this.#error })
     }
 
     return this.#value as T
