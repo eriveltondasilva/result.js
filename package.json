@@ -4,11 +4,10 @@
   "version": "1.0.0",
   "keywords": [
     "result",
-    "either",
     "typescript",
     "javascript",
-    "functional programming",
     "monad",
+    "functional programming",
     "error handling"
   ],
   "license": "MIT",
@@ -34,11 +33,7 @@
   },
   "sideEffects": false,
   "files": [
-    "dist",
-    "LICENSE",
-    "README.md",
-    "CHANGELOG.md",
-    "CONTRIBUTING.md"
+    "dist"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",

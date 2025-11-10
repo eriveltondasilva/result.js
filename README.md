@@ -1,4 +1,4 @@
-# 1. Result.js — Rust-inspired Result Type <!-- omit in toc -->
+# Result.js — Rust-inspired Result Type <!-- omit in toc -->
 
 [![npm version](https://img.shields.io/npm/v/@eriveltonsilva/result.js.svg)](https://www.npmjs.com/package/@eriveltonsilva/result.js)
 ![Typescript](https://img.shields.io/badge/TypeScript-5.9.3-blue)
@@ -30,13 +30,25 @@ A lightweight, Rust-inspired Result type for JavaScript and TypeScript — handl
 - 🔗 **Chainable** - Fluent API with `map`, `andThen`, and more
 - 🧪 **Well-tested** - Comprehensive test coverage
 - 📦 **Tree-shakeable** - Optimized bundle size
+- 🌍 **ESM & CommonJS support** - Works seamlessly in modern and legacy environments
 
 ## 2. 📦 Installation
+
 ```bash
 npm install @eriveltonsilva/result.js
 ```
 
+Supports both ESM (import) and CommonJS (require):
+```javascript
+// ESM
+import { Result } from '@eriveltonsilva/result.js'
+
+// CommonJS
+const { Result } = require('@eriveltonsilva/result.js')
+```
+
 ## 3. 🚀 Quick Start
+
 ```typescript
 import { Result } from '@eriveltonsilva/result.js'
 
@@ -90,7 +102,9 @@ Inspired by:
 - [oxide.ts package](https://www.npmjs.com/package/oxide.ts)
 - [result.ts package](https://www.npmjs.com/package/result.ts)
 
----
 <!--
+---
+
 If this library was helpful to you, consider supporting me with a coffee.
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow)](https://www.buymeacoffee.com/eriveltondasilva) ☕ -->
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow)](https://www.buymeacoffee.com/eriveltondasilva) ☕
+-->
