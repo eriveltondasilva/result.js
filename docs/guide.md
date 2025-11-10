@@ -9,42 +9,41 @@ Documentação completa da biblioteca Result.js para tratamento de erros type-sa
 - [2. Instalação](#2-instalação)
 - [3. Conceitos Básicos](#3-conceitos-básicos)
 - [4. API Reference](#4-api-reference)
-  - [4.1. Creation](#41-creation)
+  - [4.1. Static Methods](#41-static-methods)
     - [4.1.1. `Result.ok<T, E>(value: T): Result<T, E>`](#411-resultokt-evalue-t-resultt-e)
     - [4.1.2. `Result.err<T, E>(error: E): Result<T, E>`](#412-resulterrt-eerror-e-resultt-e)
-  - [4.2. Validation](#42-validation)
-    - [4.2.1. `Result.is<T, E>(value: unknown): value is Result<T, E>`](#421-resultist-evalue-unknown-value-is-resultt-e)
-    - [4.2.2. `isOk(): boolean`](#422-isok-boolean)
-    - [4.2.3. `isErr(): boolean`](#423-iserr-boolean)
-  - [4.3. Access](#43-access)
-    - [4.3.1. `get ok: T | null`](#431-get-ok-t--null)
-    - [4.3.2. `get err: E | null`](#432-get-err-e--null)
-    - [4.3.3. `unwrap(): T`](#433-unwrap-t)
-    - [4.3.4. `unwrapErr(): E`](#434-unwraperr-e)
-    - [4.3.5. `unwrapOr(defaultValue: T): T`](#435-unwrapordefaultvalue-t-t)
-    - [4.3.6. `unwrapOrElse(fn: () => T): T`](#436-unwraporelsefn---t-t)
-    - [4.3.7. `expect(message: string): T`](#437-expectmessage-string-t)
-    - [4.3.8. `expectErr(message: string): E`](#438-expecterrmessage-string-e)
-  - [4.4. Transformation](#44-transformation)
-    - [4.4.1. `map<U>(fn: (value: T) => U): Result<U, E>`](#441-mapufn-value-t--u-resultu-e)
-    - [4.4.2. `mapOr<U>(defaultValue: U, fn: (value: T) => U): U`](#442-maporudefaultvalue-u-fn-value-t--u-u)
-    - [4.4.3. `mapErr<F>(fn: (error: E) => F): Result<T, F>`](#443-maperrffn-error-e--f-resultt-f)
-    - [4.4.4. `andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E>`](#444-andthenufn-value-t--resultu-e-resultu-e)
-    - [4.4.5. `flatten<U>(): Result<U, E>`](#445-flattenu-resultu-e)
-  - [4.5. Combination](#45-combination)
-    - [4.5.1. `Result.sequence<T>(results: T[]): Result<...>`](#451-resultsequencetresults-t-result)
-    - [4.5.2. `Result.sequenceAsync<T, E>(promises: Promise<Result<T, E>>[]): Promise<Result<T[], E>>`](#452-resultsequenceasynct-epromises-promiseresultt-e-promiseresultt-e)
-    - [4.5.3. `and<U>(other: Result<U, E>): Result<U, E>`](#453-anduother-resultu-e-resultu-e)
-    - [4.5.4. `or(other: Result<T, E>): Result<T, E>`](#454-orother-resultt-e-resultt-e)
-    - [4.5.5. `orElse(fn: (error: E) => Result<T, E>): Result<T, E>`](#455-orelsefn-error-e--resultt-e-resultt-e)
-  - [4.6. Conversion](#46-conversion)
-    - [4.6.1. `Result.fromPromise<T, E>(promise: Promise<T>, mapError?: (error: unknown) => E): Promise<Result<T, E>>`](#461-resultfrompromiset-epromise-promiset-maperror-error-unknown--e-promiseresultt-e)
-    - [4.6.2. `toPromise(): Promise<T>`](#462-topromise-promiset)
-  - [4.7. Inspection](#47-inspection)
-    - [4.7.1. `match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R`](#471-matchrhandlers--ok-value-t--r-err-error-e--r--r)
-    - [4.7.2. `inspect(handlers: { ok: (value: T) => void; err: (error: E) => void }): Result<T, E>`](#472-inspecthandlers--ok-value-t--void-err-error-e--void--resultt-e)
-    - [4.7.3. `inspectOk(fn: (value: T) => void): Result<T, E>`](#473-inspectokfn-value-t--void-resultt-e)
-    - [4.7.4. `inspectErr(fn: (error: E) => void): Result<T, E>`](#474-inspecterrfn-error-e--void-resultt-e)
+    - [4.1.3. `Result.is<T, E>(value: unknown): value is Result<T, E>`](#413-resultist-evalue-unknown-value-is-resultt-e)
+    - [4.1.4. `Result.sequence<T>(results: T[]): Result<...>`](#414-resultsequencetresults-t-result)
+    - [4.1.5. `Result.sequenceAsync<T, E>(promises: Promise<Result<T, E>>[]): Promise<Result<T[], E>>`](#415-resultsequenceasynct-epromises-promiseresultt-e-promiseresultt-e)
+    - [4.1.6. `Result.fromPromise<T, E>(promise: Promise<T>, mapError?: (error: unknown) => E): Promise<Result<T, E>>`](#416-resultfrompromiset-epromise-promiset-maperror-error-unknown--e-promiseresultt-e)
+    - [4.1.7. `Result.fromTry<T, E>(fn: () => T, mapError?: (error: unknown) => E): Result<T, E>`](#417-resultfromtryt-efn---t-maperror-error-unknown--e-resultt-e)
+    - [4.1.8. `isErr(): boolean`](#418-iserr-boolean)
+  - [4.2. Access](#42-access)
+    - [4.2.1. `get ok: T | null`](#421-get-ok-t--null)
+    - [4.2.2. `get err: E | null`](#422-get-err-e--null)
+    - [4.2.3. `unwrap(): T`](#423-unwrap-t)
+    - [4.2.4. `unwrapErr(): E`](#424-unwraperr-e)
+    - [4.2.5. `unwrapOr(defaultValue: T): T`](#425-unwrapordefaultvalue-t-t)
+    - [4.2.6. `unwrapOrElse(fn: () => T): T`](#426-unwraporelsefn---t-t)
+    - [4.2.7. `expect(message: string): T`](#427-expectmessage-string-t)
+    - [4.2.8. `expectErr(message: string): E`](#428-expecterrmessage-string-e)
+  - [4.3. Transformation](#43-transformation)
+    - [4.3.1. `map<U>(fn: (value: T) => U): Result<U, E>`](#431-mapufn-value-t--u-resultu-e)
+    - [4.3.2. `mapOr<U>(defaultValue: U, fn: (value: T) => U): U`](#432-maporudefaultvalue-u-fn-value-t--u-u)
+    - [4.3.3. `mapErr<F>(fn: (error: E) => F): Result<T, F>`](#433-maperrffn-error-e--f-resultt-f)
+    - [4.3.4. `andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E>`](#434-andthenufn-value-t--resultu-e-resultu-e)
+    - [4.3.5. `flatten<U>(): Result<U, E>`](#435-flattenu-resultu-e)
+  - [4.4. Combination](#44-combination)
+    - [4.4.1. `and<U>(other: Result<U, E>): Result<U, E>`](#441-anduother-resultu-e-resultu-e)
+    - [4.4.2. `or(other: Result<T, E>): Result<T, E>`](#442-orother-resultt-e-resultt-e)
+    - [4.4.3. `orElse(fn: (error: E) => Result<T, E>): Result<T, E>`](#443-orelsefn-error-e--resultt-e-resultt-e)
+  - [4.5. Conversion](#45-conversion)
+    - [4.5.1. `toPromise(): Promise<T>`](#451-topromise-promiset)
+  - [4.6. Inspection](#46-inspection)
+    - [4.6.1. `match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R`](#461-matchrhandlers--ok-value-t--r-err-error-e--r--r)
+    - [4.6.2. `inspect(handlers: { ok: (value: T) => void; err: (error: E) => void }): Result<T, E>`](#462-inspecthandlers--ok-value-t--void-err-error-e--void--resultt-e)
+    - [4.6.3. `inspectOk(fn: (value: T) => void): Result<T, E>`](#463-inspectokfn-value-t--void-resultt-e)
+    - [4.6.4. `inspectErr(fn: (error: E) => void): Result<T, E>`](#464-inspecterrfn-error-e--void-resultt-e)
 - [5. Padrões de Uso](#5-padrões-de-uso)
   - [5.1. Validação em Cadeia](#51-validação-em-cadeia)
   - [5.2. Fallback em Cascata](#52-fallback-em-cascata)
@@ -66,7 +65,6 @@ Documentação completa da biblioteca Result.js para tratamento de erros type-sa
 - [10. Migração Gradual](#10-migração-gradual)
 - [11. Performance](#11-performance)
 - [12. Recursos Adicionais](#12-recursos-adicionais)
-
 
 ---
 
@@ -114,6 +112,7 @@ function divide(a: number, b: number): Result<number, string> {
   if (b === 0) {
     return Result.err('Division by zero')
   }
+
   return Result.ok(a / b)
 }
 
@@ -131,7 +130,7 @@ if (result.isOk()) {
 
 ## 4. API Reference
 
-### 4.1. Creation
+### 4.1. Static Methods
 
 #### 4.1.1. `Result.ok<T, E>(value: T): Result<T, E>`
 
@@ -157,11 +156,7 @@ const error = Result.err(new Error('Failed'))
 // Result<never, Error>
 ```
 
----
-
-### 4.2. Validation
-
-#### 4.2.1. `Result.is<T, E>(value: unknown): value is Result<T, E>`
+#### 4.1.3. `Result.is<T, E>(value: unknown): value is Result<T, E>`
 
 Type guard para verificar se um valor é uma instância de Result.
 
@@ -174,7 +169,94 @@ if (Result.is(value)) {
 }
 ```
 
-#### 4.2.2. `isOk(): boolean`
+#### 4.1.4. `Result.sequence<T>(results: T[]): Result<...>`
+
+Combina array de Results em um único Result com array de valores. Retorna o primeiro erro encontrado.
+
+```typescript
+const results = [
+  Result.ok(1),
+  Result.ok(2),
+  Result.ok(3)
+]
+
+const combined = Result.sequence(results)
+console.log(combined.unwrap()) // [1, 2, 3]
+
+// Com erro
+const withError = [
+  Result.ok(1),
+  Result.err('Failed'),
+  Result.ok(3)
+]
+
+const failed = Result.sequence(withError)
+console.log(failed.unwrapErr()) // 'Failed'
+```
+
+#### 4.1.5. `Result.sequenceAsync<T, E>(promises: Promise<Result<T, E>>[]): Promise<Result<T[], E>>`
+
+Versão assíncrona de `sequence`. Aguarda todas as promises.
+
+```typescript
+async function fetchUser(id: number): Promise<Result<User, Error>> {
+  // ... implementação
+}
+
+const promises = [fetchUser(1), fetchUser(2), fetchUser(3)]
+const result = await Result.sequenceAsync(promises)
+
+if (result.isOk()) {
+  const users = result.unwrap()
+  console.log(`Fetched ${users.length} users`)
+}
+```
+
+#### 4.1.6. `Result.fromPromise<T, E>(promise: Promise<T>, mapError?: (error: unknown) => E): Promise<Result<T, E>>`
+
+Converte uma Promise em Result, capturando erros.
+
+```typescript
+// Sem mapeamento de erro
+const result = await Result.fromPromise(
+  fetch('/api/users')
+)
+
+// Com mapeamento de erro
+const result = await Result.fromPromise(
+  fetch('/api/users'),
+  err => new NetworkError(err)
+)
+
+if (result.isOk()) {
+  const response = result.unwrap()
+  // processar response
+} else {
+  const error = result.unwrapErr()
+  console.error('Request failed:', error)
+}
+```
+
+#### 4.1.7. `Result.fromTry<T, E>(fn: () => T, mapError?: (error: unknown) => E): Result<T, E>`
+
+Converte uma função em Result, capturando erros.
+
+```typescript
+const result = Result.fromTry(() => {
+  functionThatMightThrow()
+}, err => new CustomError(err))
+
+if (result.isOk()) {
+  const response = result.unwrap()
+  // processar response
+}
+})
+
+---
+
+### 4.2. Validation
+
+#### 4.2.1. `isOk(): boolean`
 
 Verifica se o Result é Ok.
 
@@ -187,7 +269,7 @@ if (result.isOk()) {
 }
 ```
 
-#### 4.2.3. `isErr(): boolean`
+#### 4.1.8. `isErr(): boolean`
 
 Verifica se o Result é Err.
 
@@ -202,9 +284,9 @@ if (result.isErr()) {
 
 ---
 
-### 4.3. Access
+### 4.2. Access
 
-#### 4.3.1. `get ok: T | null`
+#### 4.2.1. `get ok: T | null`
 
 Retorna o valor de sucesso ou null.
 
@@ -216,7 +298,7 @@ const error = Result.err('Failed')
 console.log(error.ok) // null
 ```
 
-#### 4.3.2. `get err: E | null`
+#### 4.2.2. `get err: E | null`
 
 Retorna o erro ou null.
 
@@ -228,7 +310,7 @@ const success = Result.ok(42)
 console.log(success.err) // null
 ```
 
-#### 4.3.3. `unwrap(): T`
+#### 4.2.3. `unwrap(): T`
 
 Extrai o valor. Lança exceção se for Err.
 
@@ -242,7 +324,7 @@ error.unwrap() // throws Error: Called unwrap on an Err value
 
 ⚠️ **Atenção**: Use apenas quando tiver certeza que o Result é Ok.
 
-#### 4.3.4. `unwrapErr(): E`
+#### 4.2.4. `unwrapErr(): E`
 
 Extrai o erro. Lança exceção se for Ok.
 
@@ -254,7 +336,7 @@ const result = Result.ok(42)
 result.unwrapErr() // throws Error
 ```
 
-#### 4.3.5. `unwrapOr(defaultValue: T): T`
+#### 4.2.5. `unwrapOr(defaultValue: T): T`
 
 Retorna o valor ou um valor padrão se for Err.
 
@@ -266,7 +348,7 @@ const error = Result.err('Failed')
 console.log(error.unwrapOr(0)) // 0
 ```
 
-#### 4.3.6. `unwrapOrElse(fn: () => T): T`
+#### 4.2.6. `unwrapOrElse(fn: () => T): T`
 
 Retorna o valor ou computa um valor padrão se for Err.
 
@@ -280,7 +362,7 @@ const value = result.unwrapOrElse(() => {
 // value = 0
 ```
 
-#### 4.3.7. `expect(message: string): T`
+#### 4.2.7. `expect(message: string): T`
 
 Extrai o valor ou lança exceção com mensagem customizada.
 
@@ -292,7 +374,7 @@ const error = Result.err('Failed')
 error.expect('User must exist') // throws Error: User must exist
 ```
 
-#### 4.3.8. `expectErr(message: string): E`
+#### 4.2.8. `expectErr(message: string): E`
 
 Extrai o erro ou lança exceção com mensagem customizada.
 
@@ -306,9 +388,9 @@ result.expectErr('Expected error') // throws Error
 
 ---
 
-### 4.4. Transformation
+### 4.3. Transformation
 
-#### 4.4.1. `map<U>(fn: (value: T) => U): Result<U, E>`
+#### 4.3.1. `map<U>(fn: (value: T) => U): Result<U, E>`
 
 Transforma o valor de sucesso. Erro é propagado.
 
@@ -326,7 +408,7 @@ const error = Result.err<number, string>('Failed')
 console.log(error.unwrapErr()) // 'Failed'
 ```
 
-#### 4.4.2. `mapOr<U>(defaultValue: U, fn: (value: T) => U): U`
+#### 4.3.2. `mapOr<U>(defaultValue: U, fn: (value: T) => U): U`
 
 Transforma o valor ou retorna padrão se for Err.
 
@@ -338,7 +420,7 @@ const error = Result.err('Failed').mapOr(0, (x: number) => x * 2)
 console.log(error) // 0
 ```
 
-#### 4.4.3. `mapErr<F>(fn: (error: E) => F): Result<T, F>`
+#### 4.3.3. `mapErr<F>(fn: (error: E) => F): Result<T, F>`
 
 Transforma o erro. Valor é propagado.
 
@@ -351,7 +433,7 @@ console.log(result.unwrapErr())
 // { code: 404, message: 'not found' }
 ```
 
-#### 4.4.4. `andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E>`
+#### 4.3.4. `andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E>`
 
 Encadeia operações que retornam Result. Para na primeira falha.
 
@@ -379,7 +461,7 @@ const error = parseNumber('abc')
 console.log(error.unwrapErr()) // 'Not a number'
 ```
 
-#### 4.4.5. `flatten<U>(): Result<U, E>`
+#### 4.3.5. `flatten<U>(): Result<U, E>`
 
 Achata um Result aninhado.
 
@@ -395,52 +477,9 @@ console.log(flat.unwrap()) // 42
 
 ---
 
-### 4.5. Combination
+### 4.4. Combination
 
-#### 4.5.1. `Result.sequence<T>(results: T[]): Result<...>`
-
-Combina array de Results em um único Result com array de valores. Retorna o primeiro erro encontrado.
-
-```typescript
-const results = [
-  Result.ok(1),
-  Result.ok(2),
-  Result.ok(3)
-]
-
-const combined = Result.sequence(results)
-console.log(combined.unwrap()) // [1, 2, 3]
-
-// Com erro
-const withError = [
-  Result.ok(1),
-  Result.err('Failed'),
-  Result.ok(3)
-]
-
-const failed = Result.sequence(withError)
-console.log(failed.unwrapErr()) // 'Failed'
-```
-
-#### 4.5.2. `Result.sequenceAsync<T, E>(promises: Promise<Result<T, E>>[]): Promise<Result<T[], E>>`
-
-Versão assíncrona de `sequence`. Aguarda todas as promises.
-
-```typescript
-async function fetchUser(id: number): Promise<Result<User, Error>> {
-  // ... implementação
-}
-
-const promises = [fetchUser(1), fetchUser(2), fetchUser(3)]
-const result = await Result.sequenceAsync(promises)
-
-if (result.isOk()) {
-  const users = result.unwrap()
-  console.log(`Fetched ${users.length} users`)
-}
-```
-
-#### 4.5.3. `and<U>(other: Result<U, E>): Result<U, E>`
+#### 4.4.1. `and<U>(other: Result<U, E>): Result<U, E>`
 
 Retorna `other` se este Result for Ok, senão retorna o erro.
 
@@ -452,7 +491,7 @@ const error = Result.err('Failed').and(Result.ok(2))
 console.log(error.unwrapErr()) // 'Failed'
 ```
 
-#### 4.5.4. `or(other: Result<T, E>): Result<T, E>`
+#### 4.4.2. `or(other: Result<T, E>): Result<T, E>`
 
 Retorna este Result se for Ok, senão retorna `other`.
 
@@ -464,7 +503,7 @@ const error = Result.err('Failed').or(Result.ok(2))
 console.log(error.unwrap()) // 2
 ```
 
-#### 4.5.5. `orElse(fn: (error: E) => Result<T, E>): Result<T, E>`
+#### 4.4.3. `orElse(fn: (error: E) => Result<T, E>): Result<T, E>`
 
 Retorna este Result se for Ok, senão chama `fn` com o erro.
 
@@ -478,34 +517,9 @@ const result = Result.err('cache miss')
 
 ---
 
-### 4.6. Conversion
+### 4.5. Conversion
 
-#### 4.6.1. `Result.fromPromise<T, E>(promise: Promise<T>, mapError?: (error: unknown) => E): Promise<Result<T, E>>`
-
-Converte uma Promise em Result, capturando erros.
-
-```typescript
-// Sem mapeamento de erro
-const result = await Result.fromPromise(
-  fetch('/api/users')
-)
-
-// Com mapeamento de erro
-const result = await Result.fromPromise(
-  fetch('/api/users'),
-  err => new NetworkError(err)
-)
-
-if (result.isOk()) {
-  const response = result.unwrap()
-  // processar response
-} else {
-  const error = result.unwrapErr()
-  console.error('Request failed:', error)
-}
-```
-
-#### 4.6.2. `toPromise(): Promise<T>`
+#### 4.5.1. `toPromise(): Promise<T>`
 
 Converte Result em Promise. Resolve se Ok, rejeita se Err.
 
@@ -526,9 +540,9 @@ error.toPromise()
 
 ---
 
-### 4.7. Inspection
+### 4.6. Inspection
 
-#### 4.7.1. `match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R`
+#### 4.6.1. `match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R`
 
 Pattern matching. Executa o handler apropriado.
 
@@ -543,7 +557,7 @@ const message = result.match({
 console.log(message) // "Success: 42"
 ```
 
-#### 4.7.2. `inspect(handlers: { ok: (value: T) => void; err: (error: E) => void }): Result<T, E>`
+#### 4.6.2. `inspect(handlers: { ok: (value: T) => void; err: (error: E) => void }): Result<T, E>`
 
 Inspeciona o valor sem consumi-lo. Retorna o Result para encadeamento.
 
@@ -559,7 +573,7 @@ const result = Result.ok(42)
 console.log(result.unwrap()) // 84
 ```
 
-#### 4.7.3. `inspectOk(fn: (value: T) => void): Result<T, E>`
+#### 4.6.3. `inspectOk(fn: (value: T) => void): Result<T, E>`
 
 Inspeciona apenas se for Ok.
 
@@ -571,7 +585,7 @@ Result.ok(42)
 // Logs: "Got: 42"
 ```
 
-#### 4.7.4. `inspectErr(fn: (error: E) => void): Result<T, E>`
+#### 4.6.4. `inspectErr(fn: (error: E) => void): Result<T, E>`
 
 Inspeciona apenas se for Err.
 
