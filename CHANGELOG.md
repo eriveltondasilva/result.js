@@ -5,7 +5,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-05-20
+## [1.1.0] - 2023-11-20
+
+### Added ➕
+
+- You can now use **`Result.fromTry()`** to safely handle code that might throw exceptions. This returns a **`Result.ok()`** if execution is successful or a **`Result.err()`** if an exception is caught.
+
+---
+
+## [1.0.0] - 2025-11-20
 
 First stable version for production use.
 
