@@ -193,7 +193,28 @@ export class Result<T, E = Error> {
     try {
       const value = await promise
       return Result.ok<T, E>(value)
-      //
+    } catch (error) {
+      const mappedError = mapError ? mapError(error) : (error as E)
+      return Result.err<T, E>(mappedError)
+    }
+  }
+
+  /**
+   * Creates a Result from a function that might throw an error.
+   *
+   * @template T - Value type
+   * @template E - Error type
+   * @param fn - The function to execute
+   * @param mapError - Optional function to transform the caught error
+   * @returns Result<T, E>
+   *
+   * @example
+   * const result = Result.fromTry(() => JSON.parse(invalidJson))
+   * // result.isErr() === true
+   */
+  static fromTry<T, E = Error>(fn: () => T, mapError?: (error: unknown) => E): Result<T, E> {
+    try {
+      return Result.ok<T, E>(fn())
     } catch (error) {
       const mappedError = mapError ? mapError(error) : (error as E)
       return Result.err<T, E>(mappedError)
