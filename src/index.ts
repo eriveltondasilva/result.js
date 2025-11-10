@@ -42,7 +42,7 @@ export class Result<T, E = Error> {
     this.#error = error
   }
 
-  // #region CREATION
+  // #region STATIC METHODS
   /**
    * Creates a successful Result containing a value.
    *
@@ -69,14 +69,12 @@ export class Result<T, E = Error> {
    *
    * @example
    * const result = Result.err(new Error('Failed'))
-   * result.unwrapErr().message // => 'Failed'
+   * result.unwrapErr() // => Error('Failed')
    */
   static err<T = never, E = Error>(error: E): Result<T, E> {
     return new Result(false, null, error, Result.#token) as Result<T, E>
   }
-  // #endregion
 
-  // #region VALIDATION
   /**
    * Type guard to check if a value is a Result instance.
    *
@@ -96,6 +94,114 @@ export class Result<T, E = Error> {
     return value instanceof Result
   }
 
+  /**
+   * Combines multiple Results into a single Result containing an array of values.
+   * Returns the first error encountered.
+   *
+   * @template T - Array of Result types
+   * @param results - Array of Results to combine
+   * @returns Result containing array of unwrapped values or first error
+   *
+   * @example
+   * const results = [Result.ok(1), Result.ok(2), Result.ok(3)]
+   * const combined = Result.sequence(results)
+   * combined.unwrap() // => [1, 2, 3]
+   */
+  static sequence<T extends readonly Result<unknown, unknown>[]>(
+    results: T
+  ): Result<
+    { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never },
+    T[number] extends Result<unknown, infer E> ? E : never
+  > {
+    const values: unknown[] = []
+
+    for (const result of results) {
+      if (result.isErr()) {
+        return Result.err(result.unwrapErr()) as Result<
+          never,
+          T[number] extends Result<unknown, infer E> ? E : never
+        >
+      }
+      values.push(result.unwrap())
+    }
+
+    return Result.ok(
+      values as {
+        [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never
+      }
+    )
+  }
+
+  /**
+   * Combines multiple async Results into a single Result containing an array/tuple of values.
+   * Waits for all promises and returns the first error encountered.
+   *
+   * @template T - Value type
+   * @template E - Error type
+   * @param promises - Array of Promises resolving to Results
+   * @returns Promise<Result<T[], E>>
+   *
+   * @example
+   * const promises = [fetchUser(1), fetchUser(2)]
+   * const result = await Result.sequenceAsync(promises)
+   */
+  static async sequenceAsync<const T extends readonly Promise<Result<unknown, unknown>>[]>(
+    promises: T
+  ): Promise<
+    Result<
+      { -readonly [K in keyof T]: T[K] extends Promise<Result<infer U, unknown>> ? U : never },
+      T[number] extends Promise<Result<unknown, infer E>> ? E : never
+    >
+  > {
+    const results = await Promise.all(promises)
+    const values: unknown[] = []
+
+    for (const result of results) {
+      if (result.isErr()) {
+        return Result.err(result.unwrapErr()) as Result<
+          never,
+          T[number] extends Promise<Result<unknown, infer E>> ? E : never
+        >
+      }
+
+      values.push(result.unwrap())
+    }
+
+    // biome-ignore lint/suspicious/noExplicitAny: cast final
+    return Result.ok(values) as any
+  }
+
+  /**
+   * Converts a Promise into a Result, catching any errors.
+   *
+   * @template T - Value type
+   * @template E - Error type
+   * @param promise - Promise to convert
+   * @param mapError - Optional function to transform the error
+   * @returns Promise<Result<T, E>>
+   *
+   * @example
+   * const result = await Result.fromPromise(
+   *   fetch('/api/data'),
+   *   (err) => new NetworkError(err)
+   * )
+   */
+  static async fromPromise<T, E = Error>(
+    promise: Promise<T>,
+    mapError?: (error: unknown) => E
+  ): Promise<Result<T, E>> {
+    try {
+      const value = await promise
+      return Result.ok<T, E>(value)
+      //
+    } catch (error) {
+      const mappedError = mapError ? mapError(error) : (error as E)
+      return Result.err<T, E>(mappedError)
+    }
+  }
+  // #endregion
+
+  // #region VALIDATION
   /**
    * Type guard to check if Result is successful.
    *
@@ -225,7 +331,13 @@ export class Result<T, E = Error> {
    * @throws {Error} with message if Result is Err
    *
    * @example
-   * const value = result.expect('User must exist')
+   * const resultOk = Result.ok(42)
+   * result.expect('User must exist')
+   * // => 42
+   *
+   * const resultErr = Result.err(new Error('failed'))
+   * result.expect('User must exist')
+   * // => Throws Error('User must exist')
    */
   expect(message: string): T {
     if (!this.#success) {
@@ -344,83 +456,6 @@ export class Result<T, E = Error> {
 
   // #region COMBINATION
   /**
-   * Combines multiple Results into a single Result containing an array of values.
-   * Returns the first error encountered.
-   *
-   * @template T - Array of Result types
-   * @param results - Array of Results to combine
-   * @returns Result containing array of unwrapped values or first error
-   *
-   * @example
-   * const results = [Result.ok(1), Result.ok(2), Result.ok(3)]
-   * const combined = Result.sequence(results)
-   * combined.unwrap() // => [1, 2, 3]
-   */
-  static sequence<T extends readonly Result<unknown, unknown>[]>(
-    results: T
-  ): Result<
-    { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never },
-    T[number] extends Result<unknown, infer E> ? E : never
-  > {
-    const values: unknown[] = []
-
-    for (const result of results) {
-      if (result.isErr()) {
-        return Result.err(result.unwrapErr()) as Result<
-          never,
-          T[number] extends Result<unknown, infer E> ? E : never
-        >
-      }
-      values.push(result.unwrap())
-    }
-
-    return Result.ok(
-      values as {
-        [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never
-      }
-    )
-  }
-
-  /**
-   * Combines multiple async Results into a single Result containing an array of values.
-   * Waits for all promises and returns the first error encountered.
-   *
-   * @template T - Value type
-   * @template E - Error type
-   * @param promises - Array of Promises resolving to Results
-   * @returns Promise<Result<T[], E>>
-   *
-   * @example
-   * const promises = [fetchUser(1), fetchUser(2)]
-   * const result = await Result.sequenceAsync(promises)
-   */
-  static async sequenceAsync<const T extends readonly Promise<Result<unknown, unknown>>[]>(
-    promises: T
-  ): Promise<
-    Result<
-      { -readonly [K in keyof T]: T[K] extends Promise<Result<infer U, unknown>> ? U : never },
-      T[number] extends Promise<Result<unknown, infer E>> ? E : never
-    >
-  > {
-    const results = await Promise.all(promises)
-    const values: unknown[] = []
-
-    for (const result of results) {
-      if (result.isErr()) {
-        return Result.err(result.unwrapErr()) as Result<
-          never,
-          T[number] extends Promise<Result<unknown, infer E>> ? E : never
-        >
-      }
-
-      values.push(result.unwrap())
-    }
-
-    // biome-ignore lint/suspicious/noExplicitAny: cast final
-    return Result.ok(values) as any
-  }
-
-  /**
    * Returns the other Result if this Result is Ok, otherwise returns this error.
    *
    * @template U - Other value type
@@ -462,35 +497,6 @@ export class Result<T, E = Error> {
   // #endregion
 
   // #region CONVERSION
-  /**
-   * Converts a Promise into a Result, catching any errors.
-   *
-   * @template T - Value type
-   * @template E - Error type
-   * @param promise - Promise to convert
-   * @param mapError - Optional function to transform the error
-   * @returns Promise<Result<T, E>>
-   *
-   * @example
-   * const result = await Result.fromPromise(
-   *   fetch('/api/data'),
-   *   (err) => new NetworkError(err)
-   * )
-   */
-  static async fromPromise<T, E = Error>(
-    promise: Promise<T>,
-    mapError?: (error: unknown) => E
-  ): Promise<Result<T, E>> {
-    try {
-      const value = await promise
-      return Result.ok<T, E>(value)
-      //
-    } catch (error) {
-      const mappedError = mapError ? mapError(error) : (error as E)
-      return Result.err<T, E>(mappedError)
-    }
-  }
-
   /**
    * Converts Result to a Promise. Resolves if Ok, rejects if Err.
    *
