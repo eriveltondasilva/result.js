@@ -3,9 +3,10 @@
   "description": "A lightweight, Rust-inspired Result type for JavaScript and TypeScript — handle success and error cases without exceptions.",
   "version": "1.0.7",
   "keywords": [
-    "result",
-    "typescript",
     "javascript",
+    "typescript",
+    "result-type",
+    "rust",
     "monad",
     "functional programming",
     "error handling"
@@ -92,7 +93,7 @@
     "prepublishOnly": "npm run ci && npm run build",
     "postversion": "git push origin main --follow-tags",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/example.ts",
     "fmt": "biome format --write --verbose",
     "lint": "biome lint --write --verbose",
     "check": "biome check --write --verbose",
