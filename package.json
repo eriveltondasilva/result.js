@@ -1,7 +1,7 @@
 {
   "name": "@eriveltonsilva/result.js",
   "description": "A lightweight, Rust-inspired Result type for JavaScript and TypeScript — handle success and error cases without exceptions.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "keywords": [
     "result",
     "typescript",
