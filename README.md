@@ -89,3 +89,9 @@ Inspired by:
 - [Rust's Result type - documentation](https://doc.rust-lang.org/std/result)
 - [oxide.ts package](https://www.npmjs.com/package/oxide.ts)
 - [result.ts package](https://www.npmjs.com/package/result.ts)
+
+---
+
+If this library was helpful to you, consider supporting me with a coffee. ☕
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow)](https://www.buymeacoffee.com/eriveltondasilva)
+
