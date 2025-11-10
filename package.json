@@ -93,7 +93,7 @@
     "prepublishOnly": "npm run ci && npm run build",
     "postversion": "git push origin main --follow-tags",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/example.ts",
+    "dev": "tsx watch src/examples.ts",
     "fmt": "biome format --write --verbose",
     "lint": "biome lint --write --verbose",
     "check": "biome check --write --verbose",
