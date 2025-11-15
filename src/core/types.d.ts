@@ -53,6 +53,10 @@ export interface IResult<T, E> {
   flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>
   toPromise(): Promise<T>
 
+  // # COMPARISON
+  contains(value: T, equals?: (a: T, b: T) => boolean): boolean
+  containsErr(error: E, equals?: (a: E, b: E) => boolean): boolean
+
   // # ASYNC
   mapAsync<U>(fn: (value: T) => Promise<U>): AsyncResult<U, E>
   mapErrAsync<F>(fn: (error: E) => Promise<F>): AsyncResult<T, F>
@@ -64,4 +68,8 @@ export interface IResult<T, E> {
   orElseAsync(fn: (error: E) => AsyncResult<T, E>): AsyncResult<T, E>
   inspectAsync(fn: (value: T) => Promise<void>): AsyncResult<T, E>
   inspectErrAsync(fn: (error: E) => Promise<void>): AsyncResult<T, E>
+
+  // # DEBUGGING & SERIALIZATION
+  readonly [Symbol.toStringTag]: string
+  toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
 }

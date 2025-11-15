@@ -68,7 +68,7 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
 
   // #region TRANSFORMATION
   map<U>(_fn: (value: T) => U): Err<U, E> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
   mapErr<F>(fn: (error: E) => F): Err<T, F> {
@@ -90,11 +90,11 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
 
   // #region CHAINING
   andThen<U>(_fn: (value: T) => Result<U, E>): Err<U, E> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
   and<U>(_other: Result<U, E>): Err<U, E> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
   or(other: Result<T, E>): Result<T, E> {
@@ -131,9 +131,19 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   }
   // #endregion
 
+  // #region COMPARISON
+  contains(_value: T, _equals?: (a: T, b: T) => boolean): boolean {
+    return false
+  }
+
+  containsErr(error: E, equals?: (a: E, b: E) => boolean): boolean {
+    return equals ? equals(this.#error, error) : this.#error === error
+  }
+  // #endregion
+
   // #region ASYNC
   async mapAsync<U>(_fn: (value: T) => Promise<U>): Promise<Err<U, E>> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
   async mapErrAsync<F>(fn: (error: E) => Promise<F>): Promise<Err<T, F>> {
@@ -152,15 +162,15 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   }
 
   async andThenAsync<U>(_fn: (value: T) => Promise<Result<U, E>>): Promise<Err<U, E>> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
   async andAsync<U>(_other: Promise<Result<U, E>>): Promise<Err<U, E>> {
-    return new Err(this.#error)
+    return this as unknown as Err<U, E>
   }
 
-  async orAsync(_other: Promise<Result<T, E>>): Promise<Result<T, E>> {
-    return new Err(this.#error)
+  async orAsync(other: Promise<Result<T, E>>): Promise<Result<T, E>> {
+    return other
   }
 
   async orElseAsync(fn: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
@@ -176,4 +186,13 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     return this
   }
   // #endregion
+
+  //
+  get [Symbol.toStringTag](): string {
+    return 'Result.Err'
+  }
+
+  toJSON(): { type: 'err'; error: E } {
+    return { type: 'err', error: this.#error }
+  }
 }

@@ -62,8 +62,7 @@ function createAny<T extends readonly Result<unknown, unknown>[]>(
       >
     }
 
-    // biome-ignore lint/suspicious/noExplicitAny: type safe
-    errors.push(result.unwrapErr() as any)
+    errors.push(result.unwrapErr() as T[number] extends Result<unknown, infer E> ? E : never)
   }
 
   return new Err(errors as { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never })

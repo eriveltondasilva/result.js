@@ -72,7 +72,7 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
 
   mapErr<F>(_fn: (error: E) => F): Ok<T, F> {
-    return new Ok(this.#value)
+    return this as unknown as Ok<T, F>
   }
 
   mapOr<U>(_defaultValue: U, fn: (value: T) => U): U {
@@ -131,13 +131,24 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
   // #endregion
 
+  // #region COMPARISON
+  contains(value: T, equals?: (a: T, b: T) => boolean): boolean {
+    return equals ? equals(this.#value, value) : this.#value === value
+  }
+
+  containsErr(_error: E, _equals?: (a: E, b: E) => boolean): boolean {
+    return false
+  }
+
+  // #endregion
+
   // #region ASYNC
   async mapAsync<U>(fn: (value: T) => Promise<U>): Promise<Ok<U, E>> {
     return new Ok(await fn(this.#value))
   }
 
   async mapErrAsync<F>(_fn: (error: E) => Promise<F>): Promise<Ok<T, F>> {
-    return new Ok(this.#value)
+    return this as unknown as Ok<T, F>
   }
 
   async mapOrAsync<U>(_defaultValue: U, fn: (value: T) => Promise<U>): Promise<U> {
@@ -176,4 +187,13 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return this
   }
   // #endregion
+
+  //
+  get [Symbol.toStringTag](): string {
+    return 'Result.Ok'
+  }
+
+  toJSON(): { type: 'ok'; value: T } {
+    return { type: 'ok', value: this.#value }
+  }
 }
