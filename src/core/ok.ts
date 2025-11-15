@@ -22,9 +22,17 @@ export class Ok<T, E = never> implements IResult<T, E> {
   isErr(): this is Err<never, E> {
     return false
   }
+
+  isOkAnd(fn: (value: T) => boolean): this is Ok<T, never> {
+    return fn(this.#value)
+  }
+
+  isErrAnd(_fn: (error: E) => boolean): this is Err<never, E> {
+    return false
+  }
   // #endregion
 
-  // #region ACCESS
+  // #region EXTRACTION
   get ok(): T {
     return this.#value
   }
@@ -45,7 +53,7 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return this.#value
   }
 
-  unwrapOrElse(_fn: () => T): T {
+  unwrapOrElse(_fn: (error: E) => T): T {
     return this.#value
   }
 
@@ -63,24 +71,24 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return new Ok(fn(this.#value))
   }
 
-  mapOr<U>(_defaultValue: U, fn: (value: T) => U): U {
-    return fn(this.#value)
-  }
-
   mapErr<F>(_fn: (error: E) => F): Ok<T, F> {
     return new Ok(this.#value)
   }
 
+  mapOr<U>(_defaultValue: U, fn: (value: T) => U): U {
+    return fn(this.#value)
+  }
+
+  mapOrElse<U>(_defaultFn: (error: E) => U, fn: (value: T) => U): U {
+    return fn(this.#value)
+  }
+  // #endregion
+
+  // #region CHAINING
   andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E> {
     return fn(this.#value)
   }
 
-  flatten<U>(this: Ok<Result<U, E>, E>): Result<U, E> {
-    return this.#value
-  }
-  // #endregion
-
-  // #region COMBINATION
   and<U>(other: Result<U, E>): Result<U, E> {
     return other
   }
@@ -94,28 +102,72 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
   // #endregion
 
-  // #region CONVERSION
-  toPromise(): Promise<T> {
-    return Promise.resolve(this.#value)
-  }
-  // #endregion
-
   // #region INSPECTION
   match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R {
     return handlers.ok(this.#value)
   }
 
-  inspect(handlers: { ok: (value: T) => void; err: (error: E) => void }): Result<T, E> {
-    handlers.ok(this.#value)
-    return this
-  }
-
-  inspectOk(fn: (value: T) => void): Ok<T, E> {
+  inspect(fn: (value: T) => void): Ok<T, E> {
     fn(this.#value)
     return this
   }
 
   inspectErr(_fn: (error: E) => void): Ok<T, E> {
+    return this
+  }
+  // #endregion
+
+  // #region CONVERSION
+  flatten<U, F>(this: Ok<Result<U, F>, E>): Result<U, E | F> {
+    return this.#value
+  }
+
+  toPromise(): Promise<T> {
+    return Promise.resolve(this.#value)
+  }
+  // #endregion
+
+  // #region ASYNC
+  async mapAsync<U>(fn: (value: T) => Promise<U>): Promise<Ok<U, E>> {
+    return new Ok(await fn(this.#value))
+  }
+
+  async mapErrAsync<F>(_fn: (error: E) => Promise<F>): Promise<Ok<T, F>> {
+    return new Ok(this.#value)
+  }
+
+  async mapOrAsync<U>(defaultValue: U, _fn: (value: T) => Promise<U>): Promise<U> {
+    return defaultValue
+  }
+
+  async mapOrElseAsync<U>(
+    _defaultFn: (error: E) => Promise<U>,
+    fn: (value: T) => Promise<U>
+  ): Promise<U> {
+    return fn(this.#value)
+  }
+
+  async andThenAsync<U>(fn: (value: T) => Promise<Result<U, E>>): Promise<Result<U, E>> {
+    return await fn(this.#value)
+  }
+
+  async andAsync<U>(other: Promise<Result<U, E>>): Promise<Result<U, E>> {
+    return other
+  }
+
+  async orAsync(_other: Promise<Result<T, E>>): Promise<Ok<T, E>> {
+    return this
+  }
+
+  async orElseAsync(_fn: (error: E) => Promise<Result<T, E>>): Promise<Ok<T, E>> {
+    return this
+  }
+
+  async inspectAsync(_fn: (value: T) => Promise<void>): Promise<Ok<T, E>> {
+    return this
+  }
+
+  async inspectErrAsync(_fn: (error: E) => Promise<void>): Promise<Ok<T, E>> {
     return this
   }
   // #endregion

@@ -10,6 +10,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Added ➕
 
 - You can now use **`Result.fromTry()`** to safely handle code that might throw exceptions. This returns a **`Result.ok()`** if execution is successful or a **`Result.err()`** if an exception is caught.
+- `Result.unwrapOrElse()`
+- `Result.isOkAnd()`
+- `Result.isErrAnd()`
 
 ---
 
