@@ -107,7 +107,7 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   // #endregion
 
   // #region INSPECTION
-  match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R {
+  match<R1, R2>(handlers: { ok: (value: T) => R1; err: (error: E) => R2 }): R1 | R2 {
     return handlers.err(this.#error)
   }
 

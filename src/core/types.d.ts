@@ -9,6 +9,7 @@ import type { Ok } from './ok.ts'
  */
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 export type AsyncResult<T, E> = Promise<Result<T, E>>
+export type ErrorLike = Error | { message: string } | string
 
 /**
  * Interface that both Ok and Err must implement.
@@ -35,6 +36,7 @@ export interface IResult<T, E> {
   mapErr<F>(fn: (error: E) => F): Result<T, F>
   mapOr<U>(defaultValue: U, fn: (value: T) => U): U
   mapOrElse<U>(defaultFn: (error: E) => U, fn: (value: T) => U): U
+  filter(predicate: (value: T) => boolean, errorFn: (value: T) => E): Result<T, E>
 
   // # CHAINING
   andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E>
@@ -43,7 +45,7 @@ export interface IResult<T, E> {
   orElse(fn: (error: E) => Result<T, E>): Result<T, E>
 
   // # INSPECTION
-  match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R
+  match<R1, R2>(handlers: { ok: (value: T) => R1; err: (error: E) => R2 }): R1 | R2
   inspect(fn: (value: T) => void): Result<T, E>
   inspectErr(fn: (error: E) => void): Result<T, E>
 

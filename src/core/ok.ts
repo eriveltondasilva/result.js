@@ -1,4 +1,4 @@
-import type { Err } from './err.js'
+import { Err } from './err.js'
 import type { IResult, Result } from './types.js'
 
 /**
@@ -82,6 +82,10 @@ export class Ok<T, E = never> implements IResult<T, E> {
   mapOrElse<U>(_defaultFn: (error: E) => U, fn: (value: T) => U): U {
     return fn(this.#value)
   }
+
+  filter(predicate: (value: T) => boolean, errorFn: (value: T) => E): Result<T, E> {
+    return predicate(this.#value) ? this : new Err(errorFn(this.#value))
+  }
   // #endregion
 
   // #region CHAINING
@@ -103,7 +107,7 @@ export class Ok<T, E = never> implements IResult<T, E> {
   // #endregion
 
   // #region INSPECTION
-  match<R>(handlers: { ok: (value: T) => R; err: (error: E) => R }): R {
+  match<R1, R2>(handlers: { ok: (value: T) => R1; err: (error: E) => R2 }): R1 | R2 {
     return handlers.ok(this.#value)
   }
 
@@ -136,8 +140,8 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return new Ok(this.#value)
   }
 
-  async mapOrAsync<U>(defaultValue: U, _fn: (value: T) => Promise<U>): Promise<U> {
-    return defaultValue
+  async mapOrAsync<U>(_defaultValue: U, fn: (value: T) => Promise<U>): Promise<U> {
+    return fn(this.#value)
   }
 
   async mapOrElseAsync<U>(
@@ -163,7 +167,8 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return this
   }
 
-  async inspectAsync(_fn: (value: T) => Promise<void>): Promise<Ok<T, E>> {
+  async inspectAsync(fn: (value: T) => Promise<void>): Promise<Ok<T, E>> {
+    await fn(this.#value)
     return this
   }
 

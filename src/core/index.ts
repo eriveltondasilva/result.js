@@ -8,8 +8,8 @@
  * const success = Result.ok(42) // => Result<number, never>
  * const failure = Result.err(new Error('Failed')) // => Result<never, Error>
  */
-import asyncFactories from './async-factories.js'
-import factories from './factories.js'
+import asyncFactories from './factories.async.js'
+import factories from './factories.sync.js'
 
 import type { AsyncResult, Result as ResultType } from './types.js'
 

@@ -52,18 +52,21 @@ function createAny<T extends readonly Result<unknown, unknown>[]>(
   T[number] extends Result<infer U, unknown> ? U : never,
   { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never }
 > {
-  const errors: unknown[] = []
+  const errors: Array<T[number] extends Result<unknown, infer E> ? E : never> = []
 
   for (const result of results) {
     if (result.isOk()) {
-      // biome-ignore lint/suspicious/noExplicitAny: type-safe cast
-      return new Ok(result.unwrap()) as any
+      return new Ok(result.unwrap()) as Ok<
+        T[number] extends Result<infer U, unknown> ? U : never,
+        never
+      >
     }
-    errors.push(result.unwrapErr())
+
+    // biome-ignore lint/suspicious/noExplicitAny: type safe
+    errors.push(result.unwrapErr() as any)
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: type-safe cast
-  return new Err(errors as any)
+  return new Err(errors as { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never })
 }
 
 function createFromTry<T>(fn: () => T): Result<T, Error>
@@ -72,7 +75,10 @@ function createFromTry<T, E = Error>(fn: () => T, mapError?: (error: unknown) =>
   try {
     return new Ok<T, E>(fn())
   } catch (error) {
-    return new Err<T, E>(mapError ? mapError(error) : (error as E))
+    const mappedError = mapError
+      ? mapError(error)
+      : ((error instanceof Error ? error : new Error(String(error))) as E)
+    return new Err<T, E>(mappedError)
   }
 }
 
@@ -88,7 +94,7 @@ function createPartition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
     }
   }
 
-  return [oks, errs]
+  return [oks, errs] as const
 }
 
 export default {
