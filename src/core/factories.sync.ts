@@ -10,18 +10,11 @@ function createErr<T = never, E = Error>(error: E): Err<T, E> {
   return new Err(error)
 }
 
-function createIs<T, E>(value: unknown): value is Result<T, E> {
+function createIsResult<T = unknown, E = unknown>(value: unknown): value is Result<T, E> {
   return value instanceof Ok || value instanceof Err
 }
 
-function createAll<T, E>(results: Result<T, E>[]): Result<T[], E>
-function createAll<T extends readonly Result<unknown, unknown>[]>(
-  results: T
-): Result<
-  { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never },
-  T[number] extends Result<unknown, infer E> ? E : never
->
-function createAll<T extends readonly Result<unknown, unknown>[]>(
+function createAll<const T extends readonly Result<unknown, unknown>[]>(
   results: T
 ): Result<
   { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never },
@@ -36,14 +29,15 @@ function createAll<T extends readonly Result<unknown, unknown>[]>(
         T[number] extends Result<unknown, infer E> ? E : never
       >
     }
-    values.push(result.unwrap())
+    values.push(result.ok)
   }
 
-  return new Ok(
-    values as {
+  return new Ok(values) as Ok<
+    {
       [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never
-    }
-  )
+    },
+    never
+  >
 }
 
 function createAny<T extends readonly Result<unknown, unknown>[]>(
@@ -62,10 +56,13 @@ function createAny<T extends readonly Result<unknown, unknown>[]>(
       >
     }
 
-    errors.push(result.unwrapErr() as T[number] extends Result<unknown, infer E> ? E : never)
+    errors.push(result.err as T[number] extends Result<unknown, infer E> ? E : never)
   }
 
-  return new Err(errors as { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never })
+  return new Err(errors) as Err<
+    never,
+    { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never }
+  >
 }
 
 function createFromTry<T>(fn: () => T): Result<T, Error>
@@ -86,11 +83,7 @@ function createPartition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
   const errs: E[] = []
 
   for (const result of results) {
-    if (result.isOk()) {
-      oks.push(result.unwrap())
-    } else {
-      errs.push(result.unwrapErr())
-    }
+    result.isOk() ? oks.push(result.ok) : errs.push(result.err as E)
   }
 
   return [oks, errs] as const
@@ -99,7 +92,7 @@ function createPartition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
 export default {
   ok: createOk,
   err: createErr,
-  is: createIs,
+  isResult: createIsResult,
   all: createAll,
   any: createAny,
   fromTry: createFromTry,

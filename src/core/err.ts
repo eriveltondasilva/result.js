@@ -123,7 +123,7 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
 
   // #region CONVERSION
   flatten<U, F>(this: Err<Result<U, F>, E>): Err<U, E | F> {
-    return new Err(this.#error)
+    return new Err<U, E | F>(this.#error)
   }
 
   toPromise(): Promise<never> {
@@ -142,48 +142,47 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   // #endregion
 
   // #region ASYNC
-  async mapAsync<U>(_fn: (value: T) => Promise<U>): Promise<Err<U, E>> {
-    return this as unknown as Err<U, E>
+  mapAsync<U>(_fn: (value: T) => Promise<U>): Promise<Err<U, E>> {
+    return Promise.resolve(this as unknown as Err<U, E>)
   }
 
-  async mapErrAsync<F>(fn: (error: E) => Promise<F>): Promise<Err<T, F>> {
-    return new Err(await fn(this.#error))
+  mapErrAsync<F>(fn: (error: E) => Promise<F>): Promise<Err<T, F>> {
+    return fn(this.#error).then((error) => new Err(error))
   }
 
-  async mapOrAsync<U>(defaultValue: U, _fn: (value: T) => Promise<U>): Promise<U> {
-    return defaultValue
+  mapOrAsync<U>(defaultValue: U, _fn: (value: T) => Promise<U>): Promise<U> {
+    return Promise.resolve(defaultValue)
   }
 
-  async mapOrElseAsync<U>(
+  mapOrElseAsync<U>(
     defaultFn: (error: E) => Promise<U>,
     _fn: (value: T) => Promise<U>
   ): Promise<U> {
     return defaultFn(this.#error)
   }
 
-  async andThenAsync<U>(_fn: (value: T) => Promise<Result<U, E>>): Promise<Err<U, E>> {
-    return this as unknown as Err<U, E>
+  andThenAsync<U>(_fn: (value: T) => Promise<Result<U, E>>): Promise<Err<U, E>> {
+    return Promise.resolve(this as unknown as Err<U, E>)
   }
 
-  async andAsync<U>(_other: Promise<Result<U, E>>): Promise<Err<U, E>> {
-    return this as unknown as Err<U, E>
+  andAsync<U>(_other: Promise<Result<U, E>>): Promise<Err<U, E>> {
+    return Promise.resolve(this as unknown as Err<U, E>)
   }
 
-  async orAsync(other: Promise<Result<T, E>>): Promise<Result<T, E>> {
+  orAsync(other: Promise<Result<T, E>>): Promise<Result<T, E>> {
     return other
   }
 
-  async orElseAsync(fn: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  orElseAsync(fn: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
     return fn(this.#error)
   }
 
-  async inspectAsync(_fn: (value: T) => Promise<void>): Promise<Err<T, E>> {
-    return this
+  inspectAsync(_fn: (value: T) => Promise<void>): Promise<Err<T, E>> {
+    return Promise.resolve(this)
   }
 
-  async inspectErrAsync(fn: (error: E) => Promise<void>): Promise<Err<T, E>> {
-    await fn(this.#error)
-    return this
+  inspectErrAsync(fn: (error: E) => Promise<void>): Promise<Err<T, E>> {
+    return fn(this.#error).then(() => this)
   }
   // #endregion
 
