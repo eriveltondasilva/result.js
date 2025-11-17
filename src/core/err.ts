@@ -188,15 +188,6 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     return fn(this.#error)
   }
 
-  // Inspecting
-  inspectAsync(_fn: (value: T) => Promise<void>): Promise<Err<T, E>> {
-    return Promise.resolve(this)
-  }
-
-  inspectErrAsync(fn: (error: E) => Promise<void>): Promise<Err<T, E>> {
-    return fn(this.#error).then(() => this)
-  }
-
   // ==================== METADATA ====================
   get [Symbol.toStringTag](): string {
     return 'Result.Err'

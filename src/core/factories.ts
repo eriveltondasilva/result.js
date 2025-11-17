@@ -1,7 +1,7 @@
 import { Err } from './err.js'
 import { Ok } from './ok.js'
 
-import type { ErrTuple, ErrUnion, OkTuple, OkUnion, Result } from './types.js'
+import type { AsyncResult, ErrTuple, ErrUnion, OkTuple, OkUnion, Result } from './types.js'
 
 // ==================== CREATION ====================
 function createOk<T, E = never>(value: T): Ok<T, E> {
@@ -107,6 +107,27 @@ function createPartition<T, E>(results: readonly Result<T, E>[]): readonly [T[],
   return [oks, errs]
 }
 
+// ==================== ASYNC OPERATIONS ====================
+async function createFromPromise<T>(fn: () => Promise<T>): AsyncResult<T, Error>
+async function createFromPromise<T, E>(
+  fn: () => Promise<T>,
+  mapError: (error: unknown) => E
+): AsyncResult<T, E>
+async function createFromPromise<T, E = Error>(
+  fn: () => Promise<T>,
+  mapError?: (error: unknown) => E
+): AsyncResult<T, E> {
+  try {
+    const value = await fn()
+    return new Ok<T, E>(value)
+  } catch (error) {
+    const mappedError = mapError
+      ? mapError(error)
+      : ((error instanceof Error ? error : new Error(String(error))) as E)
+    return new Err<T, E>(mappedError)
+  }
+}
+
 //
 export default {
   ok: createOk,
@@ -118,4 +139,5 @@ export default {
   all: createAll,
   any: createAny,
   partition: createPartition,
+  fromPromise: createFromPromise,
 }

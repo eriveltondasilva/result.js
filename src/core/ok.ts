@@ -191,15 +191,6 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return Promise.resolve(this)
   }
 
-  // Inspecting
-  inspectAsync(fn: (value: T) => Promise<void>): Promise<Ok<T, E>> {
-    return fn(this.#value).then(() => this)
-  }
-
-  inspectErrAsync(_fn: (error: E) => Promise<void>): Promise<Ok<T, E>> {
-    return Promise.resolve(this)
-  }
-
   // ==================== METADATA ====================
   get [Symbol.toStringTag](): string {
     return 'Result.Ok'

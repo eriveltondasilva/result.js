@@ -98,10 +98,6 @@ export interface IResult<T, E> {
   orAsync(result: AsyncResult<T, E>): AsyncResult<T, E>
   orElseAsync(fn: (error: E) => AsyncResult<T, E>): AsyncResult<T, E>
 
-  // Inspecting
-  inspectAsync(fn: (value: T) => Promise<void>): AsyncResult<T, E>
-  inspectErrAsync(fn: (error: E) => Promise<void>): AsyncResult<T, E>
-
   // ==================== METADATA ====================
   readonly [Symbol.toStringTag]: string
 }
