@@ -1,8 +1,18 @@
 import { Err } from './err.js'
-import factories from './factories.sync.js'
-import type Result from './index.js'
+import syncFactories from './factories.sync.js'
 import { Ok } from './ok.js'
-import type { AsyncResult } from './types.js'
+
+import type { AsyncResult, ErrUnion, OkTuple } from './types.js'
+
+//
+async function createAllAsync<const T extends readonly AsyncResult<unknown, unknown>[]>(
+  promises: T
+): AsyncResult<
+  OkTuple<{ [K in keyof T]: Awaited<T[K]> }>,
+  ErrUnion<{ [K in keyof T]: Awaited<T[K]> }>
+> {
+  return syncFactories.all(await Promise.all(promises))
+}
 
 async function createFromPromise<T>(fn: () => Promise<T>): AsyncResult<T, Error>
 async function createFromPromise<T, E>(
@@ -22,11 +32,6 @@ async function createFromPromise<T, E = Error>(
       : ((error instanceof Error ? error : new Error(String(error))) as E)
     return new Err<T, E>(mappedError)
   }
-}
-
-async function createAllAsync<T, E>(promises: Promise<Result<T, E>>[]): AsyncResult<T[], E> {
-  const results = await Promise.all(promises)
-  return factories.all(results)
 }
 
 export default { fromPromise: createFromPromise, allAsync: createAllAsync }

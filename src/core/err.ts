@@ -14,7 +14,8 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     this.#error = error
   }
 
-  // #region VALIDATION
+  // ==================== CHECKING ====================
+  // Type guards to check Result state
   isOk(): this is Ok<T, never> {
     return false
   }
@@ -30,9 +31,9 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   isErrAnd(fn: (error: E) => boolean): this is Err<never, E> {
     return fn(this.#error)
   }
-  // #endregion
 
-  // #region EXTRACTION
+  // ==================== EXTRACTING ====================
+  // Access values directly (may be null)
   get ok(): null {
     return null
   }
@@ -41,20 +42,13 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     return this.#error
   }
 
+  // Extract values (may throw)
   unwrap(): never {
     throw new Error('Called unwrap on an Err value', { cause: this.#error })
   }
 
   unwrapErr(): E {
     return this.#error
-  }
-
-  unwrapOr(defaultValue: T): T {
-    return defaultValue
-  }
-
-  unwrapOrElse(fn: (error: E) => T): T {
-    return fn(this.#error)
   }
 
   expect(message: string): never {
@@ -64,53 +58,70 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   expectErr(_message: string): E {
     return this.#error
   }
-  // #endregion
 
-  // #region TRANSFORMATION
+  // Extract with fallback (never throws)
+  unwrapOr(defaultValue: T): T {
+    return defaultValue
+  }
+
+  unwrapOrElse(fn: (error: E) => T): T {
+    return fn(this.#error)
+  }
+
+  // ==================== TRANSFORMING ====================
+  // Transform Ok values
   map<U>(_fn: (value: T) => U): Err<U, E> {
     return this as unknown as Err<U, E>
   }
 
+  mapOr<U>(_fn: (value: T) => U, defaultValue: U): U {
+    return defaultValue
+  }
+
+  mapOrElse<U>(_okFn: (value: T) => U, errFn: (error: E) => U): U {
+    return errFn(this.#error)
+  }
+
+  // Transform Err values
   mapErr<F>(fn: (error: E) => F): Err<T, F> {
     return new Err(fn(this.#error))
   }
 
-  mapOr<U>(defaultValue: U, _fn: (value: T) => U): U {
-    return defaultValue
-  }
-
-  mapOrElse<U>(defaultFn: (error: E) => U, _fn: (value: T) => U): U {
-    return defaultFn(this.#error)
-  }
-
-  filter(_fn: (value: T) => boolean, _errorFn: (value: T) => E): Result<T, E> {
+  // Filter Ok values
+  filter(_predicate: (value: T) => boolean, _onReject: (value: T) => E): Result<T, E> {
     return this
   }
-  // #endregion
 
-  // #region CHAINING
+  // ==================== CHAINING ====================
+  // Chain operations that return Result
   andThen<U>(_fn: (value: T) => Result<U, E>): Err<U, E> {
     return this as unknown as Err<U, E>
-  }
-
-  and<U>(_other: Result<U, E>): Err<U, E> {
-    return this as unknown as Err<U, E>
-  }
-
-  or(other: Result<T, E>): Result<T, E> {
-    return other
   }
 
   orElse(fn: (error: E) => Result<T, E>): Result<T, E> {
     return fn(this.#error)
   }
-  // #endregion
 
-  // #region INSPECTION
+  // Combine with other Results
+  and<U>(_result: Result<U, E>): Err<U, E> {
+    return this as unknown as Err<U, E>
+  }
+
+  or(result: Result<T, E>): Result<T, E> {
+    return result
+  }
+
+  zip<U, F>(_result: Result<U, F>): Result<[T, U], E | F> {
+    return new Err<[T, U], E | F>(this.#error)
+  }
+
+  // ==================== INSPECTING ====================
+  // Pattern matching
   match<R1, R2>(handlers: { ok: (value: T) => R1; err: (error: E) => R2 }): R1 | R2 {
     return handlers.err(this.#error)
   }
 
+  // Side effects (doesn't modify Result)
   inspect(_fn: (value: T) => void): Err<T, E> {
     return this
   }
@@ -119,9 +130,17 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     fn(this.#error)
     return this
   }
-  // #endregion
 
-  // #region CONVERSION
+  // ==================== COMPARING ====================
+  contains(_value: T, _equals?: (actual: T, expected: T) => boolean): boolean {
+    return false
+  }
+
+  containsErr(error: E, equals?: (actual: E, expected: E) => boolean): boolean {
+    return equals ? equals(this.#error, error) : this.#error === error
+  }
+
+  // ==================== CONVERTING ====================
   flatten<U, F>(this: Err<Result<U, F>, E>): Err<U, E | F> {
     return new Err<U, E | F>(this.#error)
   }
@@ -129,19 +148,13 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   toPromise(): Promise<never> {
     return Promise.reject(this.#error)
   }
-  // #endregion
 
-  // #region COMPARISON
-  contains(_value: T, _equals?: (a: T, b: T) => boolean): boolean {
-    return false
+  toJSON(): { type: 'err'; error: E } {
+    return { type: 'err', error: this.#error }
   }
 
-  containsErr(error: E, equals?: (a: E, b: E) => boolean): boolean {
-    return equals ? equals(this.#error, error) : this.#error === error
-  }
-  // #endregion
-
-  // #region ASYNC
+  // ==================== ASYNC OPERATIONS ====================
+  // Transforming
   mapAsync<U>(_fn: (value: T) => Promise<U>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
@@ -150,33 +163,32 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
     return fn(this.#error).then((error) => new Err(error))
   }
 
-  mapOrAsync<U>(defaultValue: U, _fn: (value: T) => Promise<U>): Promise<U> {
+  mapOrAsync<U>(_fn: (value: T) => Promise<U>, defaultValue: U): Promise<U> {
     return Promise.resolve(defaultValue)
   }
 
-  mapOrElseAsync<U>(
-    defaultFn: (error: E) => Promise<U>,
-    _fn: (value: T) => Promise<U>
-  ): Promise<U> {
-    return defaultFn(this.#error)
+  mapOrElseAsync<U>(_okFn: (value: T) => Promise<U>, errFn: (error: E) => Promise<U>): Promise<U> {
+    return errFn(this.#error)
   }
 
+  // Chaining
   andThenAsync<U>(_fn: (value: T) => Promise<Result<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
-  andAsync<U>(_other: Promise<Result<U, E>>): Promise<Err<U, E>> {
+  andAsync<U>(_result: Promise<Result<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
-  orAsync(other: Promise<Result<T, E>>): Promise<Result<T, E>> {
-    return other
+  orAsync(result: Promise<Result<T, E>>): Promise<Result<T, E>> {
+    return result
   }
 
   orElseAsync(fn: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
     return fn(this.#error)
   }
 
+  // Inspecting
   inspectAsync(_fn: (value: T) => Promise<void>): Promise<Err<T, E>> {
     return Promise.resolve(this)
   }
@@ -184,14 +196,9 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   inspectErrAsync(fn: (error: E) => Promise<void>): Promise<Err<T, E>> {
     return fn(this.#error).then(() => this)
   }
-  // #endregion
 
-  //
+  // ==================== METADATA ====================
   get [Symbol.toStringTag](): string {
     return 'Result.Err'
-  }
-
-  toJSON(): { type: 'err'; error: E } {
-    return { type: 'err', error: this.#error }
   }
 }
