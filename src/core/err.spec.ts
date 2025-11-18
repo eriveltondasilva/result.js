@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Err } from './err.js'
 import { Ok } from './ok.js'
 
-import type { Result } from './types.js'
-
 describe('Err', () => {
   let errValue: Err<number, Error>
 
@@ -154,7 +152,7 @@ describe('Err', () => {
     })
 
     it('should preserve Err in and', () => {
-      const other = new Ok<string, Error>('hello')
+      const other = new Ok('hello')
       const result = errValue.and(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr().message).toBe('Test error')
@@ -168,22 +166,22 @@ describe('Err', () => {
     })
 
     it('should return other Result in or when other is Err', () => {
-      const other = new Err<number, Error>(new Error('Other error'))
+      const other = new Err(new Error('Other error'))
       const result = errValue.or(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr().message).toBe('Other error')
     })
 
     it('should return Err in zip', () => {
-      const other = new Ok<string, Error>('hello')
+      const other = new Ok('hello')
       const result = errValue.zip(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr().message).toBe('Test error')
     })
 
     it('should handle union error types in zip', () => {
-      const err = new Err<number, string>('string error')
-      const other = new Ok<string, Error>('hello')
+      const err = new Err('string error')
+      const other = new Ok('hello')
       const result = err.zip(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr()).toBe('string error')
@@ -242,7 +240,8 @@ describe('Err', () => {
 
     it('should use custom equals function in containsErr', () => {
       const err = new Err({ code: 404, message: 'Not found' })
-      const equals = (a: { code: number }, b: { code: number }) => a.code === b.code
+      const equals = (actual: { code: number }, expected: { code: number }) =>
+        actual.code === expected.code
 
       expect(err.containsErr({ code: 404, message: 'Different' }, equals)).toBe(true)
       expect(err.containsErr({ code: 500, message: 'Not found' }, equals)).toBe(false)
@@ -252,7 +251,7 @@ describe('Err', () => {
   // ==================== CONVERTING ====================
   describe('Converting', () => {
     it('should flatten Err', () => {
-      const nested = new Err<Result<number, Error>, string>('outer error')
+      const nested = new Err('outer error')
       const result = nested.flatten()
 
       expect(result.isErr()).toBe(true)
@@ -264,6 +263,10 @@ describe('Err', () => {
       await expect(promise).rejects.toThrow('Test error')
     })
 
+    it('should convert to string', () => {
+      expect(errValue.toString()).toBe('Err(Error: Test error)')
+    })
+
     it('should convert to JSON', () => {
       const json = errValue.toJSON()
       expect(json.type).toBe('err')
@@ -272,7 +275,7 @@ describe('Err', () => {
     })
 
     it('should convert string error to JSON', () => {
-      const err = new Err<number, string>('simple error')
+      const err = new Err('simple error')
       const json = err.toJSON()
 
       expect(json).toEqual({
@@ -330,7 +333,7 @@ describe('Err', () => {
     })
 
     it('should preserve Err in andAsync', async () => {
-      const other = Promise.resolve(new Ok<string, Error>('hello'))
+      const other = Promise.resolve(new Ok('hello'))
       const result = await errValue.andAsync(other)
 
       expect(result.isErr()).toBe(true)
@@ -376,32 +379,32 @@ describe('Err', () => {
   // ==================== EDGE CASES ====================
   describe('Edge Cases', () => {
     it('should handle string as error', () => {
-      const err = new Err<number, string>('simple error')
+      const err = new Err('simple error')
       expect(err.err).toBe('simple error')
       expect(err.unwrapErr()).toBe('simple error')
     })
 
     it('should handle number as error', () => {
-      const err = new Err<string, number>(404)
+      const err = new Err(404)
       expect(err.err).toBe(404)
       expect(err.containsErr(404)).toBe(true)
     })
 
     it('should handle null as error', () => {
-      const err = new Err<number, null>(null)
+      const err = new Err(null)
       expect(err.err).toBeNull()
       expect(err.unwrapErr()).toBeNull()
     })
 
     it('should handle undefined as error', () => {
-      const err = new Err<number, undefined>(undefined)
+      const err = new Err(undefined)
       expect(err.err).toBeUndefined()
       expect(err.unwrapErr()).toBeUndefined()
     })
 
     it('should handle object as error', () => {
       const errorObj = { code: 500, message: 'Server error' }
-      const err = new Err<number, typeof errorObj>(errorObj)
+      const err = new Err(errorObj)
       expect(err.err).toBe(errorObj)
       expect(err.unwrapErr()).toBe(errorObj)
     })
@@ -410,7 +413,7 @@ describe('Err', () => {
       const result = errValue
         .mapErr((e) => new Error(`First: ${e.message}`))
         .mapErr((e) => new Error(`Second: ${e.message}`))
-        .inspectErr((e) => console.log(e))
+      // .inspectErr((e) => console.log(e))
 
       expect(result.unwrapErr().message).toBe('Second: First: Test error')
     })
@@ -453,7 +456,7 @@ describe('Err', () => {
         }
       }
 
-      const err = new Err<number, CustomError>(new CustomError(404, 'Not found'))
+      const err = new Err(new CustomError(404, 'Not found'))
       expect(err.unwrapErr().code).toBe(404)
       expect(err.unwrapErr().message).toBe('Not found')
     })

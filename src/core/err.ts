@@ -112,7 +112,7 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   }
 
   zip<U, F>(_result: Result<U, F>): Result<[T, U], E | F> {
-    return new Err<[T, U], E | F>(this.#error)
+    return this as unknown as Err<[T, U], E | F>
   }
 
   // ==================== INSPECTING ====================
@@ -142,11 +142,15 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
 
   // ==================== CONVERTING ====================
   flatten<U, F>(this: Err<Result<U, F>, E>): Err<U, E | F> {
-    return new Err<U, E | F>(this.#error)
+    return this as unknown as Err<U, E | F>
   }
 
   toPromise(): Promise<never> {
     return Promise.reject(this.#error)
+  }
+
+  toString(): string {
+    return `Err(${this.#error})`
   }
 
   toJSON(): { type: 'err'; error: E } {
@@ -191,5 +195,9 @@ export class Err<T = never, E = Error> implements IResult<T, E> {
   // ==================== METADATA ====================
   get [Symbol.toStringTag](): string {
     return 'Result.Err'
+  }
+
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
+    return `Err(${JSON.stringify(this.#error)})`
   }
 }

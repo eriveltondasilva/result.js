@@ -120,7 +120,7 @@ describe('Ok', () => {
 
     it('should pass value to onReject in filter', () => {
       const result = okValue.filter(
-        (x) => x > 50,
+        (value) => value > 50,
         (value) => new Error(`Value ${value} is too small`)
       )
       expect(result.isErr()).toBe(true)
@@ -149,14 +149,14 @@ describe('Ok', () => {
     })
 
     it('should return other Result in and when other is Ok', () => {
-      const other = new Ok<string, Error>('hello')
+      const other = new Ok('hello')
       const result = okValue.and(other)
       expect(result.isOk()).toBe(true)
       expect(result.unwrap()).toBe('hello')
     })
 
     it('should return other Result in and when other is Err', () => {
-      const other = new Err<string, Error>(new Error('Failed'))
+      const other = new Err(new Error('Failed'))
       const result = okValue.and(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr().message).toBe('Failed')
@@ -170,21 +170,21 @@ describe('Ok', () => {
     })
 
     it('should zip two Ok values', () => {
-      const other = new Ok<string, Error>('hello')
+      const other = new Ok('hello')
       const result = okValue.zip(other)
       expect(result.isOk()).toBe(true)
       expect(result.unwrap()).toEqual([42, 'hello'])
     })
 
     it('should return Err when zipping with Err', () => {
-      const other = new Err<string, Error>(new Error('Failed'))
+      const other = new Err(new Error('Failed'))
       const result = okValue.zip(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr().message).toBe('Failed')
     })
 
     it('should handle union error types in zip', () => {
-      const other = new Err<string, string>('string error')
+      const other = new Err('string error')
       const result = okValue.zip(other)
       expect(result.isErr()).toBe(true)
       expect(result.unwrapErr()).toBe('string error')
@@ -239,7 +239,7 @@ describe('Ok', () => {
 
     it('should use custom equals function', () => {
       const ok = new Ok({ id: 1 })
-      const equals = (a: { id: number }, b: { id: number }) => a.id === b.id
+      const equals = (actual: { id: number }, expected: { id: number }) => actual.id === expected.id
 
       expect(ok.contains({ id: 1 }, equals)).toBe(true)
       expect(ok.contains({ id: 2 }, equals)).toBe(false)
@@ -271,6 +271,10 @@ describe('Ok', () => {
     it('should convert to resolved Promise', async () => {
       const promise = okValue.toPromise()
       await expect(promise).resolves.toBe(42)
+    })
+
+    it('should convert to string', () => {
+      expect(okValue.toString()).toBe('Ok(42)')
     })
 
     it('should convert to JSON', () => {
@@ -429,7 +433,7 @@ describe('Ok', () => {
         .map((x) => x * 2)
         .andThen((x) => new Ok(x + 10))
         .map((x) => String(x))
-        .inspect((x) => console.log(x))
+      // .inspect((x) => console.log(x))
 
       expect(result.unwrap()).toBe('94')
     })

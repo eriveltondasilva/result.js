@@ -1,8 +1,10 @@
 name: Publish
+
 on:
   push:
     tags:
       - "v*.*.*"
+
   workflow_dispatch:
     inputs:
       version:
@@ -13,6 +15,7 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-22.04
+
     steps:
       - name: ✅ Checkout
         uses: actions/checkout@v5
@@ -48,10 +51,13 @@ jobs:
 
   publish:
     needs: validate
+
     runs-on: ubuntu-22.04
+
     permissions:
       contents: read
       id-token: write
+
     steps:
       - name: ✅ Checkout
         uses: actions/checkout@v5

@@ -4,7 +4,6 @@ import type { Ok } from './ok.js'
 // #
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 export type AsyncResult<T, E> = Promise<Result<T, E>>
-export type ErrorLike = Error | { message: string } | string
 
 // #
 export type InferOk<R> = R extends Result<infer T, unknown> ? T : never
@@ -19,6 +18,10 @@ export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
 
 export type OkUnion<T extends readonly Result<unknown, unknown>[]> = InferOk<T[number]>
 export type ErrUnion<T extends readonly Result<unknown, unknown>[]> = InferErr<T[number]>
+
+export type SettledOk<T> = { status: 'ok'; value: T }
+export type SettledErr<E> = { status: 'err'; reason: E }
+export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
 
 /**
  * Interface that both Ok and Err must implement.
@@ -83,6 +86,7 @@ export interface IResult<T, E> {
   // ==================== CONVERTING ====================
   flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>
   toPromise(): Promise<T>
+  toString(): string
   toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
 
   // ==================== ASYNC OPERATIONS ====================
@@ -100,4 +104,5 @@ export interface IResult<T, E> {
 
   // ==================== METADATA ====================
   readonly [Symbol.toStringTag]: string
+  [Symbol.for('nodejs.util.inspect.custom')]: string
 }

@@ -48,7 +48,7 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
 
   unwrapErr(): never {
-    throw new Error('Called unwrapErr on an Ok value')
+    throw new Error(`Called unwrapErr on an Ok value: ${String(this.#value)}`)
   }
 
   expect(_message: string): T {
@@ -56,7 +56,7 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
 
   expectErr(message: string): never {
-    throw new Error(message)
+    throw new Error(`${message}: ${String(this.#value)}`)
   }
 
   // Extract with fallback (never throws)
@@ -152,6 +152,10 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return Promise.resolve(this.#value)
   }
 
+  toString(): string {
+    return `Ok(${String(this.#value)})`
+  }
+
   toJSON(): { type: 'ok'; value: T } {
     return { type: 'ok', value: this.#value }
   }
@@ -194,5 +198,9 @@ export class Ok<T, E = never> implements IResult<T, E> {
   // ==================== METADATA ====================
   get [Symbol.toStringTag](): string {
     return 'Result.Ok'
+  }
+
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
+    return `Ok(${JSON.stringify(this.#value)})`
   }
 }
