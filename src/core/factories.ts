@@ -159,22 +159,16 @@ async function createFromPromise<T, E>(
   }
 }
 
-//
 export default {
-  ok: createOk,
-  err: createErr,
-  isResult: createIsResult,
-  fromNullable: createFromNullable,
-  validate: createValidate,
-  fromTry: createFromTry,
-  all: createAll,
-  any: createAny,
-  partition: createPartition,
-  allSettled: createAllSettled,
-  fromPromise: createFromPromise,
+  createAll,
+  createAllSettled,
+  createAny,
+  createErr,
+  createFromNullable,
+  createFromPromise,
+  createFromTry,
+  createIsResult,
+  createOk,
+  createPartition,
+  createValidate,
 }
-
-//
-
-const all = createAllSettled([createOk(1), createOk(2), createOk(3), createErr('Error!')])
-console.log('all:', all.toJSON())

@@ -5,7 +5,19 @@ import type { AsyncResult as AsyncResultType, Result as ResultType } from './typ
 /**
  * Result factory methods and utilities.
  */
-export const Result = { ...factories } as const
+export const Result = {
+  ok: factories.createOk,
+  err: factories.createErr,
+  fromTry: factories.createFromTry,
+  fromPromise: factories.createFromPromise,
+  fromNullable: factories.createFromNullable,
+  validate: factories.createValidate,
+  isResult: factories.createIsResult,
+  all: factories.createAll,
+  any: factories.createAny,
+  partition: factories.createPartition,
+  allSettled: factories.createAllSettled,
+} as const
 
 export type Result<T, E = Error> = ResultType<T, E>
 export type AsyncResult<T, E = Error> = AsyncResultType<T, E>
