@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Err } from './err.js'
 import { Ok } from './ok.js'
+
 import { expectErr, expectOk } from './test-helpers.js'
 
 describe('Ok', () => {

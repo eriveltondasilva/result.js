@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { Err } from './err.js'
 import factories from './factories.js'
 import { Ok } from './ok.js'
+
 import { expectErr, expectOk } from './test-helpers.js'
 
 describe('Factories', () => {

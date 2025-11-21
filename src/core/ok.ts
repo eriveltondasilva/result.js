@@ -1,5 +1,6 @@
 import { Err } from './err.js'
-import type { IResult, Result } from './types.js'
+import type { Result, ResultMethods } from './types.js'
+import { assertFunction, assertMatchHandlers, assertResult } from './utils.js'
 
 /**
  * Represents a successful Result containing a value.
@@ -7,7 +8,7 @@ import type { IResult, Result } from './types.js'
  * @template T - Success value type
  * @template E - Error type
  */
-export class Ok<T, E = never> implements IResult<T, E> {
+export class Ok<T, E = never> implements ResultMethods<T, E> {
   readonly #value: T
 
   constructor(value: T) {
@@ -24,11 +25,15 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return false
   }
 
-  isOkAnd(fn: (value: T) => boolean): this is Ok<T, never> {
-    return fn(this.#value)
+  isOkAnd(predicate: (value: T) => boolean): this is Ok<T, never> {
+    assertFunction(predicate, 'Result.isOkAnd', 'predicate')
+
+    return predicate(this.#value)
   }
 
-  isErrAnd(_fn: (error: E) => boolean): this is Err<never, E> {
+  isErrAnd(predicate: (error: E) => boolean): this is Err<never, E> {
+    assertFunction(predicate, 'Result.isErrAnd', 'predicate')
+
     return false
   }
 
@@ -64,82 +69,117 @@ export class Ok<T, E = never> implements IResult<T, E> {
     return this.#value
   }
 
-  unwrapOrElse(_fn: (error: E) => T): T {
+  unwrapOrElse(onError: (error: E) => T): T {
+    assertFunction(onError, 'Result.unwrapOrElse', 'onError')
+
     return this.#value
   }
 
   // ==================== TRANSFORMING ====================
   // Transform Ok values
-  map<U>(fn: (value: T) => U): Ok<U, E> {
-    return new Ok(fn(this.#value))
+  map<U>(mapper: (value: T) => U): Ok<U, E> {
+    assertFunction(mapper, 'Result.map', 'mapper')
+
+    return new Ok(mapper(this.#value))
   }
 
-  mapOr<U>(fn: (value: T) => U, _defaultValue: U): U {
-    return fn(this.#value)
+  mapOr<U>(mapper: (value: T) => U, _defaultValue: U): U {
+    assertFunction(mapper, 'Result.mapOr', 'mapper')
+
+    return mapper(this.#value)
   }
 
-  mapOrElse<U>(okFn: (value: T) => U, _errFn: (error: E) => U): U {
-    return okFn(this.#value)
+  mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U {
+    assertFunction(okMapper, 'Result.mapOrElse', 'okMapper')
+    assertFunction(errorMapper, 'Result.mapOrElse', 'errorMapper')
+
+    return okMapper(this.#value)
   }
 
   // Transform Err values
-  mapErr<F>(_fn: (error: E) => F): Ok<T, F> {
+  mapErr<F>(mapper: (error: E) => F): Ok<T, F> {
+    assertFunction(mapper, 'Result.mapErr', 'mapper')
+
     return this as unknown as Ok<T, F>
   }
 
   // Filter Ok values
   filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E> {
+    assertFunction(predicate, 'Result.filter', 'predicate')
+    assertFunction(onReject, 'Result.filter', 'onReject')
+
     return predicate(this.#value) ? this : new Err(onReject(this.#value))
   }
 
   // ==================== CHAINING ====================
   // Chain operations that return Result
-  andThen<U>(fn: (value: T) => Result<U, E>): Result<U, E> {
-    return fn(this.#value)
+  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E> {
+    assertFunction(flatMapper, 'Result.andThen', 'flatMapper')
+
+    return flatMapper(this.#value)
   }
 
-  orElse(_fn: (error: E) => Result<T, E>): Ok<T, E> {
+  orElse(onError: (error: E) => Result<T, E>): Ok<T, E> {
+    assertFunction(onError, 'Result.orElse', 'onError')
+
     return this
   }
 
   // Combine with other Results
   and<U>(result: Result<U, E>): Result<U, E> {
+    assertResult(result, 'Result.and')
+
     return result
   }
 
   or(_result: Result<T, E>): Ok<T, E> {
+    assertResult(_result, 'Result.or')
+
     return this
   }
 
   zip<U, F>(result: Result<U, F>): Result<[T, U], E | F> {
+    assertResult(result, 'Result.zip')
+
     if (result.isOk()) {
-      return new Ok<[T, U], E | F>([this.#value, result.ok])
+      return new Ok<[T, U], E | F>([this.#value, result.unwrap()])
     }
-    return new Err<[T, U], E | F>(result.err as F)
+
+    return new Err<[T, U], E | F>(result.unwrapErr())
   }
 
   // ==================== INSPECTING ====================
   // Pattern matching
-  match<R1, R2>(handlers: { ok: (value: T) => R1; err: (error: E) => R2 }): R1 | R2 {
+  match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
+    assertMatchHandlers(handlers, 'Result.match')
+
     return handlers.ok(this.#value)
   }
 
   // Side effects (doesn't modify Result)
-  inspect(fn: (value: T) => void): Ok<T, E> {
-    fn(this.#value)
+  inspect(visitor: (value: T) => void): Ok<T, E> {
+    assertFunction(visitor, 'Result.inspect', 'visitor')
+
+    visitor(this.#value)
     return this
   }
 
-  inspectErr(_fn: (error: E) => void): Ok<T, E> {
+  inspectErr(visitor: (error: E) => void): Ok<T, E> {
+    assertFunction(visitor, 'Result.inspectErr', 'visitor')
+
     return this
   }
 
   // ==================== COMPARING ====================
-  contains(value: T, equals?: (actual: T, expected: T) => boolean): boolean {
-    return equals ? equals(this.#value, value) : this.#value === value
+  contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean {
+    comparator && assertFunction(comparator, 'Result.contains', 'comparator')
+
+    return comparator ? comparator(this.#value, value) : this.#value === value
   }
 
-  containsErr(_error: E, _equals?: (actual: E, expected: E) => boolean): boolean {
+  containsErr(_error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
+    comparator && assertFunction(comparator, 'Result.containsErr', 'comparator')
+
     return false
   }
 
@@ -162,36 +202,56 @@ export class Ok<T, E = never> implements IResult<T, E> {
 
   // ==================== ASYNC OPERATIONS ====================
   // Transforming
-  mapAsync<U>(fn: (value: T) => Promise<U>): Promise<Ok<U, E>> {
-    return fn(this.#value).then((value) => new Ok(value))
+  mapAsync<U>(mapperAsync: (value: T) => Promise<U>): Promise<Ok<U, E>> {
+    assertFunction(mapperAsync, 'Result.mapAsync', 'mapperAsync')
+
+    return mapperAsync(this.#value).then((value) => new Ok(value))
   }
 
-  mapErrAsync<F>(_fn: (error: E) => Promise<F>): Promise<Ok<T, F>> {
+  mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): Promise<Ok<T, F>> {
+    assertFunction(mapperAsync, 'Result.mapErrAsync', 'mapperAsync')
+
     return Promise.resolve(this as unknown as Ok<T, F>)
   }
 
-  mapOrAsync<U>(fn: (value: T) => Promise<U>, _defaultValue: U): Promise<U> {
-    return fn(this.#value)
+  mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, _defaultValue: U): Promise<U> {
+    assertFunction(mapperAsync, 'Result.mapOrAsync', 'mapperAsync')
+
+    return mapperAsync(this.#value)
   }
 
-  mapOrElseAsync<U>(okFn: (value: T) => Promise<U>, _errFn: (error: E) => Promise<U>): Promise<U> {
-    return okFn(this.#value)
+  mapOrElseAsync<U>(
+    okMapperAsync: (value: T) => Promise<U>,
+    errMapperAsync: (error: E) => Promise<U>
+  ): Promise<U> {
+    assertFunction(okMapperAsync, 'Result.mapOrElseAsync', 'okMapperAsync')
+    assertFunction(errMapperAsync, 'Result.mapOrElseAsync', 'errMapperAsync')
+
+    return okMapperAsync(this.#value)
   }
 
   // Chaining
-  andThenAsync<U>(fn: (value: T) => Promise<Result<U, E>>): Promise<Result<U, E>> {
-    return fn(this.#value)
+  andThenAsync<U>(flatMapperAsync: (value: T) => Promise<Result<U, E>>): Promise<Result<U, E>> {
+    assertFunction(flatMapperAsync, 'Result.andThenAsync', 'flatMapperAsync')
+
+    return flatMapperAsync(this.#value)
   }
 
   andAsync<U>(result: Promise<Result<U, E>>): Promise<Result<U, E>> {
+    // assertResult(result, 'Result.andAsync')
+
     return result
   }
 
   orAsync(_result: Promise<Result<T, E>>): Promise<Ok<T, E>> {
+    // assertResult(result, 'Result.orAsync')
+
     return Promise.resolve(this)
   }
 
-  orElseAsync(_fn: (error: E) => Promise<Result<T, E>>): Promise<Ok<T, E>> {
+  orElseAsync(onErrorAsync: (error: E) => Promise<Result<T, E>>): Promise<Ok<T, E>> {
+    assertFunction(onErrorAsync, 'Result.orElseAsync', 'onErrorAsync')
+
     return Promise.resolve(this)
   }
 
@@ -201,6 +261,6 @@ export class Ok<T, E = never> implements IResult<T, E> {
   }
 
   [Symbol.for('nodejs.util.inspect.custom')](): string {
-    return `Ok(${JSON.stringify(this.#value)})`
+    return `Ok(${JSON.stringify(this.#value, null, 2)})`
   }
 }
