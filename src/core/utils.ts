@@ -3,7 +3,6 @@ import { Ok } from './ok.js'
 
 // @ts-expect-error: process is not typed
 const shouldValidate = typeof process === 'undefined' || process.env.NODE_ENV !== 'production'
-console.log(!shouldValidate)
 
 function getTypeInfo(value: unknown): string {
   return value == null ? 'null or undefined' : typeof value

@@ -22,4 +22,9 @@ export const Result = Object.freeze({
 export type Result<T, E = Error> = ResultType<T, E>
 export type AsyncResult<T, E = Error> = AsyncResultType<T, E>
 
+export const ok = factories.createOk
+export const err = factories.createErr
+
 export default Result
+
+Result.ok('teste')
