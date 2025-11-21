@@ -1,6 +1,6 @@
 import { Err } from './err.js'
 import type { Result, ResultMethods } from './types.js'
-import { assertFunction, assertMatchHandlers, assertResult } from './utils.js'
+import { assertFunction, assertMatchHandlers, assertPromise, assertResult } from './utils.js'
 
 /**
  * Represents a successful Result containing a value.
@@ -238,13 +238,13 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   }
 
   andAsync<U>(result: Promise<Result<U, E>>): Promise<Result<U, E>> {
-    // assertResult(result, 'Result.andAsync')
+    assertPromise(result, 'Result.andAsync', 'result')
 
     return result
   }
 
   orAsync(_result: Promise<Result<T, E>>): Promise<Ok<T, E>> {
-    // assertResult(result, 'Result.orAsync')
+    assertPromise(_result, 'Result.orAsync', 'result')
 
     return Promise.resolve(this)
   }

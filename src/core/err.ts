@@ -1,7 +1,7 @@
 import type { Ok } from './ok.js'
 import type { Result, ResultMethods } from './types.js'
 
-import { assertFunction, assertMatchHandlers, assertResult } from './utils.js'
+import { assertFunction, assertMatchHandlers, assertPromise, assertResult } from './utils.js'
 
 /**
  * Represents a failed Result containing an error.
@@ -235,16 +235,22 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   }
 
   andAsync<U>(_result: Promise<Result<U, E>>): Promise<Err<U, E>> {
-    // assertResult(result.then, 'Result.andAsync')
+    assertPromise(_result, 'Result.andAsync', 'result')
 
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
   orAsync(result: Promise<Result<T, E>>): Promise<Result<T, E>> {
-    // assertResult(result, 'Result.orAsync')
+    assertPromise(result, 'Result.orAsync', 'result')
 
     return result
   }
+
+  // zipAsync<U, F>(result: Promise<Result<U, F>>): Promise<Result<[T, U], E | F>> {
+  //   assertPromise(result, 'Result.zipAsync', 'result')
+
+  //   return Promise.resolve(new Err<[T, U], E | F>(this.#error))
+  // }
 
   orElseAsync(onErrorAsync: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
     assertFunction(onErrorAsync, 'Result.orElseAsync', 'onErrorAsync')
