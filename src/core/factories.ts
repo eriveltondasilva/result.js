@@ -22,7 +22,8 @@ import { assertFunction, assertResults, isResult, unknownToError } from './utils
  * @param {T} value - Success value
  * @returns {Ok<T, E>} Ok Result
  * @example
- * Result.ok(42) // Ok(42)
+ * Result.ok(42)
+ * // Ok(42)
  */
 function createOk<T, E = never>(value: T): Ok<T, E> {
   return new Ok(value)
@@ -60,7 +61,7 @@ function createErr<T = never, E = Error>(error: E): Err<T, E> {
  * Result.validate(10, (x) => x > 5)
  * // Ok(10)
  * Result.validate(3, (x) => x > 5)
- * // Err
+ * // Err(Error: Validation failed for value: 3)
  */
 function createValidate<T>(value: T, predicate: (value: T) => boolean): Result<T, Error>
 
@@ -105,8 +106,10 @@ function createValidate<T, E = Error>(
  * @param {T | null | undefined} value - Nullable value
  * @returns {Result<NonNullable<T>, Error>} Ok if defined, Err otherwise
  * @example
- * Result.fromNullable(42) // Ok(42)
- * Result.fromNullable(null) // Err
+ * Result.fromNullable(42)
+ * // Ok(42)
+ * Result.fromNullable(null)
+ * // Err(Error: Value is null or undefined)
  */
 function createFromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Error>
 
@@ -150,8 +153,10 @@ function createFromNullable<T, E = Error>(
  * @param {unknown} value - Value to check
  * @returns {boolean} True if value is Result
  * @example
- * Result.isResult(Result.ok(1)) // true
- * Result.isResult(42) // false
+ * Result.isResult(Result.ok(1))
+ * // true
+ * Result.isResult(42)
+ * // false
  */
 function createIsResult(value: unknown): value is Result<unknown, unknown> {
   return isResult(value)
@@ -173,7 +178,7 @@ function createIsResult(value: unknown): value is Result<unknown, unknown> {
  * Result.fromTry(() => JSON.parse('{"a":1}'))
  * // Ok({a: 1})
  * Result.fromTry(() => JSON.parse('invalid'))
- * // Err
+ * // Err(Error: Invalid JSON)
  */
 function createFromTry<T>(executor: () => T): Result<T, Error>
 
@@ -216,7 +221,7 @@ function createFromTry<T, E>(
  * @returns {AsyncResult<T, Error>} Promise of Ok or Err
  * @example
  * await Result.fromPromise(async () => fetch('/api'))
- * // Ok(response) or Err
+ * // Ok(response) or Err(Error: Network error)
  */
 async function createFromPromise<T>(executor: () => Promise<T>): AsyncResult<T, Error>
 
