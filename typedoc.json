@@ -1,0 +1,54 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/core/index.ts"],
+  "out": "docs-api",
+  "plugin": [],
+  
+  // Configurações de saída
+  "name": "Result Library",
+  "includeVersion": true,
+  "readme": "README.md",
+  "theme": "default",
+  
+  // Controle de visibilidade
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  
+  // Organização
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Creation",
+    "Validation", 
+    "Conversion",
+    "Collections",
+    "*"
+  ],
+  
+  // Navegação
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  
+  // Comportamento
+  "sort": ["source-order"],
+  "kindSortOrder": [
+    "Function",
+    "Class",
+    "Interface",
+    "TypeAlias"
+  ],
+  
+  // Links externos
+  "gitRevision": "main",
+  "sourceLinkTemplate": "https://github.com/seu-usuario/result-lib/blob/{gitRevision}/{path}#L{line}",
+  
+  // Otimizações
+  "cleanOutputDir": true,
+  "hideGenerator": false,
+  "searchInComments": true,
+  "searchInDocuments": true
+}
