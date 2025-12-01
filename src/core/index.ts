@@ -26,5 +26,3 @@ export const ok = factories.createOk
 export const err = factories.createErr
 
 export default Result
-
-Result.ok('teste')
