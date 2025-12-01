@@ -57,5 +57,14 @@
     // "tsBuildInfoFile": "./tsbuildinfo"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs/*",
+    "docs-api/*",
+    "tests/*",
+    "vitest/*",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }
