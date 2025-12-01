@@ -39,6 +39,7 @@ npm install @eriveltonsilva/result.js
 ```
 
 Supports both ESM (import) and CommonJS (require):
+
 ```javascript
 // ESM
 import { Result } from '@eriveltonsilva/result.js'
@@ -98,6 +99,7 @@ MIT © [Erivelton Silva](https://github.com/eriveltondasilva) - Please read [LIC
 ## 7. 🙏 Inspiration
 
 Inspired by:
+
 - [Rust's Result type - documentation](https://doc.rust-lang.org/std/result)
 - [oxide.ts package](https://www.npmjs.com/package/oxide.ts)
 - [result.ts package](https://www.npmjs.com/package/result.ts)
