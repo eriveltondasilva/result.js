@@ -30,85 +30,79 @@ export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
  * Interface that both Ok and Err must implement.
  */
 export interface ResultMethods<T, E> {
-  // ==================== CHECKING ====================
-  // Type guards to check Result state
+  // #region VALIDATION
   isOk(): this is Ok<T, never>
   isErr(): this is Err<never, E>
   isOkAnd(predicate: (value: T) => boolean): this is Ok<T, never>
   isErrAnd(predicate: (error: E) => boolean): this is Err<never, E>
+  // #endregion
 
-  // ==================== EXTRACTING ====================
-  // Access values directly (may be null)
+  // #region ACCESS
   readonly ok: T | null
   readonly err: E | null
-
-  // Extract values (may throw)
   unwrap(): T
   unwrapErr(): E
   expect(message: string): T
   expectErr(message: string): E
+  // #endregion
 
-  // Extract with fallback (never throws)
+  // #region RECOVERY
   unwrapOr(defaultValue: T): T
   unwrapOrElse(onError: (error: E) => T): T
+  // #endregion
 
-  // ==================== TRANSFORMING ====================
-  // Transform Ok values
-  map<U>(mapper: (value: T) => U): Result<U, E>
+  // #region TRANSFORMATION
+  map<U, F = never>(mapper: (value: T) => U | Result<U, F>): Result<U, E> | Result<U, E | F>
   mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
   mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U
-
-  // Transform Err values
   mapErr<F>(mapper: (error: E) => F): Result<T, F>
+  filter(predicate: (value: T) => boolean, onReject?: (value: T) => E | Error): Result<T, E | Error>
+  flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>
+  // #endregion
 
-  // Filter Ok values
-  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
-
-  // ==================== CHAINING ====================
-  // Chain operations that return Result
+  // #region CHAINING
   andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E>
   orElse(onError: (error: E) => Result<T, E>): Result<T, E>
-
-  // Combine with other Results
   and<U>(result: Result<U, E>): Result<U, E>
   or(result: Result<T, E>): Result<T, E>
   zip<U, F>(result: Result<U, F>): Result<[T, U], E | F>
+  // #endregion
 
-  // ==================== INSPECTING ====================
-  // Pattern matching
+  // #region INSPECTION
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R
-
-  // Side effects (doesn't modify Result)
   inspect(visitor: (value: T) => void): Result<T, E>
   inspectErr(visitor: (error: E) => void): Result<T, E>
+  // #endregion
 
-  // ==================== COMPARING ====================
+  // #region COMPARISON
   contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean
   containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean
+  // #endregion
 
-  // ==================== CONVERTING ====================
-  flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>
+  // #region CONVERSION
   toPromise(): Promise<T>
   toString(): string
   toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
+  // #endregion
 
-  // ==================== ASYNC OPERATIONS ====================
-  // Transforming
-  mapAsync<U>(mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E>
+  // #region ASYNC OPERATIONS
+  mapAsync<U, F = never>(
+    mapperAsync: (value: T) => Promise<U | Result<U, F>>
+  ): Promise<Result<U, E> | Result<U, E | F>>
   mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): AsyncResult<T, F>
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U>
   mapOrElseAsync<U>(
     okMapperAsync: (value: T) => Promise<U>,
     errMapperAsync: (error: E) => Promise<U>
   ): Promise<U>
-
-  // Chaining
   andThenAsync<U>(flatMapperAsync: (value: T) => AsyncResult<U, E>): AsyncResult<U, E>
   andAsync<U>(result: AsyncResult<U, E>): AsyncResult<U, E>
   orAsync(result: AsyncResult<T, E>): AsyncResult<T, E>
   orElseAsync(onErrorAsync: (error: E) => AsyncResult<T, E>): AsyncResult<T, E>
+  // #endregion
 
-  // ==================== METADATA ====================
+  // #region METADATA
   readonly [Symbol.toStringTag]: string
   [Symbol.for('nodejs.util.inspect.custom')]: string
+  // #endregion
 }
