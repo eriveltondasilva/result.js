@@ -252,36 +252,20 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Transformation
    * @see {@link mapAsync} for async version
    * @template U - Transformed value type
-   * @param {(value: T) => U} mapper - Transformation function
+   * @template F - New error type (only when mapper returns Result)
+   * @param {(value: T) => U | Result<U, F>} mapper - Transformation function
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
    * result.map((x) => x * 2)
    * // Err(Error: fail)
-   * ```
-   */
-  map<U>(mapper: (value: T) => U): Err<U, E>
-
-  /**
-   * Transforms success value that returns Result.
    *
-   * @group Transformation
-   * @see {@link mapAsync} for async version
-   * @template U - Transformed value type
-   * @template F - New error type
-   * @param {(value: T) => Result<U, F>} mapper - Transformation function returning Result
-   * @returns {Err<U, E>} Err with same error
-   * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
    * result.map((x) => Result.ok(x * 2))
    * // Err(Error: fail)
    * ```
    */
-  map<U, F>(mapper: (value: T) => Result<U, F>): Err<U, E>
-
-  map<U, F>(mapper: (value: T) => U | Result<U, F>): Err<U, E> {
+  map<U, F = never>(mapper: (value: T) => U | Result<U, F>): Err<U, E> {
     assertFunction(mapper, 'Result.map', 'mapper')
     return this as unknown as Err<U, E>
   }
@@ -538,7 +522,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * ```ts
    * const result = Result.err("fail")
    * result.inspect((x) => console.log(x))
-    * // does nothing, returns Err("fail")
+   * // does nothing, returns Err("fail")
    * ```
    */
   inspect(visitor: (value: T) => void): Err<T, E> {
@@ -672,35 +656,22 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template U - Transformed value type
-   * @param {(value: T) => Promise<U>} mapperAsync - Async transformation
+   * @template F - New error type (only when mapper returns Result)
+   * @param {(value: T) => Promise<U | Result<U, F>>} mapperAsync - Async transformation
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
    * @example
    * ```ts
    * const result = Result.err("fail")
-   * result.mapAsync(async (x) => x * 2)
-   * // Err(Error: fail)
-   * ```
-   */
-  mapAsync<U>(mapperAsync: (value: T) => Promise<U>): Promise<Err<U, E>>
-
-  /**
-   * Transforms value asynchronously that returns Result.
+   * await result.mapAsync(async (x) => x * 2)
+   * // Err("fail")
    *
-   * @group Async Operations
-   * @template U - Transformed value type
-   * @template F - New error type
-   * @param {(value: T) => Promise<Result<U, F>>} mapperAsync - Async transformation returning Result
-   * @returns {Promise<Err<U, E>>} Promise of Err with same error
-   * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.mapAsync(async (x) => Result.ok(x * 2))
-   * // Err(Error: fail)
+   * await result.mapAsync(async (x) => Result.ok(x * 2))
+   * // Err("fail")
    * ```
    */
-  mapAsync<U, F>(mapperAsync: (value: T) => Promise<Result<U, F>>): Promise<Err<U, E>>
-
-  async mapAsync<U, F>(mapperAsync: (value: T) => Promise<U | Result<U, F>>): Promise<Err<U, E>> {
+  async mapAsync<U, F = never>(
+    mapperAsync: (value: T) => Promise<U | Result<U, F>>
+  ): Promise<Err<U, E>> {
     assertFunction(mapperAsync, 'Result.mapAsync', 'mapperAsync')
     return this as unknown as Err<U, E>
   }
@@ -715,7 +686,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.err("fail")
-   * result.mapErrAsync(async (e) => new Error(e))
+   * await result.mapErrAsync(async (e) => new Error(e))
    * // Err(Error: fail)
    * ```
    */
@@ -758,9 +729,9 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * const result = Result.err("fail")
    * result.mapOrElseAsync(
    *   async (x) => x * 2,
-   *   async (e) => new Error(e)
+   *   async (e) => -1
    * )
-   * // Error("fail")
+   * // -1
    * ```
    */
   mapOrElseAsync<U>(

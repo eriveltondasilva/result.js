@@ -90,6 +90,17 @@ describe('Ok', () => {
         expect(expectOk(result)).toBe(42)
       })
 
+      it('should keep Ok when predicate passes without onReject', () => {
+        const result = okValue.filter((x) => x > 40)
+        expect(expectOk(result)).toBe(42)
+      })
+
+      it('should convert to Err with default error message when predicate fails', () => {
+        const result = okValue.filter((x) => x > 50)
+        const error = expectErr(result)
+        expect(error.message).toBe('Filter predicate failed for value: 42')
+      })
+
       it('should convert to Err when predicate fails', () => {
         const result = okValue.filter(
           (x) => x > 50,

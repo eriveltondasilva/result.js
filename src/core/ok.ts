@@ -152,7 +152,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Access
    * @returns {never} Never returns
-   * @throws {Error} Always throws with message "Called unwrapErr on an Ok value" and cause set to the value
+   * @throws {Error} Always throws with message "Called unwrapErr on an Ok value: [value]"
    * @example
    * ```ts
    * const result = Result.ok(42)
@@ -187,7 +187,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @group Access
    * @param {string} message - Error message
    * @returns {never} Never returns
-   * @throws {Error} Always throws with message "Called expectErr on an Ok value" and cause set to the value
+   * @throws {Error} Always throws with the provided message followed by ": [value]"
    * @example
    * ```ts
    * const result = Result.ok(42)
@@ -252,40 +252,20 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @group Transformation
    * @see {@link mapAsync} for async version
    * @template U - Transformed value type
-   * @param {(value: T) => U} mapper - Transformation function
-   * @returns {Ok<U, E>} Ok with transformed value
+   * @template F - New error type (only when mapper returns Result)
+   * @param {(value: T) => U | Result<U, F>} mapper - Transformation function
+   * @returns {Ok<U, E> | Result<U, E | F>} Ok with transformed value or flattened Result
    * @example
    * ```ts
    * const result = Result.ok(5)
    * result.map((x) => x * 2)
    * // Ok(10)
-   * ```
-   */
-  map<U>(mapper: (value: T) => U): Ok<U, E>
-
-  /**
-   * Transforms success value that returns Result.
    *
-   * @group Transformation
-   * @see {@link mapAsync} for async version
-   * @template U - Transformed value type
-   * @template F - New error type
-   * @param {(value: T) => Result<U, F>} mapper - Transformation function returning Result
-   * @returns {Result<U, E | F>} Flattened Result
-   * @example
-   * ```ts
-   * const result = Result.ok(5)
-   * result.map((x) => {
-   *   return x > 0
-   *     ? Result.ok(x * 2)
-   *     : Result.err("negative")
-   * })
+   * result.map((x) => x > 0 ? Result.ok(x * 2) : Result.err("negative"))
    * // Result<number, string>
    * ```
    */
-  map<U, F>(mapper: (value: T) => Result<U, F>): Result<U, E | F>
-
-  map<U, F>(mapper: (value: T) => U | Result<U, F>): Ok<U, E> | Result<U, E | F> {
+  map<U, F = never>(mapper: (value: T) => U | Result<U, F>): Ok<U, E> | Result<U, E | F> {
     assertFunction(mapper, 'Result.map', 'mapper')
     const mapped = mapper(this.#value)
 
@@ -703,37 +683,20 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template U - Transformed value type
-   * @param {(value: T) => Promise<U>} mapperAsync - Async transformation
-   * @returns {Promise<Ok<U, E>>} Promise of Ok with transformed value
+   * @template F - New error type (only when mapper returns Result)
+   * @param {(value: T) => Promise<U | Result<U, F>>} mapperAsync - Async transformation
+   * @returns {Promise<Ok<U, E> | Result<U, E | F>>} Promise of Ok with transformed value or flattened Result
    * @example
    * ```ts
    * const result = Result.ok(5)
    * await result.mapAsync(async (x) => x * 2)
    * // Ok(10)
-   * ```
-   */
-  mapAsync<U>(mapperAsync: (value: T) => Promise<U>): Promise<Ok<U, E>>
-
-  /**
-   * Transforms value asynchronously that returns Result.
    *
-   * @group Async Operations
-   * @template U - Transformed value type
-   * @template F - New error type
-   * @param {(value: T) => Promise<Result<U, F>>} mapperAsync - Async transformation returning Result
-   * @returns {Promise<Result<U, E | F>>} Promise of flattened Result
-   * @example
-   * ```ts
-   * const result = Result.ok(5)
-   * await result.mapAsync(async x =>
-   *   x > 0 ? Result.ok(x * 2) : Result.err("negative")
-   * )
+   * await result.mapAsync(async (x) => x > 0 ? Result.ok(x * 2) : Result.err("negative"))
    * // Ok(10)
    * ```
    */
-  mapAsync<U, F>(mapperAsync: (value: T) => Promise<Result<U, F>>): Promise<Result<U, E | F>>
-
-  async mapAsync<U, F>(
+  async mapAsync<U, F = never>(
     mapperAsync: (value: T) => Promise<U | Result<U, F>>
   ): Promise<Ok<U, E> | Result<U, E | F>> {
     assertFunction(mapperAsync, 'Result.mapAsync', 'mapperAsync')
