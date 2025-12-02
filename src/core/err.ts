@@ -136,7 +136,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Access
    * @returns {never} Never returns
-   * @throws {Error} Always throws for Err
+   * @throws {Error} Always throws with message "Called unwrap on an Err value" and cause set to the error
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
@@ -170,7 +170,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Access
    * @param {string} message - Error message
    * @returns {never} Never returns
-   * @throws {Error} Always throws for Err
+   * @throws {Error} Always throws with message "Called expect on an Err value" and cause set to the error
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
@@ -250,14 +250,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Transforms success value.
    *
    * @group Transformation
+   * @see {@link mapAsync} for async version
    * @template U - Transformed value type
    * @param {(value: T) => U} mapper - Transformation function
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
-   * result.map((e) => 0)
-   * // Err(0)
+   * result.map((x) => x * 2)
+   * // Err(Error: fail)
    * ```
    */
   map<U>(mapper: (value: T) => U): Err<U, E>
@@ -266,6 +267,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Transforms success value that returns Result.
    *
    * @group Transformation
+   * @see {@link mapAsync} for async version
    * @template U - Transformed value type
    * @template F - New error type
    * @param {(value: T) => Result<U, F>} mapper - Transformation function returning Result
@@ -273,8 +275,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
-   * result.map((e) => Result.ok(0))
-   * // Err(0)
+   * result.map((x) => Result.ok(x * 2))
+   * // Err(Error: fail)
    * ```
    */
   map<U, F>(mapper: (value: T) => Result<U, F>): Err<U, E>
@@ -366,7 +368,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Transformation
    * @param {(value: T) => boolean} predicate - Validation function
-   * @param {(value: T) => E} onReject - Error generator for rejection
+   * @param {(value: T) => E} onReject - Function that generates error when predicate fails
    * @returns {Result<T, E>} This Err unchanged
    * @example
    * ```ts
@@ -536,7 +538,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * ```ts
    * const result = Result.err("fail")
    * result.inspect((x) => console.log(x))
-   * // logs "fail", returns Err("fail")
+    * // does nothing, returns Err("fail")
    * ```
    */
   inspect(visitor: (value: T) => void): Err<T, E> {
@@ -675,8 +677,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.err("fail")
-   * result.mapAsync((e) => Promise.resolve(0))
-   * // Err(0)
+   * result.mapAsync(async (x) => x * 2)
+   * // Err(Error: fail)
    * ```
    */
   mapAsync<U>(mapperAsync: (value: T) => Promise<U>): Promise<Err<U, E>>
@@ -692,8 +694,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.err("fail")
-   * result.mapAsync((e) => Promise.resolve(Result.ok(0)))
-   * // Err("fail")
+   * result.mapAsync(async (x) => Result.ok(x * 2))
+   * // Err(Error: fail)
    * ```
    */
   mapAsync<U, F>(mapperAsync: (value: T) => Promise<Result<U, F>>): Promise<Err<U, E>>
@@ -758,7 +760,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   async (x) => x * 2,
    *   async (e) => new Error(e)
    * )
-   * // Err("fail")
+   * // Error("fail")
    * ```
    */
   mapOrElseAsync<U>(

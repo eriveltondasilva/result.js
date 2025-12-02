@@ -189,7 +189,7 @@ function createFromTry<T>(executor: () => T): Result<T, Error>
  * @template E - Error type
  * @param {() => T} executor - Function to execute
  * @param {(error: unknown) => E} onError - Error transformer
- * @returns {Result<T, Error>} Ok with return value or Err with custom error
+ * @returns {Result<T, E>} Ok with return value or Err with custom error
  */
 function createFromTry<T, E>(executor: () => T, onError: (error: unknown) => E): Result<T, Error>
 
@@ -330,7 +330,7 @@ function createAllSettled<const T extends readonly Result<unknown, unknown>[]>(
  *
  * @template T - Results tuple type
  * @param {T} results - Array of Results
- * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or all Errs
+ * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors (empty array if no results)
  * @example
  * Result.any([Result.err("a"), Result.ok(2)])
  * // Ok(2)

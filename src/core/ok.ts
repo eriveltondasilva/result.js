@@ -152,7 +152,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Access
    * @returns {never} Never returns
-   * @throws {Error} Always throws for Ok
+   * @throws {Error} Always throws with message "Called unwrapErr on an Ok value" and cause set to the value
    * @example
    * ```ts
    * const result = Result.ok(42)
@@ -187,7 +187,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @group Access
    * @param {string} message - Error message
    * @returns {never} Never returns
-   * @throws {Error} Always throws for Ok
+   * @throws {Error} Always throws with message "Called expectErr on an Ok value" and cause set to the value
    * @example
    * ```ts
    * const result = Result.ok(42)
@@ -250,6 +250,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Transforms success value.
    *
    * @group Transformation
+   * @see {@link mapAsync} for async version
    * @template U - Transformed value type
    * @param {(value: T) => U} mapper - Transformation function
    * @returns {Ok<U, E>} Ok with transformed value
@@ -266,6 +267,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Transforms success value that returns Result.
    *
    * @group Transformation
+   * @see {@link mapAsync} for async version
    * @template U - Transformed value type
    * @template F - New error type
    * @param {(value: T) => Result<U, F>} mapper - Transformation function returning Result
@@ -377,7 +379,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Transformation
    * @param {(value: T) => boolean} predicate - Validation function
-   * @param {(value: T) => E} onReject - Error generator for rejection
+   * @param {(value: T) => E} onReject - Function that generates error when predicate fails
    * @returns {Result<T, E>} Ok if predicate passes, else Err
    * @example
    * ```ts
@@ -794,7 +796,10 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.ok(5)
-   * await result.mapOrElseAsync(async x => x * 2, async e => e + 1)
+   * await result.mapOrElseAsync(
+   *   async (x) => x * 2,
+   *   async (e) => e + 1
+   * )
    * // 10
    * ```
    */
@@ -817,7 +822,9 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.ok(5)
-   * await result.andThenAsync(async x => Result.ok(x * 2))
+   * await result.andThenAsync(
+   *   async (x) => Result.ok(x * 2)
+   * )
    * // Ok(10)
    * ```
    */
@@ -836,7 +843,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.ok(5)
-   * await result.andAsync(Result.ok(10))
+   * await result.andAsync(Promise.resolve(Result.ok(10)))
    * // Ok(10)
    * ```
    */
@@ -854,7 +861,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.ok(5)
-   * await result.orAsync(Result.ok(10))
+   * await result.orAsync(Promise.resolve(Result.ok(10)))
    * // Ok(5)
    * ```
    */
