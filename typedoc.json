@@ -2,14 +2,13 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["./src/index.ts"],
   "out": "./docs-api",
-  "plugin": ["typedoc-plugin-markdown"],
+  "plugin": [],
   "readme": "./README.md",
 
   "includeVersion": true,
   "excludePrivate": true,
   "excludeProtected": true,
-  "excludeInternal": true,
-  "categorizeByGroup": true,
+  "excludeInternal": false,
 
   "categoryOrder": [
     "Creation",
@@ -20,18 +19,21 @@
     "Collections",
     "*"
   ],
-  "sort": ["source-order"],
   "kindSortOrder": [
     "Function",
     "Class",
     "Interface",
     "Variable"
   ],
+  "sort": ["source-order"],
 
   "navigation": {
     "includeCategories": true,
     "includeGroups": true
   },
+  "categorizeByGroup": true,
+
+  // "favicon": "",
   "searchInComments": true,
   "commentStyle": "jsdoc"
 }

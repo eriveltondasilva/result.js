@@ -85,9 +85,9 @@
     }
   },
   "scripts": {
-    "docs": "typedoc",
-    "docs:dev": "typedoc --watch",
-    "docs:serve": "npx vite preview --outDir docs-api",
+    "docs:build": "typedoc",
+    "docs:watch": "typedoc --watch",
+    "docs:preview": "npx vite preview --open --outDir docs-api",
     "clean": "rimraf dist",
     "clean:dev": "rimraf dist vitest",
     "build": "tsup --minify",

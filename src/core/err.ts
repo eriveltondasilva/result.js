@@ -1,9 +1,11 @@
 import type { Ok } from './ok.js'
-import type { Result, ResultMethods } from './types.js'
+import type { ResultType, ResultMethods } from './types.js'
 
 /**
  * Represents a failed Result containing an error.
  *
+ * @internal
+ * @group Core
  * @template T - Success value type
  * @template E - Error type
  *
@@ -244,7 +246,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @see {@link andThen} for chaining Results
    * @template U - Transformed value type
    * @template F - New error type (only when mapper returns Result)
-   * @param {(value: T) => U | Result<U, F>} _mapper - Transformation function
+   * @param {(value: T) => U | ResultType<U, F>} _mapper - Transformation function
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
@@ -256,7 +258,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err(Error: fail)
    * ```
    */
-  map<U, F = never>(_mapper: (value: T) => U | Result<U, F>): Err<U, E> {
+  map<U, F = never>(_mapper: (value: T) => U | ResultType<U, F>): Err<U, E> {
     return this as unknown as Err<U, E>
   }
 
@@ -323,6 +325,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Filters Ok value based on predicate.
    *
+   * @overload
    * @group Transformation
    * @see {@link isErrAnd} for validation without modification
    * @param predicate - Validation function
@@ -338,16 +341,17 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("fail")
    * ```
    */
-  filter(predicate: (value: T) => boolean): Result<T, Error>
+  filter(predicate: (value: T) => boolean): ResultType<T, Error>
 
   /**
    * Filters Ok value based on predicate with custom error.
    *
+   * @overload
    * @group Transformation
    * @see {@link isErrAnd} for validation without modification
    * @param {(value: T) => boolean} predicate - Validation function
    * @param {(value: T) => E} onReject - Function that generates error when predicate fails
-   * @returns {Result<T, E>} This Err unchanged
+   * @returns {ResultType<T, E>} This Err unchanged
    * @example
    * ```ts
    * Result.err("fail").filter(
@@ -357,12 +361,12 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("fail")
    * ```
    */
-  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
+  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): ResultType<T, E>
 
   filter(
     _predicate: (value: T) => boolean,
     _onReject?: (value: T) => E | Error
-  ): Result<T, E | Error> {
+  ): ResultType<T, E | Error> {
     return this
   }
 
@@ -372,10 +376,10 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Transformation
    * @template U - Inner Result success type
    * @template F - Inner Result error type
-   * @param {Err<Result<U, F>, E>} this - Nested Result
+   * @param {Err<ResultType<U, F>, E>} this - Nested Result
    * @returns {Err<U, E | F>} Flattened Err
    */
-  flatten<U, F>(this: Err<Result<U, F>, E>): Err<U, E | F> {
+  flatten<U, F>(this: Err<ResultType<U, F>, E>): Err<U, E | F> {
     return this as unknown as Err<U, E | F>
   }
 
@@ -389,7 +393,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Chaining
    * @see {@link andThenAsync} for async version
    * @template U - New success type
-   * @param {(value: T) => Result<U, E>} _flatMapper - Chaining function
+   * @param {(value: T) => ResultType<U, E>} _flatMapper - Chaining function
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
@@ -399,7 +403,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("backup")
    * ```
    */
-  andThen<U>(_flatMapper: (value: T) => Result<U, E>): Err<U, E> {
+  andThen<U>(_flatMapper: (value: T) => ResultType<U, E>): Err<U, E> {
     return this as unknown as Err<U, E>
   }
 
@@ -409,8 +413,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Chaining
    * @see {@link orElseAsync} for async version
    * @see {@link or} for static alternative
-   * @param {(error: E) => Result<T, E>} onError - Error recovery function
-   * @returns {Result<T, E>} Result from error handler
+   * @param {(error: E) => ResultType<T, E>} onError - Error recovery function
+   * @returns {ResultType<T, E>} Result from error handler
    * @example
    * ```ts
    * Result.err("fail").orElse((e) => Result.ok(0))
@@ -419,7 +423,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("backup")
    * ```
    */
-  orElse(onError: (error: E) => Result<T, E>): Result<T, E> {
+  orElse(onError: (error: E) => ResultType<T, E>): ResultType<T, E> {
     return onError(this.#error)
   }
 
@@ -429,7 +433,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Chaining
    * @see {@link andAsync} for async version
    * @template U - Second Result success type
-   * @param {Result<U, E>} _result - Result to return
+   * @param {ResultType<U, E>} _result - Result to return
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
@@ -439,7 +443,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("backup")
    * ```
    */
-  and<U>(_result: Result<U, E>): Err<U, E> {
+  and<U>(_result: ResultType<U, E>): Err<U, E> {
     return this as unknown as Err<U, E>
   }
 
@@ -449,8 +453,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Chaining
    * @see {@link orAsync} for async version
    * @see {@link orElse} for function-based alternative
-   * @param {Result<T, E>} result - Alternative Result
-   * @returns {Result<T, E>} The alternative Result
+   * @param {ResultType<T, E>} result - Alternative Result
+   * @returns {ResultType<T, E>} The alternative Result
    * @example
    * ```ts
    * Result.err("fail").or(Result.ok(42))
@@ -459,7 +463,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("backup")
    * ```
    */
-  or(result: Result<T, E>): Result<T, E> {
+  or(result: ResultType<T, E>): ResultType<T, E> {
     return result
   }
 
@@ -469,15 +473,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Chaining
    * @template U - Second Result success type
    * @template F - Second Result error type
-   * @param {Result<U, F>} _result - Result to zip with
-   * @returns {Result<[T, U], E | F>} Err with this error
+   * @param {ResultType<U, F>} _result - Result to zip with
+   * @returns {ResultType<[T, U], E | F>} Err with this error
    * @example
    * ```ts
    * Result.err("fail").zip(Result.ok(2))
    * // Err("fail")
    * ```
    */
-  zip<U, F>(_result: Result<U, F>): Err<[T, U], E | F> {
+  zip<U, F>(_result: ResultType<U, F>): Err<[T, U], E | F> {
     return this as unknown as Err<[T, U], E | F>
   }
 
@@ -654,7 +658,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Async Operations
    * @template U - Transformed value type
    * @template F - New error type (only when mapper returns Result)
-   * @param {(value: T) => Promise<U | Result<U, F>>} _mapperAsync - Async transformation
+   * @param {(value: T) => Promise<U | ResultType<U, F>>} _mapperAsync - Async transformation
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
    * @example
    * ```ts
@@ -667,7 +671,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * ```
    */
   async mapAsync<U, F = never>(
-    _mapperAsync: (value: T) => Promise<U | Result<U, F>>
+    _mapperAsync: (value: T) => Promise<U | ResultType<U, F>>
   ): Promise<Err<U, E>> {
     return this as unknown as Err<U, E>
   }
@@ -740,7 +744,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template U - New success type
-   * @param {(value: T) => Promise<Result<U, E>>} _flatMapperAsync - Async chaining function
+   * @param {(value: T) => Promise<ResultType<U, E>>} _flatMapperAsync - Async chaining function
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
    * @example
    * ```ts
@@ -749,7 +753,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("fail")
    * ```
    */
-  andThenAsync<U>(_flatMapperAsync: (value: T) => Promise<Result<U, E>>): Promise<Err<U, E>> {
+  andThenAsync<U>(_flatMapperAsync: (value: T) => Promise<ResultType<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
@@ -758,7 +762,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template U - Second Result success type
-   * @param {Promise<Result<U, E>>} _result - Async Result (ignored for Err)
+   * @param {Promise<ResultType<U, E>>} _result - Async Result (ignored for Err)
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
    * @example
    * ```ts
@@ -767,7 +771,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("fail")
    * ```
    */
-  andAsync<U>(_result: Promise<Result<U, E>>): Promise<Err<U, E>> {
+  andAsync<U>(_result: Promise<ResultType<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
@@ -775,8 +779,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Returns this Result or async alternative.
    *
    * @group Async Operations
-   * @param {Promise<Result<T, E>>} result - Alternative async Result
-   * @returns {Promise<Result<T, E>>} The alternative Promise
+   * @param {Promise<ResultType<T, E>>} result - Alternative async Result
+   * @returns {Promise<ResultType<T, E>>} The alternative Promise
    * @example
    * ```ts
    * const result = Result.err("fail")
@@ -784,7 +788,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Ok(42)
    * ```
    */
-  orAsync(result: Promise<Result<T, E>>): Promise<Result<T, E>> {
+  orAsync(result: Promise<ResultType<T, E>>): Promise<ResultType<T, E>> {
     return result
   }
 
@@ -792,14 +796,14 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Returns this Result or executes async error handler.
    *
    * @group Async Operations
-   * @param {(error: E) => Promise<Result<T, E>>} onErrorAsync - Async error recovery
-   * @returns {Promise<Result<T, E>>} Promise from error handler
+   * @param {(error: E) => Promise<ResultType<T, E>>} onErrorAsync - Async error recovery
+   * @returns {Promise<ResultType<T, E>>} Promise from error handler
    * @example
    * const result = Result.err("fail")
    * await result.orElseAsync(async (e) => Result.ok(0))
    * // Ok(0)
    */
-  orElseAsync(onErrorAsync: (error: E) => Promise<Result<T, E>>): Promise<Result<T, E>> {
+  orElseAsync(onErrorAsync: (error: E) => Promise<ResultType<T, E>>): Promise<ResultType<T, E>> {
     return onErrorAsync(this.#error)
   }
 
@@ -807,10 +811,12 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
 
   // #region METADATA
 
+  /** @hidden */
   get [Symbol.toStringTag](): string {
     return 'Result.Err'
   }
 
+  /** @hidden */
   [Symbol.for('nodejs.util.inspect.custom')](): string {
     return `Err(${JSON.stringify(this.#error, null, 2)})`
   }

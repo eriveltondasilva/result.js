@@ -1,12 +1,12 @@
 import { Err } from './err.js'
 import { Ok } from './ok.js'
 import type {
-  AsyncResult,
+  AsyncResultType,
   ErrTuple,
   ErrUnion,
   OkTuple,
   OkUnion,
-  Result,
+  ResultType,
   SettledResult,
 } from './types.js'
 
@@ -57,31 +57,34 @@ function createErr<T = never, E = Error>(error: E): Err<T, E> {
 /**
  * Creates Result by validating value with predicate.
  *
+ * @overload
  * @group Conditional Creation
  * @template T - Value type
  * @param {T} value - Value to validate
  * @param {(value: T) => boolean} predicate - Validation function
- * @returns {Result<T, Error>} Ok if valid, Err otherwise
+ * @returns {ResultType<T, Error>} Ok if valid, Err otherwise
  * @example
  * ```ts
  * Result.validate(10, (x) => x > 5)
  * // Ok(10)
+ *
  * Result.validate(3, (x) => x > 5)
  * // Err(Error: Validation failed for value: 3)
  * ```
  */
-function createValidate<T>(value: T, predicate: (value: T) => boolean): Result<T, Error>
+function createValidate<T>(value: T, predicate: (value: T) => boolean): ResultType<T, Error>
 
 /**
  * Creates Result by validating value with custom error.
  *
+ * @overload
  * @group Conditional Creation
  * @template T - Value type
  * @template E - Error type
  * @param {T} value - Value to validate
  * @param {(value: T) => boolean} predicate - Validation function
  * @param {(value: T) => E} onError - Error generator for rejection
- * @returns {Result<T, E>} Ok if valid, Err with custom error otherwise
+ * @returns {ResultType<T, E>} Ok if valid, Err with custom error otherwise
  * @example
  * ```ts
  * Result.validate(
@@ -90,6 +93,7 @@ function createValidate<T>(value: T, predicate: (value: T) => boolean): Result<T
  *   (x) => new Error(`Value ${x} is not greater than 5`)
  * )
  * // Ok(10)
+ *
  * Result.validate(
  *   3,
  *   (x) => x > 5,
@@ -102,13 +106,13 @@ function createValidate<T, E>(
   value: T,
   predicate: (value: T) => boolean,
   onError: (value: T) => E
-): Result<T, E>
+): ResultType<T, E>
 
 function createValidate<T, E = Error>(
   value: T,
   predicate: (value: T) => boolean,
   onError?: (value: T) => E | Error
-): Result<T, E | Error> {
+): ResultType<T, E | Error> {
   if (!predicate(value)) {
     const mappedError = onError
       ? onError(value)
@@ -122,29 +126,32 @@ function createValidate<T, E = Error>(
 /**
  * Creates Result from nullable value.
  *
+ * @overload
  * @group Conditional Creation
  * @template T - Value type
  * @param {T | null | undefined} value - Nullable value
- * @returns {Result<NonNullable<T>, Error>} Ok if defined, Err otherwise
+ * @returns {ResultType<NonNullable<T>, Error>} Ok if defined, Err otherwise
  * @example
  * ```ts
  * Result.fromNullable(42)
  * // Ok(42)
+ *
  * Result.fromNullable(null)
  * // Err(Error: Value is null or undefined)
  * ```
  */
-function createFromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Error>
+function createFromNullable<T>(value: T | null | undefined): ResultType<NonNullable<T>, Error>
 
 /**
  * Creates Result from nullable value with custom error.
  *
+ * @overload
  * @group Conditional Creation
  * @template T - Value type
  * @template E - Error type
  * @param {T | null | undefined} value - Nullable value
  * @param {() => E} onError - Error generator
- * @returns {Result<NonNullable<T>, E>} Ok if defined, Err with custom error otherwise
+ * @returns {ResultType<NonNullable<T>, E>} Ok if defined, Err with custom error otherwise
  * @example
  * ```ts
  * Result.fromNullable(
@@ -152,6 +159,7 @@ function createFromNullable<T>(value: T | null | undefined): Result<NonNullable<
  *   () => new Error('Custom error')
  * )
  * // Ok(42)
+ *
  * Result.fromNullable(
  *   null,
  *   () => new Error('Custom error')
@@ -162,12 +170,12 @@ function createFromNullable<T>(value: T | null | undefined): Result<NonNullable<
 function createFromNullable<T, E>(
   value: T | null | undefined,
   onError: () => E
-): Result<NonNullable<T>, E>
+): ResultType<NonNullable<T>, E>
 
 function createFromNullable<T, E = Error>(
   value: T | null | undefined,
   onError?: () => E
-): Result<NonNullable<T>, E | Error> {
+): ResultType<NonNullable<T>, E | Error> {
   if (value === null || value === undefined) {
     const mappedError = onError ? onError() : new Error('Value is null or undefined')
     return new Err(mappedError)
@@ -189,10 +197,11 @@ function createFromNullable<T, E = Error>(
  * @example
  * Result.isResult(Result.ok(1))
  * // true
+ *
  * Result.isResult(42)
  * // false
  */
-function createIsResult(value: unknown): value is Result<unknown, unknown> {
+function createIsResult(value: unknown): value is ResultType<unknown, unknown> {
   return value instanceof Ok || value instanceof Err
 }
 
@@ -203,31 +212,34 @@ function createIsResult(value: unknown): value is Result<unknown, unknown> {
 /**
  * Wraps function execution in Result.
  *
+ * @overload
  * @group Conversion
  * @template T - Return value type
  * @param {() => T} executor - Function to execute
- * @returns {Result<T, Error>} Ok with return value or Err if throws
+ * @returns {ResultType<T, Error>} Ok with return value or Err if throws
  * @example
  * Result.fromTry(
  *   () => JSON.parse('{"a":1}')
  * )
  * // Ok({a: 1})
+ *
  * Result.fromTry(
  *   () => JSON.parse('invalid')
  * )
  * // Err(SyntaxError: JSON Parse error: Unexpected identifier "invalid")
  */
-function createFromTry<T>(executor: () => T): Result<T, Error>
+function createFromTry<T>(executor: () => T): ResultType<T, Error>
 
 /**
  * Wraps function execution in Result with custom error handler.
  *
+ * @overload
  * @group Conversion
  * @template T - Return value type
  * @template E - Error type
  * @param {() => T} executor - Function to execute
  * @param {(error: unknown) => E} onError - Error transformer
- * @returns {Result<T, E>} Ok with return value or Err with custom error
+ * @returns {ResultType<T, E>} Ok with return value or Err with custom error
  * @example
  * ```ts
  * Result.fromTry(
@@ -237,12 +249,12 @@ function createFromTry<T>(executor: () => T): Result<T, Error>
  * // Err(Error: Custom error)
  * ```
  */
-function createFromTry<T, E>(executor: () => T, onError: (error: unknown) => E): Result<T, E>
+function createFromTry<T, E>(executor: () => T, onError: (error: unknown) => E): ResultType<T, E>
 
 function createFromTry<T, E>(
   executor: () => T,
   onError?: (error: unknown) => E
-): Result<T, E | Error> {
+): ResultType<T, E | Error> {
   try {
     const value = executor()
     return new Ok(value)
@@ -259,10 +271,11 @@ function createFromTry<T, E>(
 /**
  * Wraps async function execution in Result.
  *
+ * @overload
  * @group Async Conversion
  * @template T - Return value type
  * @param {() => Promise<T>} executor - Async function to execute
- * @returns {AsyncResult<T, Error>} Promise of Ok or Err
+ * @returns {AsyncResultType<T, Error>} Promise of Ok or Err
  * @example
  * ```ts
  * await Result.fromPromise(
@@ -271,17 +284,18 @@ function createFromTry<T, E>(
  * // Ok(response) or Err(Error: Network error)
  * ```
  */
-async function createFromPromise<T>(executor: () => Promise<T>): AsyncResult<T, Error>
+async function createFromPromise<T>(executor: () => Promise<T>): AsyncResultType<T, Error>
 
 /**
  * Wraps async function execution with custom error handler.
  *
+ * @overload
  * @group Async Conversion
  * @template T - Return value type
  * @template E - Error type
  * @param {() => Promise<T>} executor - Async function to execute
  * @param {(error: unknown) => E} onError - Error transformer
- * @returns {AsyncResult<T, E>} Promise of Ok or Err with custom error
+ * @returns {AsyncResultType<T, E>} Promise of Ok or Err with custom error
  * @example
  * ```ts
  * await Result.fromPromise(
@@ -294,12 +308,12 @@ async function createFromPromise<T>(executor: () => Promise<T>): AsyncResult<T, 
 async function createFromPromise<T, E>(
   executor: () => Promise<T>,
   onError: (error: unknown) => E
-): AsyncResult<T, E>
+): AsyncResultType<T, E>
 
 async function createFromPromise<T, E>(
   executor: () => Promise<T>,
   onError?: (error: unknown) => E
-): AsyncResult<T, E | Error> {
+): AsyncResultType<T, E | Error> {
   try {
     const value = await executor()
     return new Ok(value)
@@ -319,20 +333,22 @@ async function createFromPromise<T, E>(
  * @group Collections
  * @template T - Results tuple type
  * @param {T} results - Array of Results
- * @returns {Result<OkTuple<T>, ErrUnion<T>>} Ok with all values or first Err
+ * @returns {ResultType<OkTuple<T>, ErrUnion<T>>} Ok with all values or first Err
  * @example
  * ```ts
  * Result.all([Result.ok(1), Result.ok(2)])
  * // Ok([1, 2])
+ *
  * Result.all([Result.ok(1), Result.err("fail")])
  * // Err("fail")
+ *
  * Result.all([])
  * // Ok([])
  * ```
  */
-function createAll<const T extends readonly Result<unknown, unknown>[]>(
+function createAll<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
-): Result<OkTuple<T>, ErrUnion<T>> {
+): ResultType<OkTuple<T>, ErrUnion<T>> {
   if (results.length === 0) {
     return new Ok([]) as Ok<OkTuple<T>, never>
   }
@@ -362,11 +378,12 @@ function createAll<const T extends readonly Result<unknown, unknown>[]>(
  * ```ts
  * Result.allSettled([Result.ok(1), Result.err("fail")])
  * // Ok([{status: 'ok', value: 1}, {status: 'err', reason: "fail"}])
+ *
  * Result.allSettled([])
  * // Ok([])
  * ```
  */
-function createAllSettled<const T extends readonly Result<unknown, unknown>[]>(
+function createAllSettled<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
   if (results.length === 0) {
@@ -388,20 +405,22 @@ function createAllSettled<const T extends readonly Result<unknown, unknown>[]>(
  * @group Collections
  * @template T - Results tuple type
  * @param {T} results - Array of Results
- * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors
+ * @returns {ResultType<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors
  * @example
  * ```ts
  * Result.any([Result.err("a"), Result.ok(2)])
  * // Ok(2)
+ *
  * Result.any([Result.err("a"), Result.err("b")])
  * // Err(["a", "b"])
+ *
  * Result.any([])
  * // Err([])
  * ```
  */
-function createAny<const T extends readonly Result<unknown, unknown>[]>(
+function createAny<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
-): Result<OkUnion<T>, ErrTuple<T>> {
+): ResultType<OkUnion<T>, ErrTuple<T>> {
   if (results.length === 0) {
     return new Err([]) as Err<never, ErrTuple<T>>
   }
@@ -425,19 +444,21 @@ function createAny<const T extends readonly Result<unknown, unknown>[]>(
  * @group Collections
  * @template T - Success value type
  * @template E - Error type
- * @param {readonly Result<T, E>[]} results - Array of Results
+ * @param {readonly ResultType<T, E>[]} results - Array of Results
  * @returns {readonly [T[], E[]]} Tuple of [ok values, errors]
  * @example
  * ```ts
  * Result.partition([Result.ok(1), Result.err("fail"), Result.ok(2)])
  * // [[1, 2], ["fail"]]
+ *
  * Result.partition([Result.ok(1), Result.ok(2)])
  * // [[1, 2], []]
+ *
  * Result.partition([])
  * // [[], []]
  * ```
  */
-function createPartition<T, E>(results: readonly Result<T, E>[]): readonly [T[], E[]] {
+function createPartition<T, E>(results: readonly ResultType<T, E>[]): readonly [T[], E[]] {
   if (results.length === 0) {
     return [[], []] as const
   }
@@ -458,7 +479,7 @@ function createPartition<T, E>(results: readonly Result<T, E>[]): readonly [T[],
 
 // #endregion
 
-export default {
+export {
   createAll,
   createAllSettled,
   createAny,
@@ -471,3 +492,29 @@ export default {
   createPartition,
   createValidate,
 }
+
+// export const all = createAll
+// export const allSettled = createAllSettled
+// export const any = createAny
+// export const err = createErr
+// export const fromNullable = createFromNullable
+// export const fromPromise = createFromPromise
+// export const fromTry = createFromTry
+// export const isResult = createIsResult
+// export const ok = createOk
+// export const partition = createPartition
+// export const validate = createValidate
+
+// export const factories = {
+//   all: createAll,
+//   allSettled: createAllSettled,
+//   any: createAny,
+//   err: createErr,
+//   fromNullable: createFromNullable,
+//   fromPromise: createFromPromise,
+//   fromTry: createFromTry,
+//   isResult: createIsResult,
+//   ok: createOk,
+//   partition: createPartition,
+//   validate: createValidate,
+// }
