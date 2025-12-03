@@ -10,7 +10,7 @@ import type {
   SettledResult,
 } from './types.js'
 
-import { isResult, unknownToError } from './utils.js'
+import { unknownToError } from './utils.js'
 
 // #region CREATION
 
@@ -84,9 +84,17 @@ function createValidate<T>(value: T, predicate: (value: T) => boolean): Result<T
  * @returns {Result<T, E>} Ok if valid, Err with custom error otherwise
  * @example
  * ```ts
- * Result.validate(10, (x) => x > 5, (x) => new Error(`Value ${x} is not greater than 5`))
+ * Result.validate(
+ *   10,
+ *   (x) => x > 5,
+ *   (x) => new Error(`Value ${x} is not greater than 5`)
+ * )
  * // Ok(10)
- * Result.validate(3, (x) => x > 5, (x) => new Error(`Value ${x} is not greater than 5`))
+ * Result.validate(
+ *   3,
+ *   (x) => x > 5,
+ *   (x) => new Error(`Value ${x} is not greater than 5`)
+ * )
  * // Err(Error: Value 3 is not greater than 5)
  * ```
  */
@@ -102,8 +110,10 @@ function createValidate<T, E = Error>(
   onError?: (value: T) => E | Error
 ): Result<T, E | Error> {
   if (!predicate(value)) {
-    const error = onError ? onError(value) : new Error(`Validation failed for value: ${value}`)
-    return new Err<never, E | Error>(error)
+    const mappedError = onError
+      ? onError(value)
+      : new Error(`Validation failed for value: ${value}`)
+    return new Err(mappedError)
   }
 
   return new Ok(value)
@@ -137,9 +147,15 @@ function createFromNullable<T>(value: T | null | undefined): Result<NonNullable<
  * @returns {Result<NonNullable<T>, E>} Ok if defined, Err with custom error otherwise
  * @example
  * ```ts
- * Result.fromNullable(42, () => new Error('Custom error'))
+ * Result.fromNullable(
+ *   42,
+ *   () => new Error('Custom error')
+ * )
  * // Ok(42)
- * Result.fromNullable(null, () => new Error('Custom error'))
+ * Result.fromNullable(
+ *   null,
+ *   () => new Error('Custom error')
+ * )
  * // Err(Error: Custom error)
  * ```
  */
@@ -153,8 +169,8 @@ function createFromNullable<T, E = Error>(
   onError?: () => E
 ): Result<NonNullable<T>, E | Error> {
   if (value === null || value === undefined) {
-    const error = onError ? onError() : new Error('Value is null or undefined')
-    return new Err(error)
+    const mappedError = onError ? onError() : new Error('Value is null or undefined')
+    return new Err(mappedError)
   }
 
   return new Ok(value)
@@ -192,10 +208,14 @@ function createIsResult(value: unknown): value is Result<unknown, unknown> {
  * @param {() => T} executor - Function to execute
  * @returns {Result<T, Error>} Ok with return value or Err if throws
  * @example
- * Result.fromTry(() => JSON.parse('{"a":1}'))
+ * Result.fromTry(
+ *   () => JSON.parse('{"a":1}')
+ * )
  * // Ok({a: 1})
- * Result.fromTry(() => JSON.parse('invalid'))
- * // Err(Error: Invalid JSON)
+ * Result.fromTry(
+ *   () => JSON.parse('invalid')
+ * )
+ * // Err(SyntaxError: JSON Parse error: Unexpected identifier "invalid")
  */
 function createFromTry<T>(executor: () => T): Result<T, Error>
 
@@ -224,9 +244,11 @@ function createFromTry<T, E>(
   onError?: (error: unknown) => E
 ): Result<T, E | Error> {
   try {
-    return new Ok(executor())
+    const value = executor()
+    return new Ok(value)
   } catch (error) {
-    return new Err(onError ? onError(error) : unknownToError(error))
+    const mappedError = onError ? onError(error) : unknownToError(error)
+    return new Err(mappedError)
   }
 }
 
@@ -279,9 +301,11 @@ async function createFromPromise<T, E>(
   onError?: (error: unknown) => E
 ): AsyncResult<T, E | Error> {
   try {
-    return new Ok(await executor())
+    const value = await executor()
+    return new Ok(value)
   } catch (error) {
-    return new Err(onError ? onError(error) : unknownToError(error))
+    const mappedError = onError ? onError(error) : unknownToError(error)
+    return new Err(mappedError)
   }
 }
 
@@ -302,6 +326,8 @@ async function createFromPromise<T, E>(
  * // Ok([1, 2])
  * Result.all([Result.ok(1), Result.err("fail")])
  * // Err("fail")
+ * Result.all([])
+ * // Ok([])
  * ```
  */
 function createAll<const T extends readonly Result<unknown, unknown>[]>(
@@ -326,15 +352,18 @@ function createAll<const T extends readonly Result<unknown, unknown>[]>(
 
 /**
  * Collects Results with their status.
+ * Unlike all(), this never fails - always returns Ok.
  *
  * @group Collections
  * @template T - Results tuple type
  * @param {T} results - Array of Results
- * @returns {Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]>} Ok with status array
+ * @returns {Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]>} Always Ok with status array
  * @example
  * ```ts
  * Result.allSettled([Result.ok(1), Result.err("fail")])
  * // Ok([{status: 'ok', value: 1}, {status: 'err', reason: "fail"}])
+ * Result.allSettled([])
+ * // Ok([])
  * ```
  */
 function createAllSettled<const T extends readonly Result<unknown, unknown>[]>(
@@ -359,13 +388,15 @@ function createAllSettled<const T extends readonly Result<unknown, unknown>[]>(
  * @group Collections
  * @template T - Results tuple type
  * @param {T} results - Array of Results
- * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors (empty array if no results)
+ * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors
  * @example
  * ```ts
  * Result.any([Result.err("a"), Result.ok(2)])
  * // Ok(2)
  * Result.any([Result.err("a"), Result.err("b")])
  * // Err(["a", "b"])
+ * Result.any([])
+ * // Err([])
  * ```
  */
 function createAny<const T extends readonly Result<unknown, unknown>[]>(
@@ -395,11 +426,15 @@ function createAny<const T extends readonly Result<unknown, unknown>[]>(
  * @template T - Success value type
  * @template E - Error type
  * @param {readonly Result<T, E>[]} results - Array of Results
- * @returns {readonly [T[], E[]]} Tuple of ok values and errors
+ * @returns {readonly [T[], E[]]} Tuple of [ok values, errors]
  * @example
  * ```ts
  * Result.partition([Result.ok(1), Result.err("fail"), Result.ok(2)])
  * // [[1, 2], ["fail"]]
+ * Result.partition([Result.ok(1), Result.ok(2)])
+ * // [[1, 2], []]
+ * Result.partition([])
+ * // [[], []]
  * ```
  */
 function createPartition<T, E>(results: readonly Result<T, E>[]): readonly [T[], E[]] {

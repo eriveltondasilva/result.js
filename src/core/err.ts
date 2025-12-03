@@ -164,11 +164,10 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @group Access
    * @param {string} message - Error message
    * @returns {never} Never returns
-   * @throws {Error} Always throws with message "Called expect on an Err value" and cause set to the error
+   * @throws {Error} Throws with custom message and original error as cause
    * @example
    * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.expect("should exist")
+   * Result.err(new Error("fail")).expect("should exist")
    * // throws Error("should exist", { cause: Error("fail") })
    * ```
    */
@@ -201,6 +200,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Extracts value or returns default.
    *
    * @group Recovery
+   * @see {@link unwrapOrElse} for computed default
    * @param {T} defaultValue - Fallback value
    * @returns {T} The default value
    * @example
@@ -218,6 +218,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Extracts value or computes default from error.
    *
    * @group Recovery
+   * @see {@link unwrapOr} for static default
    * @param {(error: E) => T} onError - Default value generator
    * @returns {T} Computed default value
    * @example
@@ -240,6 +241,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Transformation
    * @see {@link mapAsync} for async version
+   * @see {@link andThen} for chaining Results
    * @template U - Transformed value type
    * @template F - New error type (only when mapper returns Result)
    * @param {(value: T) => U | Result<U, F>} _mapper - Transformation function
@@ -262,6 +264,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Transforms value or returns default.
    *
    * @group Transformation
+   * @see {@link mapOrAsync} for async version
+   * @see {@link mapOrElse} for computed default
    * @template U - Transformed value type
    * @param {(value: T) => U} _mapper - Transformation function
    * @param {U} defaultValue - Fallback value
@@ -269,7 +273,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * ```ts
    * const result = Result.err(new Error("fail"))
-   * result.mapOr((e) => 0, 42)
+   * result.mapOr((x) => x * 2, 42)
    * // 42
    * ```
    */
@@ -281,6 +285,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Transforms value using appropriate mapper.
    *
    * @group Transformation
+   * @see {@link mapOrElseAsync} for async version
    * @template U - Transformed value type
    * @param {(value: T) => U} _okMapper - Success mapper
    * @param {(error: E) => U} errorMapper - Error mapper
@@ -300,6 +305,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Transforms error value.
    *
    * @group Transformation
+   * @see {@link mapErrAsync} for async version
    * @template F - New error type
    * @param {(error: E) => F} mapper - Error transformation function
    * @returns {Err<T, F>} Err with transformed error
@@ -318,12 +324,17 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Filters Ok value based on predicate.
    *
    * @group Transformation
+   * @see {@link isErrAnd} for validation without modification
    * @param predicate - Validation function
    * @returns This Err unchanged
    * @example
    * ```ts
-   * const result = Result.err("fail")
-   * result.filter((x) => x > 0)
+   * Result.err("fail").filter((x) => x > 0)
+   * // Err("fail")
+   * Result.err("fail").filter(
+   *   (x) => x > 0,
+   *   (x) => "rejected"
+   * )
    * // Err("fail")
    * ```
    */
@@ -333,13 +344,16 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Filters Ok value based on predicate with custom error.
    *
    * @group Transformation
+   * @see {@link isErrAnd} for validation without modification
    * @param {(value: T) => boolean} predicate - Validation function
    * @param {(value: T) => E} onReject - Function that generates error when predicate fails
    * @returns {Result<T, E>} This Err unchanged
    * @example
    * ```ts
-   * const result = Result.err("fail")
-   * result.filter((x) => x > 0, (x) => new Error("negative"))
+   * Result.err("fail").filter(
+   *   (x) => x > 0,
+   *   (x) => new Error("negative")
+   * )
    * // Err("fail")
    * ```
    */
@@ -373,14 +387,16 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Chains operation that returns Result.
    *
    * @group Chaining
+   * @see {@link andThenAsync} for async version
    * @template U - New success type
    * @param {(value: T) => Result<U, E>} _flatMapper - Chaining function
    * @returns {Err<U, E>} Err with same error, different value type
    * @example
    * ```ts
-   * const result = Result.err("fail")
-   * result.andThen((x) => Result.ok(x * 2))
+   * Result.err("fail").andThen((x) => Result.ok(x * 2))
    * // Err("fail")
+   * Result.err("fail").andThen((x) => Result.err("backup"))
+   * // Err("backup")
    * ```
    */
   andThen<U>(_flatMapper: (value: T) => Result<U, E>): Err<U, E> {
@@ -391,6 +407,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Returns this Result or executes error handler.
    *
    * @group Chaining
+   * @see {@link orElseAsync} for async version
+   * @see {@link or} for static alternative
    * @param {(error: E) => Result<T, E>} onError - Error recovery function
    * @returns {Result<T, E>} Result from error handler
    * @example
@@ -409,6 +427,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Returns second Result if this is Ok.
    *
    * @group Chaining
+   * @see {@link andAsync} for async version
    * @template U - Second Result success type
    * @param {Result<U, E>} _result - Result to return
    * @returns {Err<U, E>} Err with same error, different value type
@@ -416,6 +435,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * ```ts
    * Result.err("fail").and(Result.ok(42))
    * // Err("fail")
+   * Result.err("fail").and(Result.err("backup"))
+   * // Err("backup")
    * ```
    */
   and<U>(_result: Result<U, E>): Err<U, E> {
@@ -426,12 +447,16 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Returns this Result or alternative.
    *
    * @group Chaining
+   * @see {@link orAsync} for async version
+   * @see {@link orElse} for function-based alternative
    * @param {Result<T, E>} result - Alternative Result
    * @returns {Result<T, E>} The alternative Result
    * @example
    * ```ts
    * Result.err("fail").or(Result.ok(42))
    * // Ok(42)
+   * Result.err("fail").or(Result.err("backup"))
+   * // Err("backup")
    * ```
    */
   or(result: Result<T, E>): Result<T, E> {
@@ -486,6 +511,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Performs side effect on success value.
    *
    * @group Inspection
+   * @see {@link inspectErr} for error inspection
+   * @see {@link match} for pattern matching
    * @param {(value: T) => void} _visitor - Side effect function
    * @returns {Err<T, E>} This Err unchanged
    * @example
@@ -503,6 +530,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Performs side effect on error value.
    *
    * @group Inspection
+   * @see {@link inspect} for value inspection
    * @param {(error: E) => void} visitor - Side effect function
    * @returns {Err<T, E>} This Err instance for chaining
    * @example
@@ -551,6 +579,13 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // true
    * Result.err("fail").containsErr("other")
    * // false
+   * Result.err({ code: 500 }).containsErr({ code: 500 })
+   * // false (different object references)
+   * Result.err({ code: 500 }).containsErr(
+   *   { code: 500 },
+   *   (a, b) => a.code === b.code
+   * )
+   * // true (custom comparator)
    * ```
    */
   containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
@@ -601,6 +636,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * ```ts
    * Result.err("fail").toJSON()
    * // { type: "err", error: "fail" }
+   * JSON.stringify(Result.err("fail"))
+   * // '{"type":"err","error":"fail"}'
    * ```
    */
   toJSON(): { type: 'err'; error: E } {

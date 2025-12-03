@@ -13,5 +13,13 @@ export function isResult(value: unknown): boolean {
  * Useful for try/catch blocks where the error type is unknown.
  */
 export function unknownToError(error: unknown): Error {
-  return error instanceof Error ? error : new Error(String(error || 'Unknown error'))
+  if (error instanceof Error) {
+    return error
+  }
+
+  if (error === null || error === undefined) {
+    return new Error('Unknown error: null or undefined value')
+  }
+
+  return new Error(String(error))
 }

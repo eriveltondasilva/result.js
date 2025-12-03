@@ -197,6 +197,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Extracts value or returns default.
    *
    * @group Recovery
+   * @see {@link unwrapOrElse} for computed default
    * @param {T} _defaultValue - Fallback value (ignored for Ok)
    * @returns {T} The wrapped value
    * @example
@@ -214,6 +215,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Extracts value or computes default from error.
    *
    * @group Recovery
+   * @see {@link unwrapOr} for static default
    * @param {(error: E) => T} _onError - Default value generator
    * @returns {T} The wrapped value
    * @example
@@ -236,18 +238,24 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Transformation
    * @see {@link mapAsync} for async version
+   * @see {@link mapOr} for default value
+   * @see {@link andThen} for chaining Results
    * @template U - Transformed value type
    * @template F - New error type (only when mapper returns Result)
    * @param {(value: T) => U | Result<U, F>} mapper - Transformation function
    * @returns {Ok<U, E> | Result<U, E | F>} Ok with transformed value or flattened Result
    * @example
    * ```ts
-   * const result = Result.ok(5)
-   * result.map((x) => x * 2)
+   * Result.ok(5).map((x) => x * 2)
    * // Ok(10)
-   *
-   * result.map((x) => x > 0 ? Result.ok(x * 2) : Result.err("negative"))
-   * // Result<number, string>
+   * Result.ok(5).map(
+   *   (x) => x > 0 ? Result.ok(x * 2) : Result.err("negative")
+   * )
+   * // Ok(10)
+   * Result.ok(-5).map(
+   *   (x) => x > 0 ? Result.ok(x * 2) : Result.err("negative")
+   * )
+   * // Err("negative")
    * ```
    */
   map<U, F = never>(mapper: (value: T) => U | Result<U, F>): Ok<U, E> | Result<U, E | F> {
@@ -264,6 +272,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Transforms value or returns default.
    *
    * @group Transformation
+   * @see {@link mapOrAsync} for async version
+   * @see {@link mapOrElse} for computed default
    * @template U - Transformed value type
    * @param {(value: T) => U} mapper - Transformation function
    * @param {U} _defaultValue - Fallback value (ignored for Ok)
@@ -283,9 +293,10 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Transforms value using appropriate mapper.
    *
    * @group Transformation
+   * @see {@link mapOrElseAsync} for async version
    * @template U - Transformed value type
    * @param {(value: T) => U} okMapper - Success mapper
-   * @param {(error: E) => U} errorMapper - Error mapper
+   * @param {(error: E) => U} _errorMapper - Error mapper
    * @returns {U} Transformed value
    * @example
    * ```ts
@@ -302,6 +313,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Transforms error value.
    *
    * @group Transformation
+   * @see {@link mapErrAsync} for async version
    * @template F - New error type
    * @param {(error: E) => F} _mapper - Error transformation function
    * @returns {Ok<T, F>} Ok with same value, different error type
@@ -316,12 +328,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     return this as unknown as Ok<T, F>
   }
 
-  // ---
-
   /**
    * Filters Ok value based on predicate.
    *
    * @group Transformation
+   * @see {@link isOkAnd} for validation without modification
    * @param predicate - Validation function
    * @returns Ok if predicate passes, else Err with default error
    * @example
@@ -338,6 +349,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Filters Ok value based on predicate with custom error.
    *
    * @group Transformation
+   * @see {@link isOkAnd} for validation without modification
    * @param {(value: T) => boolean} predicate - Validation function
    * @param {(value: T) => E} onReject - Function that generates error when predicate fails
    * @returns {Result<T, E>} Ok if predicate passes, else Err
@@ -375,13 +387,23 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @template F - Inner Result error type
    * @param {Ok<Result<U, F>, E>} this - Nested Result
    * @returns {Result<U, E | F>} Flattened Result
+   * @throws {Error} Throws if the Ok value is not a Result
    * @example
    * ```ts
    * Result.ok(Result.ok(42)).flatten()
    * // Ok(42)
+   *
+   * Result.ok(Result.err("fail")).flatten()
+   * // Err("fail")
+   *
+   * Result.ok(42).flatten()
+   * // throws Error: flatten() called on Ok that does not contain a Result
    * ```
    */
   flatten<U, F>(this: Ok<Result<U, F>, E>): Result<U, E | F> {
+    if (!isResult(this.#value)) {
+      throw new Error('flatten() called on Ok that does not contain a Result')
+    }
     return this.#value
   }
 
@@ -393,6 +415,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Chains operation that returns Result.
    *
    * @group Chaining
+   * @see {@link andThenAsync} for async version
+   * @see {@link map} for auto-flattening alternative
    * @template U - New success type
    * @param {(value: T) => Result<U, E>} flatMapper - Chaining function
    * @returns {Result<U, E>} Result from flatMapper
@@ -412,6 +436,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Returns this Result or executes error handler.
    *
    * @group Chaining
+   * @see {@link orElseAsync} for async version
+   * @see {@link or} for static alternative
    * @param {(error: E) => Result<T, E>} _onError - Error recovery function
    * @returns {Ok<T, E>} This Ok instance
    * @example
@@ -428,6 +454,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Returns second Result if this is Ok.
    *
    * @group Chaining
+   * @see {@link andAsync} for async version
+   * @see {@link andThen} for function-based chaining
    * @template U - Second Result success type
    * @param {Result<U, E>} result - Result to return
    * @returns {Result<U, E>} The provided Result
@@ -447,11 +475,15 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Returns this Result or alternative.
    *
    * @group Chaining
+   * @see {@link orAsync} for async version
+   * @see {@link orElse} for function-based alternative
    * @param {Result<T, E>} _result - Alternative Result (ignored for Ok)
    * @returns {Ok<T, E>} This Ok instance
    * @example
    * ```ts
    * Result.ok(1).or(Result.ok(2))
+   * // Ok(1)
+   * Result.ok(1).or(Result.err("fail"))
    * // Ok(1)
    * ```
    */
@@ -462,10 +494,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Combines two Results into tuple.
    *
+   * @group Chaining
    * @template U - Second Result success type
    * @template F - Second Result error type
    * @param {Result<U, F>} result - Result to zip with
-   * @returns {Result<[T, U], E | F>} Ok with tuple or first Err
+   * @returns {Result<[T, U], E | F>} Ok with tuple [this, other] or first Err
    * @example
    * Result.ok(1).zip(Result.ok(2))
    * // Ok([1, 2])
@@ -510,6 +543,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Performs side effect on success value.
    *
    * @group Inspection
+   * @see {@link inspectErr} for error inspection
+   * @see {@link match} for pattern matching
    * @param {(value: T) => void} visitor - Side effect function
    * @returns {Ok<T, E>} This Ok instance for chaining
    * @example
@@ -527,6 +562,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Performs side effect on error value.
    *
    * @group Inspection
+   * @see {@link inspect} for value inspection
    * @param {(error: E) => void} _visitor - Side effect function
    * @returns {Ok<T, E>} This Ok instance unchanged
    * @example
@@ -556,6 +592,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // true
    * Result.ok(42).contains(99)
    * // false
+   * Result.ok({ id: 1 }).contains(
+   *   { id: 1 },
+   *   (a, b) => a.id === b.id
+   * )
+   * // true
    * ```
    */
   contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean {
@@ -621,9 +662,10 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @returns {{ type: 'ok'; value: T }} JSON representation
    * @example
    * ```ts
-   * const result = Result.ok(42)
-   * result.toJSON()
+   * Result.ok(42).toJSON()
    * // { type: 'ok', value: 42 }
+   * JSON.stringify(Result.ok(42))
+   * // '{"type":"ok","value":42}'
    * ```
    */
   toJSON(): { type: 'ok'; value: T } {
@@ -644,12 +686,12 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @returns {Promise<Ok<U, E> | Result<U, E | F>>} Promise of Ok with transformed value or flattened Result
    * @example
    * ```ts
-   * const result = Result.ok(5)
-   * await result.mapAsync(async (x) => x * 2)
-   * // Ok(10)
-   *
-   * await result.mapAsync(async (x) => x > 0 ? Result.ok(x * 2) : Result.err("negative"))
-   * // Ok(10)
+   * Result.ok(5).mapAsync(async (x) => x * 2)
+   * // Promise<Ok(10)>
+   * Result.ok(5).mapAsync(async (x) => Result.ok(x * 2))
+   * // Promise<Ok(10)>
+   * Result.ok(5).mapAsync(async (x) => Result.err("fail"))
+   * // Promise<Err("fail")>
    * ```
    */
   async mapAsync<U, F = never>(
