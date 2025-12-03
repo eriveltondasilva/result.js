@@ -1,12 +1,6 @@
 import { Err } from './err.js'
 import type { Result, ResultMethods } from './types.js'
-import {
-  assertFunction,
-  assertMatchHandlers,
-  assertPromise,
-  assertResult,
-  isResult,
-} from './utils.js'
+import { isResult } from './utils.js'
 
 /**
  * Represents a successful Result containing a value.
@@ -77,7 +71,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   isOkAnd(predicate: (value: T) => boolean): this is Ok<T, never> {
-    assertFunction(predicate, 'Result.isOkAnd', 'predicate')
     return predicate(this.#value)
   }
 
@@ -85,17 +78,14 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Checks if Result is Err and error satisfies predicate.
    *
    * @group Validation
-   * @param {(error: E) => boolean} predicate - Validation function
+   * @param {(error: E) => boolean} _predicate - Validation function
    * @returns {boolean} Always false for Ok
    */
-  isErrAnd(predicate: (error: E) => boolean): this is Err<never, E> {
-    assertFunction(predicate, 'Result.isErrAnd', 'predicate')
+  isErrAnd(_predicate: (error: E) => boolean): this is Err<never, E> {
     return false
   }
 
   // #endregion
-
-  // ---
 
   // #region ACCESS
 
@@ -201,8 +191,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // ---
-
   // #region RECOVERY
 
   /**
@@ -226,7 +214,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Extracts value or computes default from error.
    *
    * @group Recovery
-   * @param {(error: E) => T} onError - Default value generator
+   * @param {(error: E) => T} _onError - Default value generator
    * @returns {T} The wrapped value
    * @example
    * ```ts
@@ -235,14 +223,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // 42
    * ```
    */
-  unwrapOrElse(onError: (error: E) => T): T {
-    assertFunction(onError, 'Result.unwrapOrElse', 'onError')
+  unwrapOrElse(_onError: (error: E) => T): T {
     return this.#value
   }
 
   // #endregion
-
-  // ---
 
   // #region TRANSFORMATION
 
@@ -266,7 +251,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   map<U, F = never>(mapper: (value: T) => U | Result<U, F>): Ok<U, E> | Result<U, E | F> {
-    assertFunction(mapper, 'Result.map', 'mapper')
     const mapped = mapper(this.#value)
 
     if (isResult(mapped)) {
@@ -292,7 +276,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   mapOr<U>(mapper: (value: T) => U, _defaultValue: U): U {
-    assertFunction(mapper, 'Result.mapOr', 'mapper')
     return mapper(this.#value)
   }
 
@@ -311,9 +294,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // 10
    * ```
    */
-  mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U {
-    assertFunction(okMapper, 'Result.mapOrElse', 'okMapper')
-    assertFunction(errorMapper, 'Result.mapOrElse', 'errorMapper')
+  mapOrElse<U>(okMapper: (value: T) => U, _errorMapper: (error: E) => U): U {
     return okMapper(this.#value)
   }
 
@@ -322,7 +303,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Transformation
    * @template F - New error type
-   * @param {(error: E) => F} mapper - Error transformation function
+   * @param {(error: E) => F} _mapper - Error transformation function
    * @returns {Ok<T, F>} Ok with same value, different error type
    * @example
    * ```ts
@@ -331,8 +312,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok(42)
    * ```
    */
-  mapErr<F>(mapper: (error: E) => F): Ok<T, F> {
-    assertFunction(mapper, 'Result.mapErr', 'mapper')
+  mapErr<F>(_mapper: (error: E) => F): Ok<T, F> {
     return this as unknown as Ok<T, F>
   }
 
@@ -377,9 +357,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     predicate: (value: T) => boolean,
     onReject?: (value: T) => E | Error
   ): Result<T, E | Error> {
-    assertFunction(predicate, 'Result.filter', 'predicate')
-    onReject && assertFunction(onReject, 'Result.filter', 'onReject')
-
     if (!predicate(this.#value)) {
       const error = onReject
         ? onReject(this.#value)
@@ -410,8 +387,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // ---
-
   // #region CHAINING
 
   /**
@@ -430,7 +405,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E> {
-    assertFunction(flatMapper, 'Result.andThen', 'flatMapper')
     return flatMapper(this.#value)
   }
 
@@ -438,7 +412,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Returns this Result or executes error handler.
    *
    * @group Chaining
-   * @param {(error: E) => Result<T, E>} onError - Error recovery function
+   * @param {(error: E) => Result<T, E>} _onError - Error recovery function
    * @returns {Ok<T, E>} This Ok instance
    * @example
    * ```ts
@@ -446,8 +420,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok(42)
    * ```
    */
-  orElse(onError: (error: E) => Result<T, E>): Ok<T, E> {
-    assertFunction(onError, 'Result.orElse', 'onError')
+  orElse(_onError: (error: E) => Result<T, E>): Ok<T, E> {
     return this
   }
 
@@ -467,7 +440,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   and<U>(result: Result<U, E>): Result<U, E> {
-    assertResult(result, 'Result.and')
     return result
   }
 
@@ -484,7 +456,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   or(_result: Result<T, E>): Ok<T, E> {
-    assertResult(_result, 'Result.or')
     return this
   }
 
@@ -502,8 +473,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Err("fail")
    */
   zip<U, F>(result: Result<U, F>): Result<[T, U], E | F> {
-    assertResult(result, 'Result.zip')
-
     if (result.isErr()) {
       return new Err<[T, U], E | F>(result.unwrapErr())
     }
@@ -512,8 +481,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   }
 
   // #endregion
-
-  // ---
 
   // #region INSPECTION
 
@@ -536,7 +503,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
-    assertMatchHandlers(handlers, 'Result.match')
     return handlers.ok(this.#value)
   }
 
@@ -553,7 +519,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   inspect(visitor: (value: T) => void): Ok<T, E> {
-    assertFunction(visitor, 'Result.inspect', 'visitor')
     visitor(this.#value)
     return this
   }
@@ -562,7 +527,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Performs side effect on error value.
    *
    * @group Inspection
-   * @param {(error: E) => void} visitor - Side effect function
+   * @param {(error: E) => void} _visitor - Side effect function
    * @returns {Ok<T, E>} This Ok instance unchanged
    * @example
    * ```ts
@@ -570,14 +535,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok(42)
    * ```
    */
-  inspectErr(visitor: (error: E) => void): Ok<T, E> {
-    assertFunction(visitor, 'Result.inspectErr', 'visitor')
+  inspectErr(_visitor: (error: E) => void): Ok<T, E> {
     return this
   }
 
   // #endregion
-
-  // ---
 
   // #region COMPARISON
 
@@ -597,7 +559,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean {
-    comparator && assertFunction(comparator, 'Result.contains', 'comparator')
     return comparator ? comparator(this.#value, value) : this.#value === value
   }
 
@@ -606,7 +567,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Comparison
    * @param {E} _error - Error to compare (ignored for Ok)
-   * @param {(actual: E, expected: E) => boolean} [comparator] - Custom comparison function
+   * @param {(actual: E, expected: E) => boolean} [_comparator] - Custom comparison function
    * @returns {boolean} Always false for Ok
    * @example
    * ```ts
@@ -614,14 +575,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // false
    * ```
    */
-  containsErr(_error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
-    comparator && assertFunction(comparator, 'Result.containsErr', 'comparator')
+  containsErr(_error: E, _comparator?: (actual: E, expected: E) => boolean): boolean {
     return false
   }
 
   // #endregion
-
-  // ---
 
   // #region CONVERSION
 
@@ -674,8 +632,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // ---
-
   // #region ASYNC OPERATIONS
 
   /**
@@ -699,7 +655,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   async mapAsync<U, F = never>(
     mapperAsync: (value: T) => Promise<U | Result<U, F>>
   ): Promise<Ok<U, E> | Result<U, E | F>> {
-    assertFunction(mapperAsync, 'Result.mapAsync', 'mapperAsync')
     const mapped = await mapperAsync(this.#value)
 
     if (isResult(mapped)) {
@@ -714,7 +669,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template F - New error type
-   * @param {(error: E) => Promise<F>} mapperAsync - Async error transformation
+   * @param {(error: E) => Promise<F>} _mapperAsync - Async error transformation
    * @returns {Promise<Ok<T, F>>} Promise of Ok with same value
    * @example
    * ```ts
@@ -723,8 +678,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok(5)
    * ```
    */
-  mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): Promise<Ok<T, F>> {
-    assertFunction(mapperAsync, 'Result.mapErrAsync', 'mapperAsync')
+  mapErrAsync<F>(_mapperAsync: (error: E) => Promise<F>): Promise<Ok<T, F>> {
     return Promise.resolve(this as unknown as Ok<T, F>)
   }
 
@@ -744,7 +698,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, _defaultValue: U): Promise<U> {
-    assertFunction(mapperAsync, 'Result.mapOrAsync', 'mapperAsync')
     return mapperAsync(this.#value)
   }
 
@@ -754,7 +707,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @group Async Operations
    * @template U - Transformed value type
    * @param {(value: T) => Promise<U>} okMapperAsync - Async success mapper
-   * @param {(error: E) => Promise<U>} errMapperAsync - Async error mapper
+   * @param {(error: E) => Promise<U>} _errMapperAsync - Async error mapper
    * @returns {Promise<U>} Promise of transformed value
    * @example
    * ```ts
@@ -768,10 +721,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    */
   mapOrElseAsync<U>(
     okMapperAsync: (value: T) => Promise<U>,
-    errMapperAsync: (error: E) => Promise<U>
+    _errMapperAsync: (error: E) => Promise<U>
   ): Promise<U> {
-    assertFunction(okMapperAsync, 'Result.mapOrElseAsync', 'okMapperAsync')
-    assertFunction(errMapperAsync, 'Result.mapOrElseAsync', 'errMapperAsync')
     return okMapperAsync(this.#value)
   }
 
@@ -792,7 +743,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   andThenAsync<U>(flatMapperAsync: (value: T) => Promise<Result<U, E>>): Promise<Result<U, E>> {
-    assertFunction(flatMapperAsync, 'Result.andThenAsync', 'flatMapperAsync')
     return flatMapperAsync(this.#value)
   }
 
@@ -811,7 +761,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   andAsync<U>(result: Promise<Result<U, E>>): Promise<Result<U, E>> {
-    assertPromise(result, 'Result.andAsync', 'result')
     return result
   }
 
@@ -829,7 +778,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * ```
    */
   orAsync(_result: Promise<Result<T, E>>): Promise<Ok<T, E>> {
-    assertPromise(_result, 'Result.orAsync', 'result')
     return Promise.resolve(this)
   }
 
@@ -837,7 +785,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Returns this Result or executes async error handler.
    *
    * @group Async Operations
-   * @param {(error: E) => Promise<Result<T, E>>} onErrorAsync - Async error recovery
+   * @param {(error: E) => Promise<Result<T, E>>} _onErrorAsync - Async error recovery
    * @returns {Promise<Ok<T, E>>} Promise of this Ok
    * @example
    * ```ts
@@ -846,14 +794,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok(5)
    * ```
    */
-  orElseAsync(onErrorAsync: (error: E) => Promise<Result<T, E>>): Promise<Ok<T, E>> {
-    assertFunction(onErrorAsync, 'Result.orElseAsync', 'onErrorAsync')
+  orElseAsync(_onErrorAsync: (error: E) => Promise<Result<T, E>>): Promise<Ok<T, E>> {
     return Promise.resolve(this)
   }
 
   // #endregion
-
-  // ---
 
   // #region METADATA
 
