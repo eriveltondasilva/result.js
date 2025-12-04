@@ -2,20 +2,20 @@
 import { describe, expect, it } from 'vitest'
 
 import { Err } from './err.js'
-import { Ok } from './ok.js'
 import {
-  createOk,
-  createErr,
-  createIsResult,
-  createValidate,
-  createFromTry,
-  createFromNullable,
-  createAll,
-  createAny,
-  createPartition,
-  createAllSettled,
-  createFromPromise,
+  all,
+  allSettled,
+  any,
+  err,
+  fromNullable,
+  fromPromise,
+  fromTry,
+  isResult,
+  ok,
+  partition,
+  validate,
 } from './factories.js'
+import { Ok } from './ok.js'
 
 import { expectErr, expectOk } from './test-helpers.js'
 
@@ -25,22 +25,22 @@ describe('Factories', () => {
     it.each([
       {
         name: 'ok with value',
-        fn: () => createOk(42),
+        fn: () => ok(42),
         check: (r: any) => expectOk(r) === 42,
       },
       {
         name: 'ok with null',
-        fn: () => createOk(null),
+        fn: () => ok(null),
         check: (r: any) => expectOk(r) === null,
       },
       {
         name: 'err with Error',
-        fn: () => createErr(new Error('Failed')),
+        fn: () => err(new Error('Failed')),
         check: (r: any) => expectErr(r) instanceof Error,
       },
       {
         name: 'err with string',
-        fn: () => createErr('error'),
+        fn: () => err('error'),
         check: (r: any) => expectErr(r) === 'error',
       },
     ])('should create $name', ({ fn, check }) => {
@@ -57,7 +57,7 @@ describe('Factories', () => {
       { value: null, expected: false },
       { value: { ok: 42 }, expected: false },
     ])('should validate isResult for $value', ({ value, expected }) => {
-      expect(createIsResult(value)).toBe(expected)
+      expect(isResult(value)).toBe(expected)
     })
   })
 
@@ -71,7 +71,7 @@ describe('Factories', () => {
       { value: null, isOk: false, result: 'Value is null or undefined' },
       { value: undefined, isOk: false, result: 'Value is null or undefined' },
     ])('should handle $value', ({ value, isOk, result }) => {
-      const r = createFromNullable(value)
+      const r = fromNullable(value)
 
       if (isOk) {
         expect(expectOk(r)).toBe(result)
@@ -81,22 +81,22 @@ describe('Factories', () => {
     })
 
     it('should use custom error mapper', () => {
-      const result = createFromNullable(null, () => new Error('Custom'))
+      const result = fromNullable(null, () => new Error('Custom'))
       expect(expectErr(result).message).toBe('Custom')
     })
   })
 
   describe('validate', () => {
     it('should validate based on predicate', () => {
-      const valid = createValidate(42, (x) => x > 0)
-      const invalid = createValidate(-1, (x) => x > 0)
+      const valid = validate(42, (x) => x > 0)
+      const invalid = validate(-1, (x) => x > 0)
 
       expect(expectOk(valid)).toBe(42)
       expect(expectErr(invalid).message).toContain('Validation failed')
     })
 
     it('should use custom error mapper with value', () => {
-      const result = createValidate(
+      const result = validate(
         5,
         (x) => x > 10,
         (value) => new Error(`Expected > 10, got ${value}`)
@@ -107,7 +107,7 @@ describe('Factories', () => {
 
     it('should validate complex predicates', () => {
       const person = { age: 25, name: 'John' }
-      const result = createValidate(person, (p) => p.age >= 18 && p.name.length > 0)
+      const result = validate(person, (p) => p.age >= 18 && p.name.length > 0)
 
       expect(expectOk(result)).toBe(person)
     })
@@ -115,8 +115,8 @@ describe('Factories', () => {
 
   describe('fromTry', () => {
     it('should handle success and failure', () => {
-      const success = createFromTry(() => 42)
-      const failure = createFromTry(() => {
+      const success = fromTry(() => 42)
+      const failure = fromTry(() => {
         throw new Error('Failed')
       })
 
@@ -125,15 +125,15 @@ describe('Factories', () => {
     })
 
     it('should handle JSON parsing', () => {
-      const valid = createFromTry(() => JSON.parse('{"a":1}'))
-      const invalid = createFromTry(() => JSON.parse('invalid'))
+      const valid = fromTry(() => JSON.parse('{"a":1}'))
+      const invalid = fromTry(() => JSON.parse('invalid'))
 
       expect(expectOk(valid)).toEqual({ a: 1 })
       expect(expectErr(invalid)).toBeInstanceOf(SyntaxError)
     })
 
     it('should use custom error mapper', () => {
-      const result = createFromTry(
+      const result = fromTry(
         () => JSON.parse('invalid'),
         (error) => `Parse error: ${(error as Error).message}`
       )
@@ -145,7 +145,7 @@ describe('Factories', () => {
       { thrown: 'string error', expected: 'string error' },
       { thrown: null, isError: true },
     ])('should handle non-Error throws', ({ thrown, expected, isError }) => {
-      const result = createFromTry(() => {
+      const result = fromTry(() => {
         throw thrown
       })
       const err = expectErr(result)
@@ -161,26 +161,26 @@ describe('Factories', () => {
   // ==================== COMBINATION ====================
   describe('all', () => {
     it('should combine all Ok values', () => {
-      const results = [createOk(1), createOk(2), createOk(3)]
-      expect(expectOk(createAll(results))).toEqual([1, 2, 3])
+      const results = [ok(1), ok(2), ok(3)]
+      expect(expectOk(all(results))).toEqual([1, 2, 3])
     })
 
     it('should return first Err', () => {
-      const results = [createOk(1), createErr(new Error('First')), createErr(new Error('Second'))]
+      const results = [ok(1), err(new Error('First')), err(new Error('Second'))]
 
-      expect(expectErr(createAll(results)).message).toBe('First')
+      expect(expectErr(all(results)).message).toBe('First')
     })
 
     it.each([
       { results: [], expected: [] },
-      { results: [createOk(42)], expected: [42] },
+      { results: [ok(42)], expected: [42] },
     ])('should handle edge case: $results.length items', ({ results, expected }) => {
-      expect(expectOk(createAll(results as any))).toEqual(expected)
+      expect(expectOk(all(results as any))).toEqual(expected)
     })
 
     it('should preserve types in tuple', () => {
-      const results = [createOk(1), createOk('hello'), createOk(true)] as const
-      const [num, str, bool] = expectOk(createAll(results))
+      const results = [ok(1), ok('hello'), ok(true)] as const
+      const [num, str, bool] = expectOk(all(results))
 
       expect(typeof num).toBe('number')
       expect(typeof str).toBe('string')
@@ -190,34 +190,29 @@ describe('Factories', () => {
 
   describe('any', () => {
     it('should return first Ok', () => {
-      const results = [createErr(new Error('First')), createOk(42), createOk(100)]
+      const results = [err(new Error('First')), ok(42), ok(100)]
 
-      expect(expectOk(createAny(results))).toBe(42)
+      expect(expectOk(any(results))).toBe(42)
     })
 
     it('should collect all errors when all are Err', () => {
-      const results = [createErr(new Error('First')), createErr(new Error('Second'))]
+      const results = [err(new Error('First')), err(new Error('Second'))]
 
-      const errors = expectErr(createAny(results)) as Error[]
+      const errors = expectErr(any(results)) as Error[]
       expect(errors).toHaveLength(2)
       expect(errors.map((e) => e.message)).toEqual(['First', 'Second'])
     })
 
     it('should handle empty array', () => {
-      expect(expectErr(createAny([]))).toEqual([])
+      expect(expectErr(any([]))).toEqual([])
     })
   })
 
   describe('partition', () => {
     it('should separate Ok and Err values', () => {
-      const results = [
-        createOk(1),
-        createErr(new Error('First')),
-        createOk(2),
-        createErr(new Error('Second')),
-      ]
+      const results = [ok(1), err(new Error('First')), ok(2), err(new Error('Second'))]
 
-      const [oks, errs] = createPartition(results)
+      const [oks, errs] = partition(results)
 
       expect(oks).toEqual([1, 2])
       expect(errs.map((e) => e.message)).toEqual(['First', 'Second'])
@@ -226,19 +221,19 @@ describe('Factories', () => {
     it.each([
       {
         name: 'all Ok',
-        results: [createOk(1), createOk(2)],
+        results: [ok(1), ok(2)],
         oks: [1, 2],
         errs: [],
       },
       {
         name: 'all Err',
-        results: [createErr('a'), createErr('b')],
+        results: [err('a'), err('b')],
         oks: [],
         errs: ['a', 'b'],
       },
       { name: 'empty', results: [], oks: [], errs: [] },
     ])('should handle $name', ({ results, oks, errs }) => {
-      const [okValues, errValues] = createPartition(results as any)
+      const [okValues, errValues] = partition(results as any)
       expect(okValues).toEqual(oks)
       expect(errValues).toEqual(errs)
     })
@@ -246,9 +241,9 @@ describe('Factories', () => {
 
   describe('allSettled', () => {
     it('should transform all results to settled format', () => {
-      const results = [createOk(1), createErr(new Error('Failed')), createOk(2)]
+      const results = [ok(1), err(new Error('Failed')), ok(2)]
 
-      const settled = expectOk(createAllSettled(results))
+      const settled = expectOk(allSettled(results))
 
       expect(settled).toHaveLength(3)
       expect(settled[0]).toEqual({ status: 'ok', value: 1 })
@@ -259,7 +254,7 @@ describe('Factories', () => {
     it.each([
       {
         name: 'all Ok',
-        results: [createOk(1), createOk(2)],
+        results: [ok(1), ok(2)],
         expected: [
           { status: 'ok', value: 1 },
           { status: 'ok', value: 2 },
@@ -267,7 +262,7 @@ describe('Factories', () => {
       },
       {
         name: 'all Err',
-        results: [createErr('a'), createErr('b')],
+        results: [err('a'), err('b')],
         expected: [
           { status: 'err', reason: 'a' },
           { status: 'err', reason: 'b' },
@@ -275,14 +270,14 @@ describe('Factories', () => {
       },
       { createAe: 'empty', results: [], expected: [] },
     ])('should handle $name', ({ results, expected }) => {
-      const settled = expectOk(createAllSettled(results as any))
+      const settled = expectOk(allSettled(results as any))
       expect(settled).toEqual(expected)
     })
 
     it('should always return Ok with settled results', () => {
-      const results = [createErr(new Error('1')), createErr(new Error('2'))]
+      const results = [err(new Error('1')), err(new Error('2'))]
 
-      const result = createAllSettled(results)
+      const result = allSettled(results)
 
       expect(result.isOk()).toBe(true)
       expect(expectOk(result)).toHaveLength(2)
@@ -292,8 +287,8 @@ describe('Factories', () => {
   //# ==================== ASYNC OPERATIONS ====================
   describe('fromPromise', () => {
     it('should handle resolution and rejection', async () => {
-      const success = await createFromPromise(async () => 42)
-      const failure = await createFromPromise(async () => {
+      const success = await fromPromise(async () => 42)
+      const failure = await fromPromise(async () => {
         throw new Error('Failed')
       })
 
@@ -302,7 +297,7 @@ describe('Factories', () => {
     })
 
     it('should handle async operations', async () => {
-      const result = await createFromPromise(async () => {
+      const result = await fromPromise(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10))
         return { data: 'response' }
       })
@@ -311,7 +306,7 @@ describe('Factories', () => {
     })
 
     it('should use custom error mapper', async () => {
-      const result = await createFromPromise(
+      const result = await fromPromise(
         async () => {
           throw new Error('Network error')
         },
@@ -326,7 +321,7 @@ describe('Factories', () => {
       { thrown: null, isError: true },
       { thrown: undefined, isError: true },
     ])('should handle non-Error throws: $thrown', async ({ thrown, expected, isError }) => {
-      const result = await createFromPromise(async () => {
+      const result = await fromPromise(async () => {
         throw thrown
       })
       const err = expectErr(result)
@@ -344,7 +339,7 @@ describe('Factories', () => {
         message: string
       }
 
-      const result = await createFromPromise(
+      const result = await fromPromise(
         async () => {
           throw new Error('404: Not found')
         },
@@ -365,7 +360,7 @@ describe('Factories', () => {
       { value: null, name: 'null' },
       { value: undefined, name: 'undefined' },
     ])('should handle Promise.resolve with $name', async ({ value }) => {
-      const result = await createFromPromise(() => Promise.resolve(value))
+      const result = await fromPromise(() => Promise.resolve(value))
       expect(expectOk(result)).toBe(value)
     })
   })
@@ -373,8 +368,8 @@ describe('Factories', () => {
   // ==================== INTEGRATION ====================
   describe('Integration', () => {
     it('should compose fromTry with async context', async () => {
-      const result = await createFromPromise(async () => {
-        const parsed = createFromTry(() => JSON.parse('{"value":42}'))
+      const result = await fromPromise(async () => {
+        const parsed = fromTry(() => JSON.parse('{"value":42}'))
         return expectOk(parsed)
       })
 
@@ -382,16 +377,16 @@ describe('Factories', () => {
     })
 
     it('should chain async and sync operations', async () => {
-      const result = await createFromPromise(async () => '{"value":42}')
-        .then((r) => r.andThen((json) => createFromTry(() => JSON.parse(json))))
+      const result = await fromPromise(async () => '{"value":42}')
+        .then((r) => r.andThen((json) => fromTry(() => JSON.parse(json))))
         .then((r) => r.map((obj) => obj.value))
 
       expect(expectOk(result)).toBe(42)
     })
 
     it('should compose multiple factory methods', () => {
-      const result = createFromTry(() => JSON.parse('{"value":42}'))
-        .andThen((obj) => createValidate(obj.value, (x) => x > 0))
+      const result = fromTry(() => JSON.parse('{"value":42}'))
+        .andThen((obj) => validate(obj.value, (x) => x > 0))
         .map((x) => x * 2)
 
       expect(expectOk(result)).toBe(84)
@@ -401,7 +396,7 @@ describe('Factories', () => {
       type User = { name: string; age: number; email: string }
 
       const validateUser = (user: User) =>
-        createValidate(
+        validate(
           user,
           (u) => u.age >= 18 && u.name.length > 0 && u.email.includes('@'),
           (u) => new Error(`Invalid user: ${JSON.stringify(u)}`)
@@ -415,9 +410,9 @@ describe('Factories', () => {
     })
 
     it('should compose async operations', async () => {
-      const fetchUser = () => createFromPromise(async () => ({ id: 1, name: 'John' }))
+      const fetchUser = () => fromPromise(async () => ({ id: 1, name: 'John' }))
       const fetchPosts = (userId: number) =>
-        createFromPromise(async () => [{ id: 1, userId, title: 'Post 1' }])
+        fromPromise(async () => [{ id: 1, userId, title: 'Post 1' }])
 
       const result = await fetchUser().then((r) => r.andThenAsync((user) => fetchPosts(user.id)))
 
@@ -428,23 +423,23 @@ describe('Factories', () => {
   // ==================== EDGE CASES ====================
   describe('Edge Cases', () => {
     it('should handle nested Results in all', () => {
-      const results = [createOk(createOk(1)), createOk(createOk(2))]
-      const values = expectOk(createAll(results))
+      const results = [ok(ok(1)), ok(ok(2))]
+      const values = expectOk(all(results))
 
       expect(expectOk(values[0])).toBe(1)
       expect(expectOk(values[1])).toBe(2)
     })
 
     it('should handle large arrays', () => {
-      const results = Array.from({ length: 1000 }, (_, i) => createOk(i))
-      expect(expectOk(createAll(results))).toHaveLength(1000)
+      const results = Array.from({ length: 1000 }, (_, i) => ok(i))
+      expect(expectOk(all(results))).toHaveLength(1000)
     })
 
     it('should compose parseAndValidate pattern', () => {
       const parseAndValidate = (json: string) =>
-        createFromTry(() => JSON.parse(json))
-          .andThen((data) => createFromNullable(data.value))
-          .andThen((value) => createValidate(value, (x) => typeof x === 'number'))
+        fromTry(() => JSON.parse(json))
+          .andThen((data) => fromNullable(data.value))
+          .andThen((value) => validate(value, (x) => typeof x === 'number'))
 
       expect(parseAndValidate('{"value":42}').isOk()).toBe(true)
       expect(parseAndValidate('{"value":null}').isErr()).toBe(true)

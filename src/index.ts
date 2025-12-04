@@ -1,24 +1,25 @@
 import {
-  createOk,
-  createErr,
-  createFromTry,
-  createFromPromise,
-  createFromNullable,
-  createValidate,
-  createIsResult,
-  createAll,
-  createAny,
-  createPartition,
-  createAllSettled,
+  all,
+  allSettled,
+  any,
+  err,
+  fromNullable,
+  fromPromise,
+  fromTry,
+  isResult,
+  ok,
+  partition,
+  validate,
 } from './core/factories.js'
 
-export type { AsyncResultType, ResultType } from './core/types.js'
+export type { AsyncResultType, ResultMethods, ResultType } from './core/types.js'
 
 /**
  * Result factory methods and utilities for error handling.
  *
- * @namespace
  * @readonly
+ * @namespace Result
+ * @group Core
  *
  * @example
  * const result = Result.ok(42)
@@ -31,17 +32,17 @@ export type { AsyncResultType, ResultType } from './core/types.js'
  * // {a: 1}
  */
 export const Result = Object.freeze({
-  ok: createOk,
-  err: createErr,
-  fromTry: createFromTry,
-  fromPromise: createFromPromise,
-  fromNullable: createFromNullable,
-  validate: createValidate,
-  isResult: createIsResult,
-  all: createAll,
-  any: createAny,
-  partition: createPartition,
-  allSettled: createAllSettled,
+  ok,
+  err,
+  fromTry,
+  fromPromise,
+  fromNullable,
+  validate,
+  isResult,
+  all,
+  any,
+  partition,
+  allSettled,
 } as const)
 
 export default Result

@@ -28,7 +28,7 @@ import { unknownToError } from './utils.js'
  * // Ok(42)
  * ```
  */
-function createOk<T, E = never>(value: T): Ok<T, E> {
+export function ok<T, E = never>(value: T): Ok<T, E> {
   return new Ok(value)
 }
 
@@ -46,7 +46,7 @@ function createOk<T, E = never>(value: T): Ok<T, E> {
  * // Err(Error: fail)
  * ```
  */
-function createErr<T = never, E = Error>(error: E): Err<T, E> {
+export function err<T = never, E = Error>(error: E): Err<T, E> {
   return new Err(error)
 }
 
@@ -72,7 +72,7 @@ function createErr<T = never, E = Error>(error: E): Err<T, E> {
  * // Err(Error: Validation failed for value: 3)
  * ```
  */
-function createValidate<T>(value: T, predicate: (value: T) => boolean): ResultType<T, Error>
+export function validate<T>(value: T, predicate: (value: T) => boolean): ResultType<T, Error>
 
 /**
  * Creates Result by validating value with custom error.
@@ -102,13 +102,13 @@ function createValidate<T>(value: T, predicate: (value: T) => boolean): ResultTy
  * // Err(Error: Value 3 is not greater than 5)
  * ```
  */
-function createValidate<T, E>(
+export function validate<T, E>(
   value: T,
   predicate: (value: T) => boolean,
   onError: (value: T) => E
 ): ResultType<T, E>
 
-function createValidate<T, E = Error>(
+export function validate<T, E = Error>(
   value: T,
   predicate: (value: T) => boolean,
   onError?: (value: T) => E | Error
@@ -140,7 +140,7 @@ function createValidate<T, E = Error>(
  * // Err(Error: Value is null or undefined)
  * ```
  */
-function createFromNullable<T>(value: T | null | undefined): ResultType<NonNullable<T>, Error>
+export function fromNullable<T>(value: T | null | undefined): ResultType<NonNullable<T>, Error>
 
 /**
  * Creates Result from nullable value with custom error.
@@ -167,12 +167,12 @@ function createFromNullable<T>(value: T | null | undefined): ResultType<NonNulla
  * // Err(Error: Custom error)
  * ```
  */
-function createFromNullable<T, E>(
+export function fromNullable<T, E>(
   value: T | null | undefined,
   onError: () => E
 ): ResultType<NonNullable<T>, E>
 
-function createFromNullable<T, E = Error>(
+export function fromNullable<T, E = Error>(
   value: T | null | undefined,
   onError?: () => E
 ): ResultType<NonNullable<T>, E | Error> {
@@ -201,7 +201,7 @@ function createFromNullable<T, E = Error>(
  * Result.isResult(42)
  * // false
  */
-function createIsResult(value: unknown): value is ResultType<unknown, unknown> {
+export function isResult(value: unknown): value is ResultType<unknown, unknown> {
   return value instanceof Ok || value instanceof Err
 }
 
@@ -228,7 +228,7 @@ function createIsResult(value: unknown): value is ResultType<unknown, unknown> {
  * )
  * // Err(SyntaxError: JSON Parse error: Unexpected identifier "invalid")
  */
-function createFromTry<T>(executor: () => T): ResultType<T, Error>
+export function fromTry<T>(executor: () => T): ResultType<T, Error>
 
 /**
  * Wraps function execution in Result with custom error handler.
@@ -249,9 +249,9 @@ function createFromTry<T>(executor: () => T): ResultType<T, Error>
  * // Err(Error: Custom error)
  * ```
  */
-function createFromTry<T, E>(executor: () => T, onError: (error: unknown) => E): ResultType<T, E>
+export function fromTry<T, E>(executor: () => T, onError: (error: unknown) => E): ResultType<T, E>
 
-function createFromTry<T, E>(
+export function fromTry<T, E>(
   executor: () => T,
   onError?: (error: unknown) => E
 ): ResultType<T, E | Error> {
@@ -284,7 +284,7 @@ function createFromTry<T, E>(
  * // Ok(response) or Err(Error: Network error)
  * ```
  */
-async function createFromPromise<T>(executor: () => Promise<T>): AsyncResultType<T, Error>
+export async function fromPromise<T>(executor: () => Promise<T>): AsyncResultType<T, Error>
 
 /**
  * Wraps async function execution with custom error handler.
@@ -305,12 +305,12 @@ async function createFromPromise<T>(executor: () => Promise<T>): AsyncResultType
  * // Ok(response) or Err(Error: Custom error)
  * ```
  */
-async function createFromPromise<T, E>(
+export async function fromPromise<T, E>(
   executor: () => Promise<T>,
   onError: (error: unknown) => E
 ): AsyncResultType<T, E>
 
-async function createFromPromise<T, E>(
+export async function fromPromise<T, E>(
   executor: () => Promise<T>,
   onError?: (error: unknown) => E
 ): AsyncResultType<T, E | Error> {
@@ -346,7 +346,7 @@ async function createFromPromise<T, E>(
  * // Ok([])
  * ```
  */
-function createAll<const T extends readonly ResultType<unknown, unknown>[]>(
+export function all<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
 ): ResultType<OkTuple<T>, ErrUnion<T>> {
   if (results.length === 0) {
@@ -383,7 +383,7 @@ function createAll<const T extends readonly ResultType<unknown, unknown>[]>(
  * // Ok([])
  * ```
  */
-function createAllSettled<const T extends readonly ResultType<unknown, unknown>[]>(
+export function allSettled<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
   if (results.length === 0) {
@@ -418,7 +418,7 @@ function createAllSettled<const T extends readonly ResultType<unknown, unknown>[
  * // Err([])
  * ```
  */
-function createAny<const T extends readonly ResultType<unknown, unknown>[]>(
+export function any<const T extends readonly ResultType<unknown, unknown>[]>(
   results: T
 ): ResultType<OkUnion<T>, ErrTuple<T>> {
   if (results.length === 0) {
@@ -458,7 +458,7 @@ function createAny<const T extends readonly ResultType<unknown, unknown>[]>(
  * // [[], []]
  * ```
  */
-function createPartition<T, E>(results: readonly ResultType<T, E>[]): readonly [T[], E[]] {
+export function partition<T, E>(results: readonly ResultType<T, E>[]): readonly [T[], E[]] {
   if (results.length === 0) {
     return [[], []] as const
   }
@@ -478,43 +478,3 @@ function createPartition<T, E>(results: readonly ResultType<T, E>[]): readonly [
 }
 
 // #endregion
-
-export {
-  createAll,
-  createAllSettled,
-  createAny,
-  createErr,
-  createFromNullable,
-  createFromPromise,
-  createFromTry,
-  createIsResult,
-  createOk,
-  createPartition,
-  createValidate,
-}
-
-// export const all = createAll
-// export const allSettled = createAllSettled
-// export const any = createAny
-// export const err = createErr
-// export const fromNullable = createFromNullable
-// export const fromPromise = createFromPromise
-// export const fromTry = createFromTry
-// export const isResult = createIsResult
-// export const ok = createOk
-// export const partition = createPartition
-// export const validate = createValidate
-
-// export const factories = {
-//   all: createAll,
-//   allSettled: createAllSettled,
-//   any: createAny,
-//   err: createErr,
-//   fromNullable: createFromNullable,
-//   fromPromise: createFromPromise,
-//   fromTry: createFromTry,
-//   isResult: createIsResult,
-//   ok: createOk,
-//   partition: createPartition,
-//   validate: createValidate,
-// }
