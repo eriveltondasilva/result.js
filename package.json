@@ -87,7 +87,7 @@
   "scripts": {
     "docs:build": "typedoc",
     "docs:watch": "typedoc --watch",
-    "docs:preview": "npx vite preview --open --outDir docs-api",
+    "docs:preview": "npm run docs:build && npx vite preview --open --outDir docs-api",
     "clean": "rimraf dist",
     "clean:dev": "rimraf dist vitest",
     "build": "tsup --minify",
@@ -121,6 +121,7 @@
     "tsx": "^4.20.6",
     "typedoc": "^0.28.15",
     "typedoc-plugin-markdown": "^4.9.0",
+    "typedoc-plugin-missing-exports": "^4.1.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
   }
