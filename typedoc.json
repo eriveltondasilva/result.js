@@ -2,38 +2,83 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["./src/index.ts"],
   "out": "./docs-api",
-  "plugin": [],
+  "plugin": ["typedoc-plugin-missing-exports"],
   "readme": "./README.md",
 
+  "name": "Result.js1",
   "includeVersion": true,
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeInternal": false,
 
   "categoryOrder": [
+   "Creation",
+    "Conditional Creation",
+    "Validation",
+    "Conversion",
+    "Async Conversion",
+    "Collections",
+    "Access",
+    "Recovery",
+    "Transformation",
+    "Chaining",
+    "Inspection",
+    "Comparison",
+    "Async Operations",
+    "*"
+  ],
+
+  "kindSortOrder": [
+    "Function",
+    "Class",
+    "Interface",
+    "Variable",
+    "TypeAlias"
+  ],
+
+  "sort": ["source-order", "kind"],
+   "groupOrder": [
     "Creation",
     "Conditional Creation",
     "Validation",
     "Conversion",
     "Async Conversion",
     "Collections",
+    "Access",
+    "Recovery",
+    "Transformation",
+    "Chaining",
+    "Inspection",
+    "Comparison",
+    "Async Operations",
     "*"
   ],
-  "kindSortOrder": [
-    "Function",
-    "Class",
-    "Interface",
-    "Variable"
-  ],
-  "sort": ["source-order"],
 
   "navigation": {
     "includeCategories": true,
-    "includeGroups": true
+    "includeGroups": true,
+    "includeFolders": false
   },
-  "categorizeByGroup": true,
 
-  // "favicon": "",
+  "categorizeByGroup": true,
   "searchInComments": true,
-  "commentStyle": "jsdoc"
+  "searchInDocuments": true,
+  "commentStyle": "jsdoc",
+
+   "treatWarningsAsErrors": false,
+  "treatValidationWarningsAsErrors": false,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+
+  "excludeExternals": true,
+  "excludeNotDocumented": false,
+  "excludeReferences": false,
+
+  "emit": "docs",
+  "theme": "default",
+  "lightHighlightTheme": "light-plus",
+  "darkHighlightTheme": "dark-plus",
 }
