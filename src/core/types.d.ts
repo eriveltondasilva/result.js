@@ -48,32 +48,91 @@ export type AsyncResultType<T, E> = Promise<ResultType<T, E>>
 // #endregion
 
 // #region INFERENCE
+
+/**
+ * Extracts the success value type (T) from a ResultType.
+ * Returns never if the input is not a ResultType.
+ * @internal
+ */
 export type InferOk<R> = R extends ResultType<infer T, unknown> ? T : never
+
+/**
+ * Extracts the error type (E) from a ResultType.
+ * Returns never if the input is not a ResultType.
+ * @internal
+ */
 export type InferErr<R> = R extends ResultType<unknown, infer E> ? E : never
+
 // #endregion
 
 // #region TUPLES
+
+/**
+ * Infers a tuple of success types from an array of ResultTypes.
+ * @template T - A tuple of ResultType instances.
+ * @internal
+ */
 export type OkTuple<T extends readonly ResultType<unknown, unknown>[]> = {
   [K in keyof T]: InferOk<T[K]>
 }
+
+/**
+ * Infers a tuple of error types from an array of ResultTypes.
+ * @template T - A tuple of ResultType instances.
+ * @internal
+ */
 export type ErrTuple<T extends readonly ResultType<unknown, unknown>[]> = {
   [K in keyof T]: InferErr<T[K]>
 }
+
 // #endregion
 
 // #region UNION
+
+/**
+ * Infers a union of all possible success types from an array of ResultTypes.
+ * @template T - A tuple/array of ResultType instances.
+ * @internal
+ */
 export type OkUnion<T extends readonly ResultType<unknown, unknown>[]> = InferOk<T[number]>
+
+/**
+ * Infers a union of all possible error types from an array of ResultTypes.
+ * @template T - A tuple/array of ResultType instances.
+ * @internal
+ */
 export type ErrUnion<T extends readonly ResultType<unknown, unknown>[]> = InferErr<T[number]>
+
 // #endregion
 
 // #region SETTLED
+
+/**
+ * Represents a successful outcome in a settled result structure (e.g., from Result.allSettled).
+ * @internal
+ */
 export type SettledOk<T> = { status: 'ok'; value: T }
+
+/**
+ * Represents a failed outcome in a settled result structure (e.g., from Result.allSettled).
+ * @internal
+ */
 export type SettledErr<E> = { status: 'err'; reason: E }
+
+/**
+ * Represents a final outcome of a Result operation, whether success or failure.
+ * @internal
+ */
 export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
+
 // #endregion
 
 /**
  * Interface that both Ok and Err must implement.
+ *
+ * @internal
+ * @template T - Success value type
+ * @template E - Error type
  */
 export interface ResultMethods<T, E> {
   // #region VALIDATION
@@ -153,7 +212,9 @@ export interface ResultMethods<T, E> {
   // #endregion
 
   // #region METADATA
+  /** @hidden */
   readonly [Symbol.toStringTag]: string
+  /** @hidden */
   [Symbol.for('nodejs.util.inspect.custom')]: string
   // #endregion
 }

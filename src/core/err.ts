@@ -1,20 +1,23 @@
 import type { Ok } from './ok.js'
-import type { ResultType, ResultMethods } from './types.js'
+import type { ResultMethods, ResultType } from './types.js'
 
 /**
- * Represents a failed Result containing an error.
+ * Represents an error Result containing a failure.
+ *
+ * Err is a Result variant that encapsulates failed operations.
+ * Provides methods for recovery, error transformation, and conversion
+ * to other representations, maintaining type-safety.
+ *
+ * **Note:** You normally don't instantiate Err directly. Use `Result.err(error)`.
  *
  * @internal
- * @group Core
- * @template T - Success value type
+ * @template T - Success value type (for compatibility)
  * @template E - Error type
  *
  * @example
- * ```ts
- * const result = Result.err(new Error("fail"))
- * result.unwrapErr()
- * // Error("fail")
- * ```
+ * const result = Result.err(new Error('failed'))
+ * console.log(result.unwrapErr()) // Error: failed
+ * console.log(result.isErr()) // true
  */
 export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   readonly #error: E
@@ -26,66 +29,68 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region VALIDATION
 
   /**
-   * Checks if Result is Ok variant.
+   * Checks if this Result is the Ok variant.
    *
    * @group Validation
+   * @see {@link isErr} for the opposite check
    * @returns {boolean} Always false for Err
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.isOk()
-   * // false
-   * ```
+   * Result.err('fail').isOk() // false
    */
   isOk(): this is Ok<T, never> {
     return false
   }
 
   /**
-   * Checks if Result is Err variant.
+   * Checks if this Result is the Err variant.
    *
    * @group Validation
+   * @see {@link isOk} for the opposite check
    * @returns {boolean} Always true for Err
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.isErr()
-   * // true
-   * ```
+   * Result.err('fail').isErr() // true
+   * Result.ok(42).isErr() // false
    */
   isErr(): this is Err<never, E> {
     return true
   }
 
   /**
-   * Checks if Result is Ok and value satisfies predicate.
+   * Checks if it's Ok and if the value satisfies a predicate.
    *
    * @group Validation
-   * @param {(value: T) => boolean} predicate - Validation function
+   * @see {@link isErrAnd} for the opposite check
+   * @param {(value: T) => boolean} _predicate - Validation function (ignored)
    * @returns {boolean} Always false for Err
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.isOkAnd((x) => x > 5)
-   * // false
-   * ```
+   * Result.err('fail').isOkAnd(x => x > 5) // false
    */
   isOkAnd(_predicate: (value: T) => boolean): this is Ok<T, never> {
     return false
   }
 
   /**
-   * Checks if Result is Err and error satisfies predicate.
+   * Checks if it's Err and if the error satisfies a predicate.
+   *
+   * Useful for filtering specific error types or conditions.
    *
    * @group Validation
    * @param {(error: E) => boolean} predicate - Validation function
-   * @returns {boolean} True if Err and predicate passes
+   * @returns {boolean} true if Err and predicate passes
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("not found"));
-   * result.isErrAnd((e) => e.message.includes("not"))
+   * const err = Result.err(new Error('not found'))
+   * err.isErrAnd(e => e.message.includes('not'))
    * // true
-   * ```
+   *
+   * @example
+   * // Checking specific error type
+   * if (result.isErrAnd(e => e.code === 404)) {
+   *   console.log('Resource not found')
+   * }
    */
   isErrAnd(predicate: (error: E) => boolean): this is Err<never, E> {
     return predicate(this.#error)
@@ -96,82 +101,92 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region ACCESS
 
   /**
-   * Gets success value or null.
+   * Gets the success value or null.
    *
    * @group Access
    * @returns {null} Always null for Err
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.ok
-   * // null
-   * ```
+   * Result.err('fail').ok // null
    */
   get ok(): null {
     return null
   }
 
   /**
-   * Gets error value or null.
+   * Gets the error or null.
+   *
+   * Read-only property for safe error access.
    *
    * @group Access
-   * @returns {E} The wrapped error
+   * @returns {E} The encapsulated error
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.err
-   * // Error("fail")
-   * ```
+   * const result = Result.err('fail')
+   * console.log(result.err) // "fail"
+   *
+   * @example
+   * const ok = Result.ok(42)
+   * console.log(ok.err) // null
    */
   get err(): E {
     return this.#error
   }
 
   /**
-   * Extracts success value.
+   * Attempts to extract the success value (always fails for Err).
    *
    * @group Access
    * @returns {never} Never returns
-   * @throws {Error} Always throws with message "Called unwrap on an Err value" and cause set to the error
+   * @throws {Error} Always throws error with original cause
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.unwrap()
-   * // throws Error("Called unwrap on an Err value", { cause: Error("fail") })
-   * ```
+   * Result.err(new Error('fail')).unwrap()
+   * // throws Error("Called unwrap on an Err value", {
+   * //   cause: Error("fail")
+   * // })
    */
   unwrap(): never {
     throw new Error('Called unwrap on an Err value', { cause: this.#error })
   }
 
   /**
-   * Extracts error value.
+   * Extracts the error.
+   *
+   * For Err, returns the encapsulated error.
+   * Use when you're sure the Result is Err.
    *
    * @group Access
-   * @returns {E} The wrapped error
+   * @returns {E} The encapsulated error
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.unwrapErr()
-   * // Error("fail")
-   * ```
+   * const err = Result.err('failed').unwrapErr()
+   * console.log(err) // "failed"
+   *
+   * @example
+   * // Usage after checking
+   * if (result.isErr()) {
+   *   const error = result.unwrapErr() // safe
+   *   console.error('Operation failed:', error)
+   * }
    */
   unwrapErr(): E {
     return this.#error
   }
 
   /**
-   * Extracts value with custom error message.
+   * Attempts to extract value with custom message (always fails for Err).
    *
    * @group Access
    * @param {string} message - Error message
    * @returns {never} Never returns
    * @throws {Error} Throws with custom message and original error as cause
+   *
    * @example
-   * ```ts
-   * Result.err(new Error("fail")).expect("should exist")
-   * // throws Error("should exist", { cause: Error("fail") })
-   * ```
+   * Result.err(new Error('fail')).expect('should exist')
+   * // throws Error("should exist", {
+   * //   cause: Error("fail")
+   * // })
    */
   expect(message: string): never {
     throw new Error(message, { cause: this.#error })
@@ -180,15 +195,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Extracts error with custom message.
    *
+   * For Err, ignores the message and returns the error.
+   *
    * @group Access
    * @param {string} _message - Error message (ignored for Err)
-   * @returns {E} The wrapped error
+   * @returns {E} The encapsulated error
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.expectErr("oops")
-   * // Error("fail")
-   * ```
+   * Result.err('fail').expectErr('should be error')
+   * // "fail"
    */
   expectErr(_message: string): E {
     return this.#error
@@ -201,16 +216,21 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Extracts value or returns default.
    *
+   * For Err, returns the provided default value.
+   * For Ok, would return the encapsulated value.
+   *
    * @group Recovery
    * @see {@link unwrapOrElse} for computed default
-   * @param {T} defaultValue - Fallback value
+   * @param {T} defaultValue - Default value to return
    * @returns {T} The default value
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error())
-   * result.unwrapOr(42)
-   * // 42
-   * ```
+   * Result.err('fail').unwrapOr(42) // 42
+   * Result.ok(99).unwrapOr(42) // 99
+   *
+   * @example
+   * // Providing default value in operation
+   * const age = getAge().unwrapOr(18)
    */
   unwrapOr(defaultValue: T): T {
     return defaultValue
@@ -219,16 +239,27 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Extracts value or computes default from error.
    *
+   * Allows generating fallback value based on specific error.
+   *
    * @group Recovery
    * @see {@link unwrapOr} for static default
    * @param {(error: E) => T} onError - Default value generator
-   * @returns {T} Computed default value
+   * @returns {T} Value computed from error
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.unwrapOrElse((e) => 0)
-   * // 0
-   * ```
+   * Result.err('not found').unwrapOrElse(e => {
+   *   console.log('Error:', e)
+   *   return 0
+   * })
+   * // logs "Error: not found", returns 0
+   *
+   * @example
+   * // Recovery based on error type
+   * result.unwrapOrElse(error => {
+   *   if (error.code === 404) return []
+   *   if (error.code === 500) throw error
+   *   return defaultValue
+   * })
    */
   unwrapOrElse(onError: (error: E) => T): T {
     return onError(this.#error)
@@ -239,24 +270,26 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region TRANSFORMATION
 
   /**
-   * Transforms success value.
+   * Transforms the success value (not applicable for Err).
+   *
+   * For Err, keeps the error and only adjusts value type.
    *
    * @group Transformation
    * @see {@link mapAsync} for async version
-   * @see {@link andThen} for chaining Results
+   * @see {@link mapOr} for default value
+   * @see {@link mapErr} to transform the error part (not the value)
+   * @see {@link andThen} for explicit chaining
    * @template U - Transformed value type
-   * @template F - New error type (only when mapper returns Result)
-   * @param {(value: T) => U | ResultType<U, F>} _mapper - Transformation function
+   * @template F - Error type (when mapper returns Result)
+   * @param {(value: T) => U | ResultType<U, F>} _mapper - Transformation (ignored)
    * @returns {Err<U, E>} Err with same error, different value type
-   * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.map((x) => x * 2)
-   * // Err(Error: fail)
    *
-   * result.map((x) => Result.ok(x * 2))
-   * // Err(Error: fail)
-   * ```
+   * @example
+   * Result.err('fail').map(x => x * 2)
+   * // Err("fail")
+   *
+   * Result.err('fail').map(x => Result.ok(x * 2))
+   * // Err("fail")
    */
   map<U, F = never>(_mapper: (value: T) => U | ResultType<U, F>): Err<U, E> {
     return this as unknown as Err<U, E>
@@ -265,19 +298,19 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Transforms value or returns default.
    *
+   * For Err, ignores mapper and returns default.
+   *
    * @group Transformation
    * @see {@link mapOrAsync} for async version
    * @see {@link mapOrElse} for computed default
    * @template U - Transformed value type
-   * @param {(value: T) => U} _mapper - Transformation function
-   * @param {U} defaultValue - Fallback value
+   * @param {(value: T) => U} _mapper - Transformation (ignored)
+   * @param {U} defaultValue - Default value
    * @returns {U} The default value
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.mapOr((x) => x * 2, 42)
-   * // 42
-   * ```
+   * Result.err('fail').mapOr(x => x * 2, 42) // 42
+   * Result.ok(5).mapOr(x => x * 2, 42) // 10
    */
   mapOr<U>(_mapper: (value: T) => U, defaultValue: U): U {
     return defaultValue
@@ -286,80 +319,93 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Transforms value using appropriate mapper.
    *
+   * For Err, uses error mapper.
+   *
    * @group Transformation
    * @see {@link mapOrElseAsync} for async version
-   * @template U - Transformed value type
-   * @param {(value: T) => U} _okMapper - Success mapper
+   * @template U - Result type
+   * @param {(value: T) => U} _okMapper - Success mapper (ignored)
    * @param {(error: E) => U} errorMapper - Error mapper
    * @returns {U} Result from error mapper
+   *
    * @example
-   * ```ts
-   * const result = Result.err(new Error("fail"))
-   * result.mapOrElse((x) => x * 2, (e) => -1)
+   * Result.err('fail').mapOrElse(
+   *   x => x * 2,
+   *   e => -1
+   * )
    * // -1
-   * ```
+   *
+   * @example
+   * // Converting error to valid value
+   * const value = result.mapOrElse(
+   *   user => user.name,
+   *   error => 'Anonymous'
+   * )
    */
   mapOrElse<U>(_okMapper: (value: T) => U, errorMapper: (error: E) => U): U {
     return errorMapper(this.#error)
   }
 
   /**
-   * Transforms error value.
+   * Transforms the error.
+   *
+   * Applies function to error and returns new Err with result.
+   * Useful for normalizing or enriching errors.
    *
    * @group Transformation
    * @see {@link mapErrAsync} for async version
    * @template F - New error type
-   * @param {(error: E) => F} mapper - Error transformation function
+   * @param {(error: E) => F} mapper - Error transformer
    * @returns {Err<T, F>} Err with transformed error
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.mapErr((e) => new Error(e))
-   * // Err(Error: fail)
-   * ```
+   * Result.err('not found')
+   *   .mapErr(e => new Error(e))
+   * // Err(Error: not found)
+   *
+   * @example
+   * // Normalizing error types
+   * result.mapErr(error => ({
+   *   code: error.code || 'UNKNOWN',
+   *   message: error.message,
+   *   timestamp: Date.now()
+   * }))
    */
   mapErr<F>(mapper: (error: E) => F): Err<T, F> {
     return new Err(mapper(this.#error))
   }
 
   /**
-   * Filters Ok value based on predicate.
+   * Filters Ok value based on predicate (not applicable for Err).
    *
    * @overload
    * @group Transformation
-   * @see {@link isErrAnd} for validation without modification
-   * @param predicate - Validation function
+   * @see {@link isErrAnd} for validation
+   * @param predicate - Validation function (ignored)
    * @returns This Err unchanged
+   *
    * @example
-   * ```ts
-   * Result.err("fail").filter((x) => x > 0)
+   * Result.err('fail').filter(x => x > 0)
    * // Err("fail")
-   * Result.err("fail").filter(
-   *   (x) => x > 0,
-   *   (x) => "rejected"
-   * )
-   * // Err("fail")
-   * ```
    */
   filter(predicate: (value: T) => boolean): ResultType<T, Error>
 
   /**
-   * Filters Ok value based on predicate with custom error.
+   * Filters Ok value with custom error (not applicable for Err).
    *
    * @overload
    * @group Transformation
-   * @see {@link isErrAnd} for validation without modification
-   * @param {(value: T) => boolean} predicate - Validation function
-   * @param {(value: T) => E} onReject - Function that generates error when predicate fails
+   * @see {@link isErrAnd} for validation
+   * @param {(value: T) => boolean} predicate - Validation (ignored)
+   * @param {(value: T) => E} onReject - Error generator (ignored)
    * @returns {ResultType<T, E>} This Err unchanged
+   *
    * @example
-   * ```ts
-   * Result.err("fail").filter(
-   *   (x) => x > 0,
-   *   (x) => new Error("negative")
+   * Result.err('fail').filter(
+   *   x => x > 0,
+   *   x => new Error('negative')
    * )
    * // Err("fail")
-   * ```
    */
   filter(predicate: (value: T) => boolean, onReject: (value: T) => E): ResultType<T, E>
 
@@ -371,13 +417,17 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   }
 
   /**
-   * Flattens nested Result.
+   * Flattens nested Result (not applicable for Err).
    *
    * @group Transformation
-   * @template U - Inner Result success type
+   * @template U - Inner Result value type
    * @template F - Inner Result error type
    * @param {Err<ResultType<U, F>, E>} this - Nested Result
    * @returns {Err<U, E | F>} Flattened Err
+   *
+   * @example
+   * Result.err('fail').flatten()
+   * // Err("fail")
    */
   flatten<U, F>(this: Err<ResultType<U, F>, E>): Err<U, E | F> {
     return this as unknown as Err<U, E | F>
@@ -388,60 +438,69 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region CHAINING
 
   /**
-   * Chains operation that returns Result.
+   * Chains operation that returns Result (not applicable for Err).
+   *
+   * For Err, keeps the error ignoring the function.
    *
    * @group Chaining
    * @see {@link andThenAsync} for async version
    * @template U - New success type
-   * @param {(value: T) => ResultType<U, E>} _flatMapper - Chaining function
-   * @returns {Err<U, E>} Err with same error, different value type
+   * @param {(value: T) => ResultType<U, E>} _flatMapper - Chaining (ignored)
+   * @returns {Err<U, E>} Err with same error
+   *
    * @example
-   * ```ts
-   * Result.err("fail").andThen((x) => Result.ok(x * 2))
+   * Result.err('fail').andThen(x => Result.ok(x * 2))
    * // Err("fail")
-   * Result.err("fail").andThen((x) => Result.err("backup"))
-   * // Err("backup")
-   * ```
+   *
+   * Result.err('fail').andThen(x => Result.err('backup'))
+   * // Err("fail") - keeps original error
    */
   andThen<U>(_flatMapper: (value: T) => ResultType<U, E>): Err<U, E> {
     return this as unknown as Err<U, E>
   }
 
   /**
-   * Returns this Result or executes error handler.
+   * Returns this Result or executes error recovery.
+   *
+   * For Err, executes recovery function with the error.
+   * Allows converting Err to Ok or generating new Err.
    *
    * @group Chaining
    * @see {@link orElseAsync} for async version
    * @see {@link or} for static alternative
-   * @param {(error: E) => ResultType<T, E>} onError - Error recovery function
-   * @returns {ResultType<T, E>} Result from error handler
+   * @param {(error: E) => ResultType<T, E>} onError - Recovery function
+   * @returns {ResultType<T, E>} Result returned by recovery
+   *
    * @example
-   * ```ts
-   * Result.err("fail").orElse((e) => Result.ok(0))
-   * // Ok(0)
-   * Result.err("fail").orElse((e) => Result.err("backup"))
-   * // Err("backup")
-   * ```
+   * Result.err('not found').orElse(e => Result.ok(null))
+   * // Ok(null) - recovered
+   *
+   * Result.err('fail').orElse(e => Result.err('backup'))
+   * // Err("backup") - error replaced
+   *
+   * @example
+   * // Fallback chain
+   * fetchFromCache()
+   *   .orElse(() => fetchFromDatabase())
+   *   .orElse(() => fetchFromAPI())
    */
   orElse(onError: (error: E) => ResultType<T, E>): ResultType<T, E> {
     return onError(this.#error)
   }
 
   /**
-   * Returns second Result if this is Ok.
+   * Returns second Result if this is Ok (not applicable for Err).
    *
    * @group Chaining
    * @see {@link andAsync} for async version
+   * @see {@link andThen} for explicit chaining
    * @template U - Second Result success type
-   * @param {ResultType<U, E>} _result - Result to return
-   * @returns {Err<U, E>} Err with same error, different value type
+   * @param {ResultType<U, E>} _result - Result (ignored)
+   * @returns {Err<U, E>} Err with same error
+   *
    * @example
-   * ```ts
-   * Result.err("fail").and(Result.ok(42))
+   * Result.err('fail').and(Result.ok(42))
    * // Err("fail")
-   * Result.err("fail").and(Result.err("backup"))
-   * // Err("backup")
-   * ```
    */
   and<U>(_result: ResultType<U, E>): Err<U, E> {
     return this as unknown as Err<U, E>
@@ -450,36 +509,38 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Returns this Result or alternative.
    *
+   * For Err, returns the provided alternative Result.
+   *
    * @group Chaining
    * @see {@link orAsync} for async version
    * @see {@link orElse} for function-based alternative
    * @param {ResultType<T, E>} result - Alternative Result
    * @returns {ResultType<T, E>} The alternative Result
+   *
    * @example
-   * ```ts
-   * Result.err("fail").or(Result.ok(42))
+   * Result.err('fail').or(Result.ok(42))
    * // Ok(42)
-   * Result.err("fail").or(Result.err("backup"))
+   *
+   * Result.err('fail').or(Result.err('backup'))
    * // Err("backup")
-   * ```
    */
   or(result: ResultType<T, E>): ResultType<T, E> {
     return result
   }
 
   /**
-   * Combines two Results into tuple.
+   * Combines two Results into tuple (fails if any is Err).
    *
    * @group Chaining
+   * @see {@link and} for chaining and discarding the first Ok value.
    * @template U - Second Result success type
    * @template F - Second Result error type
-   * @param {ResultType<U, F>} _result - Result to zip with
+   * @param {ResultType<U, F>} _result - Result to combine (ignored)
    * @returns {ResultType<[T, U], E | F>} Err with this error
+   *
    * @example
-   * ```ts
-   * Result.err("fail").zip(Result.ok(2))
+   * Result.err('fail').zip(Result.ok(2))
    * // Err("fail")
-   * ```
    */
   zip<U, F>(_result: ResultType<U, F>): Err<[T, U], E | F> {
     return this as unknown as Err<[T, U], E | F>
@@ -490,59 +551,78 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region INSPECTION
 
   /**
-   * Pattern matches on Result state.
+   * Pattern matching on Result state.
+   *
+   * Executes error handler for Err.
    *
    * @group Inspection
    * @template L - Ok handler return type
    * @template R - Err handler return type
-   * @param {{ ok: (value: T) => L; err: (error: E) => R }} handlers - Match handlers
+   * @param {{ ok: (value: T) => L; err: (error: E) => R }} handlers - Handlers
    * @returns {L | R} Result from error handler
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.match({
-   *   ok: (x) => x * 2,
-   *   err: (e) => 0
+   * const msg = Result.err('not found').match({
+   *   ok: x => `Value: ${x}`,
+   *   err: e => `Error: ${e}`
    * })
-   * // 0
-   * ```
+   * // "Error: not found"
+   *
+   * @example
+   * // Specific handling by error type
+   * result.match({
+   *   ok: data => processData(data),
+   *   err: error => {
+   *     if (error.code === 404) return showNotFound()
+   *     if (error.code === 500) return showServerError()
+   *     return showGenericError()
+   *   }
+   * })
    */
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
     return handlers.err(this.#error)
   }
 
   /**
-   * Performs side effect on success value.
+   * Performs side effect on success value (not applicable for Err).
    *
    * @group Inspection
    * @see {@link inspectErr} for error inspection
    * @see {@link match} for pattern matching
-   * @param {(value: T) => void} _visitor - Side effect function
+   * @param {(value: T) => void} _visitor - Side effect (ignored)
    * @returns {Err<T, E>} This Err unchanged
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.inspect((x) => console.log(x))
-   * // does nothing, returns Err("fail")
-   * ```
+   * Result.err('fail').inspect(x => console.log(x))
+   * // Err("fail") - nothing is executed
    */
   inspect(_visitor: (value: T) => void): Err<T, E> {
     return this
   }
 
   /**
-   * Performs side effect on error value.
+   * Performs side effect on error.
+   *
+   * Useful for logging, metrics, or error debugging.
    *
    * @group Inspection
    * @see {@link inspect} for value inspection
    * @param {(error: E) => void} visitor - Side effect function
-   * @returns {Err<T, E>} This Err instance for chaining
+   * @returns {Err<T, E>} This instance for chaining
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.inspectErr((e) => console.log(e))
-   * // logs "fail", returns Err(Error: fail)
-   * ```
+   * Result.err('fail')
+   *   .inspectErr(e => console.error('Error:', e))
+   *   .mapErr(e => new Error(e))
+   * // logs "Error: fail", returns Err(Error: fail)
+   *
+   * @example
+   * // Logging and monitoring
+   * fetchUser(id)
+   *   .inspectErr(error => {
+   *     logger.error('Failed to fetch user', { userId: id, error })
+   *     metrics.increment('user.fetch.error')
+   *   })
    */
   inspectErr(visitor: (error: E) => void): Err<T, E> {
     visitor(this.#error)
@@ -554,17 +634,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region COMPARISON
 
   /**
-   * Checks if Ok contains specific value.
+   * Checks if Ok contains specific value (always false for Err).
    *
    * @group Comparison
-   * @param {T} _value - Value to compare (ignored for Err)
-   * @param {(actual: T, expected: T) => boolean} [_comparator] - Custom comparison
-   * @returns {boolean} Always false for Err
+   * @param {T} _value - Value to compare (ignored)
+   * @param {(actual: T, expected: T) => boolean} [_comparator] - Comparator (ignored)
+   * @returns {boolean} Always false
+   *
    * @example
-   * ```ts
-   * Result.err("fail").contains("fail")
-   * // false
-   * ```
+   * Result.err('fail').contains(42) // false
    */
   contains(_value: T, _comparator?: (actual: T, expected: T) => boolean): boolean {
     return false
@@ -573,24 +651,30 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Checks if Err contains specific error.
    *
+   * Uses strict equality (===) by default.
+   * Custom comparator allows checking complex objects.
+   *
    * @group Comparison
    * @param {E} error - Error to compare
-   * @param {(actual: E, expected: E) => boolean} [comparator] - Custom comparison
-   * @returns {boolean} True if errors match
+   * @param {(actual: E, expected: E) => boolean} [comparator] - Custom comparator
+   * @returns {boolean} true if errors match
+   *
    * @example
-   * ```ts
-   * Result.err("fail").containsErr("fail")
-   * // true
-   * Result.err("fail").containsErr("other")
-   * // false
+   * Result.err('fail').containsErr('fail') // true
+   * Result.err('fail').containsErr('other') // false
+   *
+   * @example
+   * // With objects (different references)
    * Result.err({ code: 500 }).containsErr({ code: 500 })
-   * // false (different object references)
+   * // false
+   *
+   * @example
+   * // With custom comparator
    * Result.err({ code: 500 }).containsErr(
    *   { code: 500 },
    *   (a, b) => a.code === b.code
    * )
-   * // true (custom comparator)
-   * ```
+   * // true
    */
   containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
     return comparator ? comparator(this.#error, error) : this.#error === error
@@ -604,13 +688,20 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Converts Result to rejected Promise.
    *
    * @group Conversion
-   * @returns {Promise<never>} Promise rejecting with error
+   * @returns {Promise<never>} Promise rejecting with the error
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.toPromise().catch((e) => console.log(e))
-   * // logs "fail"
-   * ```
+   * try {
+   *   await Result.err('fail').toPromise()
+   * } catch (e) {
+   *   console.log(e) // "fail"
+   * }
+   *
+   * @example
+   * // Integrating with Promise-based code
+   * Result.err('fail')
+   *   .toPromise()
+   *   .catch(err => console.error(err))
    */
   toPromise(): Promise<never> {
     return Promise.reject(this.#error)
@@ -620,12 +711,14 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Converts Result to string representation.
    *
    * @group Conversion
-   * @returns {string} String format
+   * @returns {string} Format "Err(error)"
+   *
    * @example
-   * ```ts
-   * Result.err("fail").toString()
+   * Result.err('fail').toString()
    * // "Err(fail)"
-   * ```
+   *
+   * Result.err(new Error('oops')).toString()
+   * // "Err(Error: oops)"
    */
   toString(): string {
     return `Err(${this.#error})`
@@ -634,15 +727,17 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Converts Result to JSON object.
    *
+   * Useful for serialization and APIs.
+   *
    * @group Conversion
    * @returns {{ type: 'err'; error: E }} JSON representation
+   *
    * @example
-   * ```ts
-   * Result.err("fail").toJSON()
-   * // { type: "err", error: "fail" }
-   * JSON.stringify(Result.err("fail"))
+   * Result.err('fail').toJSON()
+   * // { type: 'err', error: 'fail' }
+   *
+   * JSON.stringify(Result.err('fail'))
    * // '{"type":"err","error":"fail"}'
-   * ```
    */
   toJSON(): { type: 'err'; error: E } {
     return { type: 'err', error: this.#error }
@@ -653,22 +748,17 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   // #region ASYNC OPERATIONS
 
   /**
-   * Transforms value asynchronously.
+   * Transforms value asynchronously (not applicable for Err).
    *
    * @group Async Operations
    * @template U - Transformed value type
-   * @template F - New error type (only when mapper returns Result)
-   * @param {(value: T) => Promise<U | ResultType<U, F>>} _mapperAsync - Async transformation
+   * @template F - Error type (when returns Result)
+   * @param {(value: T) => Promise<U | ResultType<U, F>>} _mapperAsync - Transformation (ignored)
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
-   * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * await result.mapAsync(async (x) => x * 2)
-   * // Err("fail")
    *
-   * await result.mapAsync(async (x) => Result.ok(x * 2))
+   * @example
+   * await Result.err('fail').mapAsync(async x => x * 2)
    * // Err("fail")
-   * ```
    */
   async mapAsync<U, F = never>(
     _mapperAsync: (value: T) => Promise<U | ResultType<U, F>>
@@ -679,16 +769,26 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Transforms error asynchronously.
    *
+   * Async version of mapErr().
+   *
    * @group Async Operations
    * @template F - New error type
-   * @param {(error: E) => Promise<F>} mapperAsync - Async error transformation
+   * @param {(error: E) => Promise<F>} mapperAsync - Async transformation
    * @returns {Promise<Err<T, F>>} Promise of Err with transformed error
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * await result.mapErrAsync(async (e) => new Error(e))
+   * await Result.err('fail').mapErrAsync(
+   *   async e => new Error(e)
+   * )
    * // Err(Error: fail)
-   * ```
+   *
+   * @example
+   * // Enriching error with async data
+   * await result.mapErrAsync(async error => ({
+   *   ...error,
+   *   context: await fetchContext(),
+   *   timestamp: Date.now()
+   * }))
    */
   async mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): Promise<Err<T, F>> {
     const e = await mapperAsync(this.#error)
@@ -700,37 +800,33 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *
    * @group Async Operations
    * @template U - Transformed value type
-   * @param {(value: T) => Promise<U>} _mapperAsync - Async transformation
-   * @param {U} defaultValue - Fallback value
+   * @param {(value: T) => Promise<U>} _mapperAsync - Transformation (ignored)
+   * @param {U} defaultValue - Default value
    * @returns {Promise<U>} Promise of default value
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.mapOrAsync(async (x) => x * 2, 0)
+   * await Result.err('fail').mapOrAsync(async x => x * 2, 0)
    * // 0
-   * ```
    */
   mapOrAsync<U>(_mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U> {
     return Promise.resolve(defaultValue)
   }
 
   /**
-   * Transforms value using appropriate async mapper.
+   * Transforms using appropriate async mapper.
    *
    * @group Async Operations
-   * @template U - Transformed value type
-   * @param {(value: T) => Promise<U>} _okMapperAsync - Async success mapper
+   * @template U - Result type
+   * @param {(value: T) => Promise<U>} _okMapperAsync - Success mapper (ignored)
    * @param {(error: E) => Promise<U>} errMapperAsync - Async error mapper
-   * @returns {Promise<U>} Promise from error mapper
+   * @returns {Promise<U>} Promise of result from error mapper
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * result.mapOrElseAsync(
-   *   async (x) => x * 2,
-   *   async (e) => -1
+   * await Result.err('fail').mapOrElseAsync(
+   *   async x => x * 2,
+   *   async e => -1
    * )
    * // -1
-   * ```
    */
   mapOrElseAsync<U>(
     _okMapperAsync: (value: T) => Promise<U>,
@@ -740,36 +836,36 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   }
 
   /**
-   * Chains async operation returning Result.
+   * Chains async operation that returns Result (not applicable for Err).
    *
    * @group Async Operations
    * @template U - New success type
-   * @param {(value: T) => Promise<ResultType<U, E>>} _flatMapperAsync - Async chaining function
+   * @param {(value: T) => Promise<ResultType<U, E>>} _flatMapperAsync - Chaining (ignored)
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * await result.andThenAsync(async (x) => Result.ok(x * 2))
+   * await Result.err('fail').andThenAsync(
+   *   async x => Result.ok(x * 2)
+   * )
    * // Err("fail")
-   * ```
    */
   andThenAsync<U>(_flatMapperAsync: (value: T) => Promise<ResultType<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
   }
 
   /**
-   * Returns async Result if this is Ok.
+   * Returns async Result if this is Ok (not applicable for Err).
    *
    * @group Async Operations
    * @template U - Second Result success type
-   * @param {Promise<ResultType<U, E>>} _result - Async Result (ignored for Err)
+   * @param {Promise<ResultType<U, E>>} _result - Async Result (ignored)
    * @returns {Promise<Err<U, E>>} Promise of Err with same error
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * await result.andAsync(Promise.resolve(Result.ok(42)))
+   * await Result.err('fail').andAsync(
+   *   Promise.resolve(Result.ok(42))
+   * )
    * // Err("fail")
-   * ```
    */
   andAsync<U>(_result: Promise<ResultType<U, E>>): Promise<Err<U, E>> {
     return Promise.resolve(this as unknown as Err<U, E>)
@@ -778,30 +874,41 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
   /**
    * Returns this Result or async alternative.
    *
+   * For Err, returns the alternative Promise.
+   *
    * @group Async Operations
-   * @param {Promise<ResultType<T, E>>} result - Alternative async Result
-   * @returns {Promise<ResultType<T, E>>} The alternative Promise
+   * @param {Promise<ResultType<T, E>>} result - Async alternative Result
+   * @returns {Promise<ResultType<T, E>>} The provided Promise
+   *
    * @example
-   * ```ts
-   * const result = Result.err("fail")
-   * await result.orAsync(Promise.resolve(Result.ok(42)))
+   * await Result.err('fail').orAsync(
+   *   Promise.resolve(Result.ok(42))
+   * )
    * // Ok(42)
-   * ```
    */
   orAsync(result: Promise<ResultType<T, E>>): Promise<ResultType<T, E>> {
     return result
   }
 
   /**
-   * Returns this Result or executes async error handler.
+   * Returns this Result or executes async recovery.
+   *
+   * For Err, executes async recovery function.
    *
    * @group Async Operations
-   * @param {(error: E) => Promise<ResultType<T, E>>} onErrorAsync - Async error recovery
-   * @returns {Promise<ResultType<T, E>>} Promise from error handler
+   * @param {(error: E) => Promise<ResultType<T, E>>} onErrorAsync - Async recovery
+   * @returns {Promise<ResultType<T, E>>} Promise of recovered Result
+   *
    * @example
-   * const result = Result.err("fail")
-   * await result.orElseAsync(async (e) => Result.ok(0))
-   * // Ok(0)
+   * await Result.err('not found').orElseAsync(
+   *   async e => Result.ok(await fetchDefault())
+   * )
+   *
+   * @example
+   * // Async fallback chain
+   * await result
+   *   .orElseAsync(async () => fetchFromCache())
+   *   .then(r => r.orElseAsync(async () => fetchFromAPI()))
    */
   orElseAsync(onErrorAsync: (error: E) => Promise<ResultType<T, E>>): Promise<ResultType<T, E>> {
     return onErrorAsync(this.#error)
