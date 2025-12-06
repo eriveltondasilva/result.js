@@ -1,3 +1,9 @@
+---
+title: Result.js
+# group: Documents
+# category: Guides
+---
+
 # Result.js - Documentação Completa <!-- omit in toc -->
 
 Documentação completa da biblioteca Result.js para tratamento de erros type-safe em JavaScript e TypeScript.
@@ -75,12 +81,14 @@ Result.js é uma biblioteca inspirada no tipo `Result<T, E>` do Rust, projetada 
 ### 1.1. Por que usar Result?
 
 **Problemas com exceptions:**
+
 - Fluxo de controle implícito
 - Difícil rastrear quais funções podem lançar erros
 - Fácil esquecer de tratar erros
 - Performance overhead
 
 **Benefícios do Result:**
+
 - Erros explícitos na assinatura da função
 - Compilador força o tratamento de erros
 - Composição funcional com operadores
@@ -103,6 +111,7 @@ import { Result } from '@eriveltonsilva/result.js'
 ## 3. Conceitos Básicos
 
 Um `Result<T, E>` representa:
+
 - **Ok(T)**: operação bem-sucedida contendo valor do tipo `T`
 - **Err(E)**: operação falhou contendo erro do tipo `E`
 
@@ -903,6 +912,7 @@ function safeFetch(): Result<User, Error> {
 ## 11. Performance
 
 Result.js é extremamente leve:
+
 - Zero dependências
 - Bundle size mínimo
 - Overhead negligível
