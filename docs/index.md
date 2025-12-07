@@ -17,7 +17,6 @@ Welcome to the complete documentation for Result.js - a Rust-inspired Result typ
 ### Guides
 
 - **[Examples & Patterns](./examples.md)** - Real-world usage patterns and best practices
-- **[Configuration](./configuration.md)** - Build and bundler configuration
 - **[Migration Guide](./migration-guide.md)** - Migrating from exceptions to Results
 
 ### Development
@@ -88,7 +87,6 @@ const results = Result.all([
 ## Community & Support
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/eriveltondasilva/result.js/issues)
-- **Discussions**: [Ask questions and share ideas](https://github.com/eriveltondasilva/result.js/discussions)
 - **npm**: [Package on npm](https://www.npmjs.com/package/@eriveltonsilva/result.js)
 
 ## License

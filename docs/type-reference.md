@@ -151,7 +151,7 @@ const settled = Result.allSettled([
   Result.err('fail')
 ]).unwrap()
 
-settled.forEach(result => {
+settled.forEach((result) => {
   if (result.status === 'ok') {
     console.log(result.value)
   } else {
@@ -180,7 +180,7 @@ function process(result: ResultType<number, string>) {
 
 ```typescript
 function processPositive(result: ResultType<number, Error>) {
-  if (result.isOkAnd(x => x > 0)) {
+  if (result.isOkAnd((x) => x > 0)) {
     // result is Ok<number> AND value > 0
     const positive: number = result.unwrap()
   }
@@ -366,8 +366,8 @@ const result3 = Math.random() > 0.5
 ```typescript
 // Each step infers types automatically
 const result = Result.ok(5)           // ResultType<number, never>
-  .map(x => x * 2)                    // ResultType<number, never>
-  .andThen(x =>                       // ResultType<string, Error>
+  .map((x) => x * 2)                    // ResultType<number, never>
+  .andThen((x) =>                       // ResultType<string, Error>
     x > 0 
       ? Result.ok(String(x))
       : Result.err(new Error('negative'))

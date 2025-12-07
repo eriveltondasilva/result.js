@@ -2,17 +2,6 @@
 
 Real-world usage examples and best practices.
 
-## Table of Contents
-
-- [Form Validation](#form-validation)
-- [API Integration](#api-integration)
-- [Database Operations](#database-operations)
-- [File Operations](#file-operations)
-- [Authentication](#authentication)
-- [Async Patterns](#async-patterns)
-- [Error Recovery](#error-recovery)
-- [Batch Processing](#batch-processing)
-
 ## Form Validation
 
 ### Single Field Validation
@@ -68,10 +57,10 @@ function validateForm(data: FormData): ResultType<ValidatedForm, ValidationError
 ```typescript
 function validateUserSignup(data: FormData): ResultType<ValidatedForm, ValidationError> {
   return Result.ok(data)
-    .andThen(d => validateEmail(d.email).map(() => d))
-    .andThen(d => validatePassword(d.password).map(() => d))
-    .andThen(d => validateAge(d.age).map(() => d))
-    .map(d => ({ email: d.email, password: d.password, age: d.age }))
+    .andThen((d) => validateEmail(d.email).map(() => d))
+    .andThen((d) => validatePassword(d.password).map(() => d))
+    .andThen((d) => validateAge(d.age).map(() => d))
+    .map((d) => ({ email: d.email, password: d.password, age: d.age }))
 }
 ```
 
@@ -93,7 +82,7 @@ async function fetchUser(id: string): AsyncResultType<User, ApiError> {
       
       return response.json()
     },
-    (err): ApiError => 
+    (ApiError) => 
       typeof err === 'object' && err !== null && 'status' in err
         ? err as ApiError
         : { status: 500, message: String(err) }
@@ -120,7 +109,7 @@ async function fetchWithRetry<T>(
     if (result.isOk()) return result
     
     if (i < maxRetries - 1) {
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)))
+      await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, i)))
     }
   }
   
@@ -164,7 +153,7 @@ async function findUserById(id: string): AsyncResultType<User, DbError> {
       
       return user
     },
-    (err): DbError =>
+    (err): (DbError) =>
       typeof err === 'object' && err !== null && 'code' in err
         ? err as DbError
         : { code: 'UNKNOWN', detail: String(err) }
@@ -227,7 +216,7 @@ async function loadAndValidateConfig(
   path: string
 ): AsyncResultType<ValidConfig, Error> {
   return (await loadConfig(path))
-    .andThen(config => validateConfig(config))
+    .andThen((config) => validateConfig(config))
 }
 ```
 
@@ -278,11 +267,11 @@ function checkPermission(
 ```typescript
 async function processUserData(userId: string) {
   return (await fetchUser(userId))
-    .mapAsync(async user => {
+    .mapAsync(async (user) => {
       const enriched = await enrichUserData(user)
       return enriched
     })
-    .andThenAsync(async user => {
+    .andThenAsync(async (user) => {
       await saveUserCache(user)
       return Result.ok(user)
     })
@@ -327,8 +316,8 @@ async function getProductRecommendations(userId: string) {
 
 ```typescript
 async function fetchWithLogging<T>(url: string): AsyncResultType<T, Error> {
-  return (await Result.fromPromise(() => fetch(url).then(r => r.json())))
-    .inspectErr(error => {
+  return (await Result.fromPromise(() => fetch(url).then((r) => r.json())))
+    .inspectErr((error) => {
       logger.error('Fetch failed', { url, error })
       metrics.increment('fetch.error')
     })
@@ -342,7 +331,7 @@ async function fetchWithLogging<T>(url: string): AsyncResultType<T, Error> {
 ```typescript
 async function batchProcessItems(items: Item[]) {
   const results = await Promise.all(
-    items.map(item => processItem(item))
+    items.map((item) => processItem(item))
   )
   
   const [successes, failures] = Result.partition(results)
@@ -360,7 +349,7 @@ async function batchProcessItems(items: Item[]) {
 
 ```typescript
 async function batchCreateUsers(users: UserInput[]) {
-  const validations = users.map(user => validateUser(user))
+  const validations = users.map((user) => validateUser(user))
   const allValid = Result.all(validations)
   
   if (allValid.isErr()) {
@@ -391,7 +380,7 @@ async function processWithConcurrencyLimit<T, E>(
     results.push(...batchResults)
     
     // Check for first error
-    const firstError = batchResults.find(r => r.isErr())
+    const firstError = batchResults.find((r) => r.isErr())
     if (firstError) {
       return firstError as Err<never, E>
     }

@@ -2,21 +2,6 @@
 
 Complete reference for all Result.js methods and functions.
 
-## Table of Contents
-
-- [Creation](#creation)
-- [Conditional Creation](#conditional-creation)
-- [Validation](#validation)
-- [Access](#access)
-- [Recovery](#recovery)
-- [Transformation](#transformation)
-- [Chaining](#chaining)
-- [Inspection](#inspection)
-- [Comparison](#comparison)
-- [Conversion](#conversion)
-- [Async Operations](#async-operations)
-- [Collections](#collections)
-
 ## Creation
 
 ### Result.ok()
@@ -57,6 +42,7 @@ Wraps code that may throw in a Result.
 
 ```typescript
 Result.fromTry<T>(executor: () => T): ResultType<T, Error>
+
 Result.fromTry<T, E>(executor: () => T, onError: (error: unknown) => E): ResultType<T, E>
 ```
 
@@ -85,6 +71,7 @@ Wraps async operations in a Result.
 
 ```typescript
 Result.fromPromise<T>(executor: () => Promise<T>): AsyncResultType<T, Error>
+
 Result.fromPromise<T, E>(
   executor: () => Promise<T>,
   onError: (error: unknown) => E
@@ -108,6 +95,7 @@ Converts nullable values to Results.
 
 ```typescript
 Result.fromNullable<T>(value: T | null | undefined): ResultType<NonNullable<T>, Error>
+
 Result.fromNullable<T, E>(
   value: T | null | undefined,
   onError: () => E
@@ -117,7 +105,7 @@ Result.fromNullable<T, E>(
 **Example:**
 
 ```typescript
-const user = users.find(u => u.id === id)
+const user = users.find((u) => u.id === id)
 const result = Result.fromNullable(user)
 // Ok(user) or Err(Error: Value is null or undefined)
 ```
@@ -137,6 +125,7 @@ Creates Result by validating a value.
 
 ```typescript
 Result.validate<T>(value: T, predicate: (value: T) => boolean): ResultType<T, Error>
+
 Result.validate<T, E>(
   value: T,
   predicate: (value: T) => boolean,
@@ -147,13 +136,13 @@ Result.validate<T, E>(
 **Example:**
 
 ```typescript
-const age = Result.validate(25, x => x >= 18)
+const age = Result.validate(25, (x) => x >= 18)
 // Ok(25)
 
 const invalid = Result.validate(
   -5,
-  x => x > 0,
-  x => new Error(`${x} must be positive`)
+  (x) => x > 0,
+  (x) => new Error(`${x} must be positive`)
 )
 // Err(Error: -5 must be positive)
 ```
@@ -203,7 +192,7 @@ isOkAnd(predicate: (value: T) => boolean): this is Ok<T, never>
 **Example:**
 
 ```typescript
-if (result.isOkAnd(x => x > 10)) {
+if (result.isOkAnd((x) => x > 10)) {
   console.log('Value is Ok and greater than 10')
 }
 ```
@@ -219,7 +208,7 @@ isErrAnd(predicate: (error: E) => boolean): this is Err<never, E>
 **Example:**
 
 ```typescript
-if (result.isErrAnd(e => e.code === 404)) {
+if (result.isErrAnd((e) => e.code === 404)) {
   console.log('Not found error')
 }
 ```
@@ -346,7 +335,7 @@ unwrapOrElse(onError: (error: E) => T): T
 **Example:**
 
 ```typescript
-const value = result.unwrapOrElse(err => {
+const value = result.unwrapOrElse((err) => {
   console.log('Error:', err)
   return defaultValue
 })
@@ -360,16 +349,17 @@ Transforms success value.
 
 ```typescript
 map<U>(mapper: (value: T) => U): ResultType<U, E>
+
 map<U, F>(mapper: (value: T) => ResultType<U, F>): ResultType<U, E | F>
 ```
 
 **Example:**
 
 ```typescript
-const doubled = Result.ok(5).map(x => x * 2)
+const doubled = Result.ok(5).map((x) => x * 2)
 // Ok(10)
 
-const nested = Result.ok(5).map(x =>
+const nested = Result.ok(5).map((x) =>
   x > 0 ? Result.ok(x) : Result.err('negative')
 )
 // Auto-flattened to Ok(5)
@@ -386,10 +376,10 @@ mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
 **Example:**
 
 ```typescript
-const result = Result.ok(5).mapOr(x => x * 2, 0)
+const result = Result.ok(5).mapOr((x) => x * 2, 0)
 // 10
 
-const errResult = Result.err('fail').mapOr(x => x * 2, 0)
+const errResult = Result.err('fail').mapOr((x) => x * 2, 0)
 // 0
 ```
 
@@ -408,8 +398,8 @@ mapOrElse<U>(
 
 ```typescript
 const value = result.mapOrElse(
-  x => x * 2,
-  err => -1
+  (x) => x * 2,
+  (err) => -1
 )
 ```
 
@@ -425,7 +415,7 @@ mapErr<F>(mapper: (error: E) => F): ResultType<T, F>
 
 ```typescript
 const result = Result.err('not found')
-  .mapErr(e => new Error(e))
+  .mapErr((e) => new Error(e))
 // Err(Error: not found)
 ```
 
@@ -435,6 +425,7 @@ Filters Ok value with predicate.
 
 ```typescript
 filter(predicate: (value: T) => boolean): ResultType<T, Error>
+
 filter(
   predicate: (value: T) => boolean,
   onReject: (value: T) => E
@@ -444,12 +435,12 @@ filter(
 **Example:**
 
 ```typescript
-const result = Result.ok(10).filter(x => x > 5)
+const result = Result.ok(10).filter((x) => x > 5)
 // Ok(10)
 
 const filtered = Result.ok(3).filter(
-  x => x > 5,
-  x => new Error(`${x} is too small`)
+  (x) => x > 5,
+  (x) => new Error(`${x} is too small`)
 )
 // Err(Error: 3 is too small)
 ```
@@ -566,8 +557,8 @@ match<L, R>(handlers: {
 
 ```typescript
 const message = result.match({
-  ok: value => `Success: ${value}`,
-  err: error => `Error: ${error}`
+  ok: (value) => `Success: ${value}`,
+  err: (error) => `Error: ${error}`
 })
 ```
 
@@ -583,8 +574,8 @@ inspect(visitor: (value: T) => void): ResultType<T, E>
 
 ```typescript
 result
-  .inspect(x => console.log('Value:', x))
-  .map(x => x * 2)
+  .inspect((x) => console.log('Value:', x))
+  .map((x) => x * 2)
 ```
 
 ### inspectErr()
@@ -599,7 +590,7 @@ inspectErr(visitor: (error: E) => void): ResultType<T, E>
 
 ```typescript
 result
-  .inspectErr(err => logger.error(err))
+  .inspectErr((err) => logger.error(err))
   .mapErr(normalizeError)
 ```
 
@@ -698,7 +689,7 @@ mapAsync<U>(mapperAsync: (value: T) => Promise<U>): Promise<ResultType<U, E>>
 
 ```typescript
 const result = await Result.ok(userId)
-  .mapAsync(async id => fetchUser(id))
+  .mapAsync(async (id) => fetchUser(id))
 ```
 
 ### mapErrAsync()

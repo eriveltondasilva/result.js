@@ -1,9 +1,3 @@
----
-title: Getting Started
-group: Documents
-category: Guides
----
-
 # Getting Started
 
 This guide will help you install and start using Result.js in your project.
@@ -16,12 +10,6 @@ This guide will help you install and start using Result.js in your project.
 npm install @eriveltonsilva/result.js
 ```
 
-<!-- ### yarn
-
-```bash
-yarn add @eriveltonsilva/result.js
-``` -->
-
 ## Requirements
 
 - Node.js >= 22.0.0
@@ -33,12 +21,20 @@ yarn add @eriveltonsilva/result.js
 
 ```typescript
 import { Result } from '@eriveltonsilva/result.js'
+
+// or
+
+import Result from '@eriveltonsilva/result.js'
 ```
 
 ### CommonJS
 
 ```javascript
 const { Result } = require('@eriveltonsilva/result.js')
+
+// or
+
+const Result = require('@eriveltonsilva/result.js')
 ```
 
 ## Your First Result
@@ -126,8 +122,8 @@ function validateEmail(email: string): ResultType<string, ValidationError> {
 
 ```typescript
 const result = Result.ok(5)
-  .map(x => x * 2)
-  .map(x => x + 10)
+  .map((x) => x * 2)
+  .map((x) => x + 10)
 
 console.log(result.unwrap()) // 20
 ```
@@ -148,7 +144,7 @@ if (result.isOk()) {
 ## Handling Nullables
 
 ```typescript
-const user = users.find(u => u.id === userId)
+const user = users.find((user) => user.id === userId)
 
 // Convert to Result
 const result = Result.fromNullable(user)
@@ -190,11 +186,11 @@ if (result.isOk()) {
 
 ```typescript
 const result = await Result.ok(userId)
-  .mapAsync(async id => {
+  .mapAsync(async (id) => {
     const user = await fetchUser(id)
     return user
   })
-  .andThenAsync(async user => {
+  .andThenAsync(async (user) => {
     await updateLastLogin(user.id)
     return Result.ok(user)
   })
@@ -204,8 +200,8 @@ const result = await Result.ok(userId)
 
 ```typescript
 const message = result.match({
-  ok: value => `Success: ${value}`,
-  err: error => `Error: ${error.message}`
+  ok: (value) => `Success: ${value}`,
+  err: (error) => `Error: ${error.message}`
 })
 
 console.log(message)
@@ -220,7 +216,7 @@ console.log(message)
 const value = result.unwrapOr(42)
 
 // Computed default
-const value = result.unwrapOrElse(error => {
+const value = result.unwrapOrElse((error) => {
   console.log('Error occurred:', error)
   return defaultValue
 })

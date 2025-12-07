@@ -57,7 +57,7 @@ All Result operations are immutable. Methods return new Results rather than modi
 
 ```typescript
 const original = Result.ok(5)
-const doubled = original.map(x => x * 2)
+const doubled = original.map((x) => x * 2)
 
 console.log(original.unwrap()) // 5 (unchanged)
 console.log(doubled.unwrap())  // 10
@@ -84,15 +84,15 @@ TypeScript automatically infers Result types from usage.
 ```typescript
 // Type inferred as ResultType<number, string>
 const result = Result.ok(42)
-  .map(x => x * 2)
-  .andThen(x => x > 50 ? Result.ok(x) : Result.err('too small'))
+  .map((x) => x * 2)
+  .andThen((x) => x > 50 ? Result.ok(x) : Result.err('too small'))
 ```
 
 ## Internal Architecture
 
 ### Class Structure
 
-```bash
+```txt
 Result (namespace)
 ├── Ok<T, E>     - Success variant
 ├── Err<T, E>    - Error variant
@@ -164,8 +164,8 @@ match result {
 // Result.js
 const result: ResultType<number, string> = Result.ok(42)
 result.match({
-  ok: value => console.log(`Got: ${value}`),
-  err: e => console.log(`Error: ${e}`)
+  ok: (value) => console.log(`Got: ${value}`),
+  err: (e) => console.log(`Error: ${e}`)
 })
 ```
 
@@ -185,7 +185,7 @@ fn process() -> Result<i32, String> {
 // Result.js uses method chaining
 function process(): ResultType<number, string> {
   return fallibleOp()
-    .map(x => x * 2)
+    .map((x) => x * 2)
 }
 ```
 
@@ -275,7 +275,7 @@ Result.js is tree-shakeable. Unused methods are removed during bundling.
 ```typescript
 // Only imports ok() and map() - smaller bundle
 import { Result } from '@eriveltonsilva/result.js'
-const result = Result.ok(42).map(x => x * 2)
+const result = Result.ok(42).map((x) => x * 2)
 ```
 
 ## Type System Integration
@@ -309,13 +309,6 @@ function validate<E>(data: unknown): ResultType<ValidData, E> {
   // ...
 }
 ```
-
-## Future Considerations
-
-- Async iterator support
-- Transducer integration
-- Effect system compatibility
-- Do-notation (if TypeScript adds it)
 
 ## Further Reading
 
