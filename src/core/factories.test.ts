@@ -99,7 +99,7 @@ describe('Factories', () => {
       const result = validate(
         5,
         (x) => x > 10,
-        (value) => new Error(`Expected > 10, got ${value}`)
+        (value) => new Error(`Expected > 10, got ${value}`),
       )
 
       expect(expectErr(result).message).toBe('Expected > 10, got 5')
@@ -135,7 +135,7 @@ describe('Factories', () => {
     it('should use custom error mapper', () => {
       const result = fromTry(
         () => JSON.parse('invalid'),
-        (error) => `Parse error: ${(error as Error).message}`
+        (error) => `Parse error: ${(error as Error).message}`,
       )
 
       expect(expectErr(result)).toContain('Parse error')
@@ -310,7 +310,7 @@ describe('Factories', () => {
         async () => {
           throw new Error('Network error')
         },
-        (error) => `Custom: ${(error as Error).message}`
+        (error) => `Custom: ${(error as Error).message}`,
       )
 
       expect(expectErr(result)).toBe('Custom: Network error')
@@ -346,7 +346,7 @@ describe('Factories', () => {
         (error): ApiError => ({
           code: 404,
           message: (error as Error).message,
-        })
+        }),
       )
 
       expect(expectErr(result)).toEqual({
@@ -399,7 +399,7 @@ describe('Factories', () => {
         validate(
           user,
           (u) => u.age >= 18 && u.name.length > 0 && u.email.includes('@'),
-          (u) => new Error(`Invalid user: ${JSON.stringify(u)}`)
+          (u) => new Error(`Invalid user: ${JSON.stringify(u)}`),
         )
 
       const valid = validateUser({ name: 'John', age: 25, email: 'john@test.com' })

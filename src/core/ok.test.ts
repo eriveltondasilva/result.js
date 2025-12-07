@@ -85,7 +85,7 @@ describe('Ok', () => {
       it('should keep Ok when predicate passes', () => {
         const result = okValue.filter(
           (x) => x > 40,
-          () => new Error('Too small')
+          () => new Error('Too small'),
         )
         expect(expectOk(result)).toBe(42)
       })
@@ -104,7 +104,7 @@ describe('Ok', () => {
       it('should convert to Err when predicate fails', () => {
         const result = okValue.filter(
           (x) => x > 50,
-          (value) => new Error(`Value ${value} is too small`)
+          (value) => new Error(`Value ${value} is too small`),
         )
         const error = expectErr(result)
         expect(error.message).toBe('Value 42 is too small')
@@ -337,11 +337,11 @@ describe('Ok', () => {
       const result = okValue
         .filter(
           (x) => x > 0,
-          () => new Error('Negative')
+          () => new Error('Negative'),
         )
         .filter(
           (x) => x < 100,
-          () => new Error('Too large')
+          () => new Error('Too large'),
         )
 
       expect(expectOk(result)).toBe(42)

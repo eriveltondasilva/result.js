@@ -16,6 +16,8 @@ describe('Module Exports', () => {
       'any',
       'partition',
       'allSettled',
+      'values',
+      'errors',
     ]
 
     methods.forEach((method) => {

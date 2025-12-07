@@ -144,13 +144,13 @@ export function validate<T>(value: T, predicate: (value: T) => boolean): ResultT
 export function validate<T, E>(
   value: T,
   predicate: (value: T) => boolean,
-  onError: (value: T) => E
+  onError: (value: T) => E,
 ): ResultType<T, E>
 
 export function validate<T, E = Error>(
   value: T,
   predicate: (value: T) => boolean,
-  onError?: (value: T) => E | Error
+  onError?: (value: T) => E | Error,
 ): ResultType<T, E | Error> {
   if (!predicate(value)) {
     const mappedError = onError
@@ -222,12 +222,12 @@ export function fromNullable<T>(value: T | null | undefined): ResultType<NonNull
  */
 export function fromNullable<T, E>(
   value: T | null | undefined,
-  onError: () => E
+  onError: () => E,
 ): ResultType<NonNullable<T>, E>
 
 export function fromNullable<T, E = Error>(
   value: T | null | undefined,
-  onError?: () => E
+  onError?: () => E,
 ): ResultType<NonNullable<T>, E | Error> {
   if (value === null || value === undefined) {
     const mappedError = onError ? onError() : new Error('Value is null or undefined')
@@ -351,7 +351,7 @@ export function fromTry<T, E>(executor: () => T, onError: (error: unknown) => E)
 
 export function fromTry<T, E>(
   executor: () => T,
-  onError?: (error: unknown) => E
+  onError?: (error: unknown) => E,
 ): ResultType<T, E | Error> {
   try {
     const value = executor()
@@ -438,12 +438,12 @@ export async function fromPromise<T>(executor: () => Promise<T>): AsyncResultTyp
  */
 export async function fromPromise<T, E>(
   executor: () => Promise<T>,
-  onError: (error: unknown) => E
+  onError: (error: unknown) => E,
 ): AsyncResultType<T, E>
 
 export async function fromPromise<T, E>(
   executor: () => Promise<T>,
-  onError?: (error: unknown) => E
+  onError?: (error: unknown) => E,
 ): AsyncResultType<T, E | Error> {
   try {
     const value = await executor()
@@ -507,7 +507,7 @@ export async function fromPromise<T, E>(
  * Result.all([]) // Ok([])
  */
 export function all<const T extends readonly ResultType<unknown, unknown>[]>(
-  results: T
+  results: T,
 ): ResultType<OkTuple<T>, ErrUnion<T>> {
   if (results.length === 0) {
     return new Ok([]) as Ok<OkTuple<T>, never>
@@ -565,7 +565,7 @@ export function all<const T extends readonly ResultType<unknown, unknown>[]>(
  * Result.allSettled([]) // Ok([])
  */
 export function allSettled<const T extends readonly ResultType<unknown, unknown>[]>(
-  results: T
+  results: T,
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
   if (results.length === 0) {
     return new Ok([])
@@ -624,7 +624,7 @@ export function allSettled<const T extends readonly ResultType<unknown, unknown>
  * Result.any([]) // Err([])
  */
 export function any<const T extends readonly ResultType<unknown, unknown>[]>(
-  results: T
+  results: T,
 ): ResultType<OkUnion<T>, ErrTuple<T>> {
   if (results.length === 0) {
     return new Err([]) as Err<never, ErrTuple<T>>
@@ -699,6 +699,22 @@ export function partition<T, E>(results: readonly ResultType<T, E>[]): readonly 
   }
 
   return [oks, errs] as const
+}
+
+export function values<T, E>(results: readonly ResultType<T, E>[]): T[] {
+  if (results.length === 0) {
+    return []
+  }
+
+  return results.filter((r) => r.isOk()).map((r) => r.unwrap())
+}
+
+export function errors<T, E>(results: readonly ResultType<T, E>[]): E[] {
+  if (results.length === 0) {
+    return []
+  }
+
+  return results.filter((r) => r.isErr()).map((r) => r.unwrapErr())
 }
 
 // #endregion

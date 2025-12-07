@@ -108,7 +108,7 @@ describe('Err', () => {
     it('should preserve Err in filter', () => {
       const result = errValue.filter(
         (x) => x > 0,
-        () => new Error('Filter failed')
+        () => new Error('Filter failed'),
       )
       expect(expectErr(result).message).toBe('Test error')
     })
@@ -323,7 +323,7 @@ describe('Err', () => {
       it('should recover with orElseAsync', async () => {
         const ok = await errValue.orElseAsync(async () => new Ok(42))
         const err = await errValue.orElseAsync(
-          async (e) => new Err(new Error(`Async chained: ${e.message}`))
+          async (e) => new Err(new Error(`Async chained: ${e.message}`)),
         )
 
         expect(expectOk(ok)).toBe(42)
@@ -392,7 +392,7 @@ describe('Err', () => {
       class CustomError extends Error {
         constructor(
           public code: number,
-          message: string
+          message: string,
         ) {
           super(message)
           this.name = 'CustomError'

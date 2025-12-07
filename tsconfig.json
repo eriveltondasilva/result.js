@@ -50,7 +50,7 @@
     // Qualidade
     "forceConsistentCasingInFileNames": true,
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
+    "allowUnreachableCode": false
 
     // Build
     // "incremental": true,

@@ -3,6 +3,7 @@ import {
   allSettled,
   any,
   err,
+  errors,
   fromNullable,
   fromPromise,
   fromTry,
@@ -10,14 +11,10 @@ import {
   ok,
   partition,
   validate,
+  values,
 } from './core/factories.js'
 
 export type { AsyncResultType, ResultMethods, ResultType } from './core/types.js'
-
-/**
- * teste lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
- * @document ../docs/todos.md
- */
 
 /**
  * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
@@ -75,6 +72,8 @@ export const Result = Object.freeze({
   any,
   partition,
   allSettled,
+  values,
+  errors,
 } as const)
 
 export default Result

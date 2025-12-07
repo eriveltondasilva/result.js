@@ -158,14 +158,14 @@ export interface ResultMethods<T, E> {
 
   // #region TRANSFORMATION
   map<U, F = never>(
-    mapper: (value: T) => U | ResultType<U, F>
+    mapper: (value: T) => U | ResultType<U, F>,
   ): ResultType<U, E> | ResultType<U, E | F>
   mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
   mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U
   mapErr<F>(mapper: (error: E) => F): ResultType<T, F>
   filter(
     predicate: (value: T) => boolean,
-    onReject?: (value: T) => E | Error
+    onReject?: (value: T) => E | Error,
   ): ResultType<T, E | Error>
   flatten<U, F>(this: ResultType<ResultType<U, F>, E>): ResultType<U, E | F>
   // #endregion
@@ -197,13 +197,13 @@ export interface ResultMethods<T, E> {
 
   // #region ASYNC OPERATIONS
   mapAsync<U, F = never>(
-    mapperAsync: (value: T) => Promise<U | ResultType<U, F>>
+    mapperAsync: (value: T) => Promise<U | ResultType<U, F>>,
   ): Promise<ResultType<U, E> | ResultType<U, E | F>>
   mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): AsyncResultType<T, F>
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U>
   mapOrElseAsync<U>(
     okMapperAsync: (value: T) => Promise<U>,
-    errMapperAsync: (error: E) => Promise<U>
+    errMapperAsync: (error: E) => Promise<U>,
   ): Promise<U>
   andThenAsync<U>(flatMapperAsync: (value: T) => AsyncResultType<U, E>): AsyncResultType<U, E>
   andAsync<U>(result: AsyncResultType<U, E>): AsyncResultType<U, E>

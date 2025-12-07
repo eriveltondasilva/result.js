@@ -411,7 +411,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
 
   filter(
     _predicate: (value: T) => boolean,
-    _onReject?: (value: T) => E | Error
+    _onReject?: (value: T) => E | Error,
   ): ResultType<T, E | Error> {
     return this
   }
@@ -761,7 +761,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("fail")
    */
   async mapAsync<U, F = never>(
-    _mapperAsync: (value: T) => Promise<U | ResultType<U, F>>
+    _mapperAsync: (value: T) => Promise<U | ResultType<U, F>>,
   ): Promise<Err<U, E>> {
     return this as unknown as Err<U, E>
   }
@@ -830,7 +830,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    */
   mapOrElseAsync<U>(
     _okMapperAsync: (value: T) => Promise<U>,
-    errMapperAsync: (error: E) => Promise<U>
+    errMapperAsync: (error: E) => Promise<U>,
   ): Promise<U> {
     return errMapperAsync(this.#error)
   }

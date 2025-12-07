@@ -5,10 +5,7 @@
   "out": "./docs/typedoc",
   "entryPoints": ["./src/index.ts"],
   "projectDocuments": ["./docs/*.md"],
-  "plugin": [
-    "typedoc-plugin-missing-exports",
-    "typedoc-github-theme"
-  ],
+  "plugin": ["typedoc-plugin-missing-exports", "typedoc-github-theme"],
   "includeVersion": true,
 
   "navigation": {
@@ -22,5 +19,5 @@
     "github": "https://github.com/eriveltondasilva/result.js",
     "npm": "https://www.npmjs.com/package/result.js",
     "docs": "https://eriveltondasilva.github.io/result.js/"
-  },
+  }
 }

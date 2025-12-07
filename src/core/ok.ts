@@ -403,7 +403,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   filter(
     predicate: (value: T) => boolean,
-    onReject?: (value: T) => E | Error
+    onReject?: (value: T) => E | Error,
   ): ResultType<T, E | Error> {
     if (!predicate(this.#value)) {
       const error = onReject
@@ -793,7 +793,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * })
    */
   async mapAsync<U, F = never>(
-    mapperAsync: (value: T) => Promise<U | ResultType<U, F>>
+    mapperAsync: (value: T) => Promise<U | ResultType<U, F>>,
   ): Promise<Ok<U, E> | ResultType<U, E | F>> {
     const mapped = await mapperAsync(this.#value)
 
@@ -855,7 +855,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    */
   mapOrElseAsync<U>(
     okMapperAsync: (value: T) => Promise<U>,
-    _errMapperAsync: (error: E) => Promise<U>
+    _errMapperAsync: (error: E) => Promise<U>,
   ): Promise<U> {
     return okMapperAsync(this.#value)
   }
@@ -875,7 +875,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * })
    */
   andThenAsync<U>(
-    flatMapperAsync: (value: T) => Promise<ResultType<U, E>>
+    flatMapperAsync: (value: T) => Promise<ResultType<U, E>>,
   ): Promise<ResultType<U, E>> {
     return flatMapperAsync(this.#value)
   }

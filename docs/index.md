@@ -1,94 +1,119 @@
-# Result.js Documentation
+---
+layout: home
 
-Welcome to the complete documentation for Result.js - a Rust-inspired Result type for JavaScript and TypeScript.
+hero:
+  name: Result.js
+  text: Result Type for JavaScript
+  tagline: Explicit, type-safe error handling inspired by Rust
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/eriveltondasilva/result.js
 
-## Table of Contents
+features:
+  - icon: 🦀
+    title: Rust-Inspired
+    details: Familiar API based on Rust's Result<T, E>, bringing robustness and reliability to JavaScript
 
-### Getting Started
+  - icon: 🎯
+    title: Type-Safe
+    details: Full TypeScript support with automatic type inference and smart type guards
 
-- **[Getting Started](./getting-started.md)** - Installation, setup, and your first Result
-- **[Core Concepts](./architecture.md)** - Understanding the Result pattern and architecture
+  - icon: 📦
+    title: Zero Dependencies
+    details: Lightweight and focused library with no external dependencies. Only ~3KB minified
 
-### Reference
+  - icon: 🔗
+    title: Fluent API
+    details: Chain operations with map, andThen, orElse and 40+ available methods
 
-- **[API Reference](./api-reference.md)** - Complete API documentation with all methods
-- **[Type Reference](./type-reference.md)** - TypeScript types and utilities
+  - icon: ⚡
+    title: Tree-Shakeable
+    details: Optimized for modern bundlers. Import only what you need
 
-### Guides
+  - icon: 🛡️
+    title: No Exceptions
+    details: Eliminate try-catch. Handle errors explicitly in return types
+---
 
-- **[Examples & Patterns](./examples.md)** - Real-world usage patterns and best practices
-- **[Migration Guide](./migration-guide.md)** - Migrating from exceptions to Results
+## Quick Install
 
-### Development
+```bash
+npm install @eriveltonsilva/result.js
+```
 
-- **[Contributing](../CONTRIBUTING.md)** - How to contribute to Result.js
-- **[Changelog](../CHANGELOG.md)** - Version history and updates
-
-## What is Result.js?
-
-Result.js brings Rust's powerful `Result<T, E>` pattern to JavaScript and TypeScript. It provides a type-safe way to handle operations that can succeed or fail without throwing exceptions.
-
-### Why Use Result.js?
-
-**Explicit Error Handling**
+## Basic Example
 
 ```typescript
-// Instead of try-catch
+import { Result } from '@eriveltonsilva/result.js'
+
+// Create Results
+const success = Result.ok(42)
+const failure = Result.err(new Error('Something went wrong'))
+
+// Check and extract values
+if (success.isOk()) {
+  console.log(success.unwrap()) // 42
+}
+
+// Chain operations
+const result = Result.ok(10)
+  .map((x) => x * 2)
+  .andThen((x) => x > 15 ? Result.ok(x) : Result.err('too small'))
+  .unwrapOr(0)
+
+console.log(result) // 20
+```
+
+## Why Result.js?
+
+### Before (with exceptions)
+
+```typescript
+function divide(a: number, b: number): number {
+  if (b === 0) throw new Error('Division by zero')
+  return a / b
+}
+
 try {
-  const data = JSON.parse(input)
-  processData(data)
+  const result = divide(10, 0)
+  console.log(result)
 } catch (error) {
-  handleError(error)
-}
-
-// Use Result
-const result = Result.fromTry(() => JSON.parse(input))
-if (result.isOk()) {
-  processData(result.unwrap())
-} else {
-  handleError(result.unwrapErr())
+  console.error(error)
 }
 ```
 
-**Type-Safe Chaining**
+### After (with Result)
 
 ```typescript
-const user = Result.ok(userData)
-  .map(validateEmail)
-  .andThen(checkPermissions)
-  .andThen(saveToDatabase)
+function divide(a: number, b: number): ResultType<number, string> {
+  if (b === 0) return Result.err('Division by zero')
+  return Result.ok(a / b)
+}
+
+const result = divide(10, 0)
+if (result.isErr()) {
+  console.error(result.unwrapErr()) // TypeScript knows it's string
+}
 ```
 
-**Better Composability**
+## Key Features
 
-```typescript
-const results = Result.all([
-  fetchUser(id),
-  fetchPosts(id),
-  fetchComments(id)
-])
-```
+- **Errors in return type** - No runtime surprises
+- **Pattern matching** - Elegant decisions with `match()`
+- **Async operations** - Full Promise support
+- **Functional composition** - Combine operations easily
+- **ESM and CommonJS compatible** - Use anywhere
 
-## Quick Navigation
+## Next Steps
 
-### By Use Case
+<div class="vp-doc">
 
-- **Error handling** → [Getting Started](./getting-started.md#error-handling)
-- **Async operations** → [Examples: Async Patterns](./examples.md#async-patterns)
-- **Validation** → [Examples: Validation](./examples.md#validation-patterns)
-- **Collections** → [API: Collections](./api-reference.md#collections)
+- **[Getting Started Guide](/guide/)** - Learn the fundamentals
+- **[API Reference](/api/)** - Explore all methods
+- **[Examples](/examples/)** - See real-world patterns
 
-### By Experience Level
-
-- **New to Result pattern?** Start with [Getting Started](./getting-started.md)
-- **Coming from Rust?** Check [Architecture](./architecture.md#comparison-with-rust)
-- **Migrating existing code?** See [Migration Guide](./migration-guide.md)
-
-## Community & Support
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/eriveltondasilva/result.js/issues)
-- **npm**: [Package on npm](https://www.npmjs.com/package/@eriveltonsilva/result.js)
-
-## License
-
-Result.js is [MIT licensed](../LICENSE.md).
+</div>
