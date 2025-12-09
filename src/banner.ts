@@ -19,5 +19,7 @@ export const banner = `/**
  * @see https://doc.rust-lang.org/std/result - Rust Result Type
  * @see https://www.npmjs.com/package/oxide.ts - oxide.ts Package
  * @see https://www.npmjs.com/package/result.ts - result.ts Package
+ * @see https://hexdocs.pm/gleam_stdlib/gleam/result.html - Gleam Result Type
+ * @see https://github.com/gleam-lang/gleam/blob/main/stdlib/result.md - Gleam Result Type
  */
 `
