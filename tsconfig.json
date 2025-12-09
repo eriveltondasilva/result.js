@@ -1,27 +1,29 @@
 {
-  "extends": ["@tsconfig/node22/tsconfig.json", "@tsconfig/strictest/tsconfig.json"],
+  "extends": [
+    "@tsconfig/node22/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json"
+  ],
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
-
     // Environment Settings
-
     // Module System
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
-
     // Library específico
-    "lib": ["ES2022"],
-    "types": ["node"],
-
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node"
+    ],
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
     // Stricter Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -29,39 +31,35 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitOverride": true,
-
     // Recommended Options
     "strict": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-
     // Compatibilidade
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-
     // Outputs otimizados
     "removeComments": false,
     "downlevelIteration": true,
     // "importHelpers": true,
-
     // Qualidade
     "forceConsistentCasingInFileNames": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false
-
     // Build
     // "incremental": true,
     // "tsBuildInfoFile": "./tsbuildinfo"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "node_modules",
     "dist",
     "docs/*",
-    "docs-api/*",
     "tests/*",
     "vitest/*",
     "**/*.spec.ts",
