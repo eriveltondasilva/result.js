@@ -14,7 +14,7 @@ import {
   values,
 } from './core/factories.js'
 
-export type { AsyncResultType, ResultMethods, ResultType } from './core/types.js'
+import type { AsyncResultType, ResultModule, ResultType } from './core/types.js'
 
 /**
  * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
@@ -60,20 +60,23 @@ export type { AsyncResultType, ResultMethods, ResultType } from './core/types.js
  *   Result.ok(3)
  * ]).unwrap() // [1, 2, 3]
  */
-export const Result = Object.freeze({
-  ok,
-  err,
-  fromTry,
-  fromPromise,
-  fromNullable,
-  validate,
-  isResult,
+export const Result: ResultModule = Object.freeze({
   all,
-  any,
-  partition,
   allSettled,
-  values,
+  any,
+  err,
   errors,
+  fromNullable,
+  fromPromise,
+  fromTry,
+  isResult,
+  ok,
+  partition,
+  validate,
+  values,
 } as const)
+
+export type Result<T, E> = ResultType<T, E>
+export type AsyncResult<T, E> = AsyncResultType<T, E>
 
 export default Result

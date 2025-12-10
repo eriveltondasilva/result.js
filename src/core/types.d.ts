@@ -1,6 +1,8 @@
 import type { Err } from './err.js'
 import type { Ok } from './ok.js'
 
+import factories from './factories.js'
+
 // #region TYPES
 
 /**
@@ -217,4 +219,10 @@ export interface ResultMethods<T, E> {
   /** @hidden */
   [Symbol.for('nodejs.util.inspect.custom')]: string
   // #endregion
+}
+
+export type ResultModule = {
+  [K in keyof typeof factories as (typeof factories)[K] extends (...args: unknown[]) => unknown
+    ? K
+    : never]: (typeof factories)[K]
 }
