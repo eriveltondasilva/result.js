@@ -3,12 +3,15 @@ layout: home
 
 hero:
   name: Result.js
-  text: Result Type for JavaScript
-  tagline: Explicit, type-safe error handling inspired by Rust
+  text: Explicit Error Handling
+  tagline: Type-safe Result<T, E> pattern inspired by Rust, for JavaScript & TypeScript
+  image:
+    src: /resultjs-icon.png
+    alt: Result.js
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/
+      link: ./guide/getting-started/what-is-result.md
     - theme: alt
       text: View on GitHub
       link: https://github.com/eriveltondasilva/result.js
@@ -16,27 +19,27 @@ hero:
 features:
   - icon: 🦀
     title: Rust-Inspired
-    details: Familiar API based on Rust's Result<T, E>, bringing robustness and reliability to JavaScript
+    details: Familiar Result<T, E> API bringing robustness and clarity to JavaScript
 
   - icon: 🎯
     title: Type-Safe
     details: Full TypeScript support with automatic type inference and smart type guards
 
-  - icon: 📦
+  - icon: ⚡
     title: Zero Dependencies
-    details: Lightweight and focused library with no external dependencies. Only ~3KB minified
+    details: Lightweight library (~3KB minified) with no external dependencies
 
   - icon: 🔗
     title: Fluent API
-    details: Chain operations with map, andThen, orElse and 40+ available methods
+    details: Chain operations naturally with map, andThen, orElse, and 40+ methods
 
-  - icon: ⚡
+  - icon: 🌳
     title: Tree-Shakeable
-    details: Optimized for modern bundlers. Import only what you need
+    details: Optimized for modern bundlers—import only what you need
 
   - icon: 🛡️
     title: No Exceptions
-    details: Eliminate try-catch. Handle errors explicitly in return types
+    details: Eliminate try-catch blocks and handle errors explicitly in types
 ---
 
 ## Quick Install
@@ -54,11 +57,6 @@ import { Result } from '@eriveltonsilva/result.js'
 const success = Result.ok(42)
 const failure = Result.err(new Error('Something went wrong'))
 
-// Check and extract values
-if (success.isOk()) {
-  console.log(success.unwrap()) // 42
-}
-
 // Chain operations
 const result = Result.ok(10)
   .map((x) => x * 2)
@@ -70,50 +68,38 @@ console.log(result) // 20
 
 ## Why Result.js?
 
-### Before (with exceptions)
+### ✓ Errors in Types
 
 ```typescript
-function divide(a: number, b: number): number {
-  if (b === 0) throw new Error('Division by zero')
-  return a / b
-}
-
-try {
-  const result = divide(10, 0)
-  console.log(result)
-} catch (error) {
-  console.error(error)
-}
-```
-
-### After (with Result)
-
-```typescript
-function divide(a: number, b: number): ResultType<number, string> {
+// With Result: errors are explicit
+function divide(a: number, b: number): Result<number, string> {
   if (b === 0) return Result.err('Division by zero')
   return Result.ok(a / b)
 }
 
 const result = divide(10, 0)
-if (result.isErr()) {
-  console.error(result.unwrapErr()) // TypeScript knows it's string
-}
+
+result.match({
+  ok: (val) => console.log(val),
+  err: (msg) => console.error(msg)
+})
 ```
 
-## Key Features
+### ✓ Clean Composition
 
-- **Errors in return type** - No runtime surprises
-- **Pattern matching** - Elegant decisions with `match()`
-- **Async operations** - Full Promise support
-- **Functional composition** - Combine operations easily
-- **ESM and CommonJS compatible** - Use anywhere
+Chain operations without nested try-catch blocks:
 
-## Next Steps
+```typescript
+const user = await Result.ok(userId)
+  .mapAsync((id) => fetchUser(id))
+  .then((r) => r.andThenAsync(validateUser))
+```
 
-<div class="vp-doc">
+## Key Advantages
 
-- **[Getting Started Guide](/guide/)** - Learn the fundamentals
-- **[API Reference](/api/)** - Explore all methods
-- **[Examples](/examples/)** - See real-world patterns
-
-</div>
+- **Explicit errors** — No hidden exceptions in types
+- **Type safety** — TypeScript enforces error handling
+- **Clean composition** — Chain operations without nesting
+- **Pattern matching** — Elegant `match()` for both cases
+- **Async support** — Full Promise/async-await integration
+- **ESM + CommonJS** — Works everywhere
