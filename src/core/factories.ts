@@ -682,9 +682,9 @@ export function any<const T extends readonly ResultType<unknown, unknown>[]>(
  * // Empty array
  * Result.partition([]) // [[], []]
  */
-export function partition<T, E>(results: readonly ResultType<T, E>[]): readonly [T[], E[]] {
+export function partition<T, E>(results: readonly ResultType<T, E>[]): [T[], E[]] {
   if (results.length === 0) {
-    return [[], []] as const
+    return [[], []]
   }
 
   const oks: T[] = []
@@ -698,9 +698,46 @@ export function partition<T, E>(results: readonly ResultType<T, E>[]): readonly 
     }
   }
 
-  return [oks, errs] as const
+  return [oks, errs]
 }
 
+/**
+ * Extracts only the success values from an array of Results.
+ *
+ * Filters and returns only the values from Results that are Ok,
+ * discarding errors. Useful when you want to process only the
+ * successes without worrying about failures.
+ *
+ * @group Collections
+ * @template T - Success value type
+ * @template E - Error type
+ * @param {readonly ResultType<T, E>[]} results - Array of Results
+ * @returns {T[]} Array containing only Ok values
+ *
+ * @example
+ * // Extracting success values
+ * const operations = [
+ *   Result.ok(1),
+ *   Result.err('failure A'),
+ *   Result.ok(2),
+ *   Result.err('failure B'),
+ *   Result.ok(3)
+ * ]
+ *
+ * const successes = Result.values(operations)
+ * console.log(successes) // [1, 2, 3]
+ *
+ * @example
+ * // Batch processing
+ * const items = ['1', '2', 'invalid', '4']
+ * const parsed = items.map(x => Result.fromTry(() => parseInt(x)))
+ * const validNumbers = Result.values(parsed)
+ * console.log(validNumbers) // [1, 2, 4]
+ *
+ * @example
+ * // Empty array
+ * Result.values([]) // []
+ */
 export function values<T, E>(results: readonly ResultType<T, E>[]): T[] {
   if (results.length === 0) {
     return []
@@ -709,6 +746,49 @@ export function values<T, E>(results: readonly ResultType<T, E>[]): T[] {
   return results.filter((r) => r.isOk()).map((r) => r.unwrap())
 }
 
+/**
+ * Extracts only the errors from an array of Results.
+ *
+ * Filters and returns only the errors from Results that are Err,
+ * discarding successes. Useful when you want to analyze or
+ * log only the failures that occurred.
+ *
+ * @group Collections
+ * @template T - Success value type
+ * @template E - Error type
+ * @param {readonly ResultType<T, E>[]} results - Array of Results
+ * @returns {E[]} Array containing only errors
+ *
+ * @example
+ * // Collecting errors
+ * const operations = [
+ *   Result.ok(1),
+ *   Result.err('failure A'),
+ *   Result.ok(2),
+ *   Result.err('failure B'),
+ *   Result.ok(3)
+ * ]
+ *
+ * const failures = Result.errors(operations)
+ * console.log(failures) // ["failure A", "failure B"]
+ *
+ * @example
+ * // Error report in validations
+ * const validations = [
+ *   validateEmail(form.email),
+ *   validatePassword(form.password),
+ *   validateAge(form.age)
+ * ]
+ *
+ * const validationErrors = Result.errors(validations)
+ * if (validationErrors.length > 0) {
+ *   console.error('Validation errors:', validationErrors)
+ * }
+ *
+ * @example
+ * // Empty array
+ * Result.errors([]) // []
+ */
 export function errors<T, E>(results: readonly ResultType<T, E>[]): E[] {
   if (results.length === 0) {
     return []
