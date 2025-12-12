@@ -105,7 +105,7 @@
     "test:report": "vitest run --reporter=html --outputFile=vitest/report/index.html",
     "test:report:preview": "npm run test:report && npx vite preview --outDir vitest/report",
     "ci": "npm run types && biome ci && npm run test",
-    "docs:dev": "vitepress dev docs",
+    "docs:dev": "vitepress dev docs --open",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
