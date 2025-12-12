@@ -4,16 +4,17 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  lang: 'en',
   title: 'Result.js',
-  description: 'Result type for JavaScript & TypeScript',
+  description: 'Explicit, type-safe error handling for JavaScript & TypeScript',
+  head: [['link', { rel: 'icon', href: '/resultjs-icon.png' }]],
+  base: '/repo/',
 
   themeConfig: {
-    // logo: '',
     nav: [
-      { text: 'Guide', link: '/guide/' },
-      { text: 'API', link: '/api/' },
-      { text: 'Examples', link: '/examples/' },
-      { text: 'Reference', link: '/reference/types' },
+      { text: 'Guide', link: '/guide/what-is-result.md' },
+      { text: 'Examples', link: '/examples/patterns.md' },
+      { text: 'Reference', link: '/api-reference.md' },
     ],
 
     sidebar: {
@@ -21,25 +22,27 @@ export default defineConfig({
         {
           text: 'Getting Started',
           items: [
-            { text: 'Introduction', link: '/guide/' },
-            { text: 'Quick Start', link: '/guide/quick-start' },
-            { text: 'Core Concepts', link: '/guide/core-concepts' },
-            { text: 'Migration Guide', link: '/guide/migration' },
+            { text: 'What is Result?', link: '/guide/getting-started/what-is-result.md' },
+            { text: 'Installation', link: '/guide/getting-started/installation.md' },
+            { text: 'Quick Start', link: '/guide/getting-started/quick-start.md' },
           ],
         },
-      ],
-
-      '/api/': [
         {
-          text: 'API Reference',
+          text: 'Core Concepts',
           items: [
-            { text: 'Overview', link: '/api/' },
-            { text: 'Creation', link: '/api/creation' },
-            { text: 'Validation', link: '/api/validation' },
-            { text: 'Transformation', link: '/api/transformation' },
-            { text: 'Chaining', link: '/api/chaining' },
-            { text: 'Async Operations', link: '/api/async' },
-            { text: 'Collections', link: '/api/collections' },
+            { text: 'Type Safety', link: '/guide/core-concepts/type-safety.md' },
+            { text: 'Error Handling', link: '/guide/core-concepts/error-handling.md' },
+            { text: 'Operation Chaining', link: '/guide/core-concepts/chaining.md' },
+            { text: 'Pattern Matching', link: '/guide/core-concepts/matching.md' },
+            { text: 'Async Operations', link: '/guide/core-concepts/async.md' },
+          ],
+        },
+        {
+          text: 'Advanced',
+          items: [
+            { text: 'Best Practices', link: '/guide/advanced/best-practices.md' },
+            { text: 'Migration Guide', link: '/guide/advanced/migration.md' },
+            { text: 'Troubleshooting', link: '/guide/advanced/troubleshooting.md' },
           ],
         },
       ],
@@ -48,26 +51,27 @@ export default defineConfig({
         {
           text: 'Examples',
           items: [
-            { text: 'Overview', link: '/examples/' },
-            { text: 'Form Validation', link: '/examples/validation' },
-            { text: 'API Calls', link: '/examples/api-calls' },
-            { text: 'Database', link: '/examples/database' },
-            { text: 'Error Handling', link: '/examples/error-handling' },
-          ],
-        },
-      ],
-
-      '/reference/': [
-        {
-          text: 'Reference',
-          items: [
-            { text: 'TypeScript Types', link: '/reference/types' },
-            { text: 'Comparison', link: '/reference/comparison' },
+            { text: 'Patterns', link: '/examples/patterns.md' },
+            { text: 'Express.js', link: '/examples/express.md' },
+            { text: 'React.js', link: '/examples/react.md' },
+            { text: 'Database', link: '/examples/database.md' },
           ],
         },
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/eriveltondasilva/result.js' }],
+    editLink: {
+      pattern: 'https://github.com/eriveltondasilva/result.js/edit/main/docs/:path',
+    },
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/eriveltondasilva/result.js' },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/@eriveltonsilva/result.js' },
+    ],
+
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2025-present <a href="https://github.com/eriveltondasilva">Erivelton Silva</a>',
+    },
   },
 })
