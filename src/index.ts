@@ -1,20 +1,5 @@
-import {
-  all,
-  allSettled,
-  any,
-  err,
-  errors,
-  fromNullable,
-  fromPromise,
-  fromTry,
-  isResult,
-  ok,
-  partition,
-  validate,
-  values,
-} from './core/factories.js'
-
-import type { AsyncResultType, ResultModule, ResultType } from './core/types.js'
+import * as factories from './core/factories.js'
+import type { AsyncResultType, ResultType } from './core/types.js'
 
 /**
  * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
@@ -42,6 +27,7 @@ import type { AsyncResultType, ResultModule, ResultType } from './core/types.js'
  * @example
  * // Error handling with try/catch
  * const parsed = Result.fromTry(() => JSON.parse('{"a":1}'))
+ *
  * if (parsed.isOk()) {
  *   console.log(parsed.unwrap()) // {a: 1}
  * }
@@ -60,21 +46,7 @@ import type { AsyncResultType, ResultModule, ResultType } from './core/types.js'
  *   Result.ok(3)
  * ]).unwrap() // [1, 2, 3]
  */
-export const Result: ResultModule = Object.freeze({
-  all,
-  allSettled,
-  any,
-  err,
-  errors,
-  fromNullable,
-  fromPromise,
-  fromTry,
-  isResult,
-  ok,
-  partition,
-  validate,
-  values,
-} as const)
+export const Result = Object.freeze({...factories} as const)
 
 export type Result<T, E> = ResultType<T, E>
 export type AsyncResult<T, E> = AsyncResultType<T, E>
