@@ -51,33 +51,27 @@
   "scripts": {
     "clean": "rimraf dist",
     "clean:dev": "rimraf dist vitest",
-
     "build": "npm run clean && tsup --minify",
     "build:dev": "npm run clean && tsup",
-    
     "start": "node dist/index.js",
     "dev": "tsx watch src/examples.ts",
-
     "fmt": "biome format --write --verbose",
     "lint": "biome lint --write --verbose",
     "check": "biome check --write --verbose",
-    
     "typecheck": "tsc --noEmit",
-
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --coverage --ui",
     "test:report": "vitest run --reporter=html --outputFile=vitest/report/index.html",
     "test:report:preview": "npm run test:report && npx vite preview --outDir vitest/report",
-
     "ci": "npm run typecheck && biome ci && npm run test",
     "prepublishOnly": "npm run ci && npm run build",
     "postversion": "git push origin main --follow-tags",
-    
     "docs:dev": "vitepress dev docs --open",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.4",
@@ -86,6 +80,7 @@
     "@types/node": "^22.19.2",
     "@vitest/coverage-v8": "^4.0.8",
     "@vitest/ui": "^4.0.8",
+    "husky": "^9.1.7",
     "rimraf": "^6.1.0",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
