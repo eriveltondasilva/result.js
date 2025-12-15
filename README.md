@@ -55,7 +55,7 @@ const result = Result.fromTry(() => JSON.parse('{"valid": true}'))
 
 ## Documentation
 
-For comprehensive guides, API reference, and advanced usage patterns, see the **[complete documentation](./docs)**.
+For comprehensive guides, API reference, and advanced usage patterns, see the **[complete documentation](https://eriveltondasilva.github.io/result.js/)**.
 
 ### Quick Links
 
