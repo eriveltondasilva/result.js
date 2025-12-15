@@ -7,7 +7,7 @@ export default defineConfig({
   title: 'Result.js',
   description: 'Explicit, type-safe error handling for JavaScript & TypeScript',
   head: [['link', { rel: 'icon', href: '/resultjs-icon.png' }]],
-  base: '/repo/',
+  base: '/result.js/',
 
   themeConfig: {
     nav: [
