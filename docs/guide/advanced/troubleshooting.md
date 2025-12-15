@@ -190,5 +190,5 @@ test('should return Err for invalid input', () => {
 ## Still Need Help?
 
 - **[Best Practices](./best-practices.md)** — Core principles
-- **[Error Handling](./error-handling.md)** — Recovery strategies
+- **[Error Handling](../core-concepts/error-handling.md)** — Recovery strategies
 - **[GitHub Issues](https://github.com/eriveltondasilva/result.js/issues)** — Report bugs
