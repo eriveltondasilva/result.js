@@ -1,5 +1,54 @@
+// biome-ignore assist/source/organizeImports: no need to organize imports
 import * as factories from './core/factories.js'
-import type { AsyncResultType, ResultType } from './core/types.js'
+
+import type { Err } from './core/err.js'
+import type { Ok } from './core/ok.js'
+
+// #region TYPE
+
+/**
+ * Represents a result that can be either success (Ok) or failure (Err).
+ *
+ * @see {@link AsyncResult} for async version
+ * @template T - Success value type
+ * @template E - Error type
+ *
+ * @example
+ * ```ts
+ * function divide(a: number, b: number): Result<number, string> {
+ *   return b === 0 ? Result.err('Division by zero') : Result.ok(a / b)
+ * }
+ *
+ * const result = divide(10, 2)
+ *
+ * if (result.isOk()) {
+ *   console.log(result.unwrap()) // 5
+ * }
+ * ```
+ */
+export type Result<T, E> = Ok<T, E> | Err<T, E>
+
+/**
+ * Represents a Promise that resolves to a Result.
+ *
+ * @template T - Success value type
+ * @template E - Error type
+ *
+ * @example
+ * ```ts
+ * async function fetchUser(id: string): AsyncResult<User, Error> {
+ *   return Result.fromPromise(
+ *     async () => {
+ *       const response = await fetch(`/api/users/${id}`)
+ *       return response.json()
+ *     }
+ *   )
+ * }
+ * ```
+ */
+export type AsyncResult<T, E> = Promise<Result<T, E>>
+
+// #endregion
 
 /**
  * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
@@ -46,9 +95,6 @@ import type { AsyncResultType, ResultType } from './core/types.js'
  *   Result.ok(3)
  * ]).unwrap() // [1, 2, 3]
  */
-export const Result = Object.freeze({...factories} as const)
-
-export type Result<T, E> = ResultType<T, E>
-export type AsyncResult<T, E> = AsyncResultType<T, E>
+export const Result = Object.freeze({ ...factories } as const)
 
 export default Result

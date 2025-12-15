@@ -16,7 +16,7 @@ describe('Module Exports', () => {
     'partition',
     'validate',
     'values',
-  ] as const
+  ] satisfies (keyof typeof Result)[]
 
   it.each(factoryMethods)('should export factory method %s', (method) => {
     expect(typeof Result[method]).toBe('function')

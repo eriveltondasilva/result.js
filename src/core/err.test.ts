@@ -332,14 +332,6 @@ describe('Err', () => {
     })
   })
 
-  //# ==================== METADATA ====================
-  describe('Metadata', () => {
-    it('should have correct Symbol.toStringTag', () => {
-      expect(errValue[Symbol.toStringTag]).toBe('Result.Err')
-      expect(Object.prototype.toString.call(errValue)).toBe('[object Result.Err]')
-    })
-  })
-
   //# ==================== EDGE CASES ====================
   describe('Edge Cases', () => {
     it.each([

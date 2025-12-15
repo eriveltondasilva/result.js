@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: test file */
 import { describe, expect, it } from 'vitest'
 
-import { Err } from './err.js'
 import {
   all,
   allSettled,
@@ -15,7 +14,6 @@ import {
   partition,
   validate,
 } from './factories.js'
-import { Ok } from './ok.js'
 
 import { expectErr, expectOk } from './test-helpers.js'
 
@@ -49,15 +47,25 @@ describe('Factories', () => {
   })
 
   //# ==================== VALIDATION ====================
-  describe('Result Validation', () => {
-    it.each([
-      { value: new Ok(42), expected: true },
-      { value: new Err(new Error()), expected: true },
-      { value: 42, expected: false },
-      { value: null, expected: false },
-      { value: { ok: 42 }, expected: false },
-    ])('should validate isResult for $value', ({ value, expected }) => {
-      expect(isResult(value)).toBe(expected)
+  describe('Validation', () => {
+    describe('isResult - Valid Results', () => {
+      it.each([
+        ['Ok with value', ok(42)],
+        ['Err with Error', err(new Error('Failed'))],
+      ])('should identify %s as Result', (_label, value) => {
+        expect(isResult(value)).toBe(true)
+      })
+    })
+
+    describe('isResult - Invalid Results', () => {
+      it.each([
+        ['number', 42],
+        ['null', null],
+        ['undefined', undefined],
+        ['plain object', { ok: 42 }],
+      ])('should reject %s as non-Result', (_label, value) => {
+        expect(isResult(value)).toBe(false)
+      })
     })
   })
 
@@ -268,7 +276,7 @@ describe('Factories', () => {
           { status: 'err', reason: 'b' },
         ],
       },
-      { createAe: 'empty', results: [], expected: [] },
+      { name: 'empty', results: [], expected: [] },
     ])('should handle $name', ({ results, expected }) => {
       const settled = expectOk(allSettled(results as any))
       expect(settled).toEqual(expected)

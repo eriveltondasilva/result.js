@@ -1,6 +1,5 @@
 // https://vitepress.dev/reference/site-config
 // https://vitepress.dev/reference/default-theme-config
-
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({

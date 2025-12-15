@@ -7,7 +7,7 @@
 ![Size](https://img.shields.io/bundlephobia/minzip/@eriveltonsilva/result.js)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-![Result.js](./assets/resultjs-banner.png)
+![Result.js](./src/assets/resultjs-banner.png)
 
 A lightweight, Rust-inspired Result type for JavaScript and TypeScript. Handle success and error cases explicitly without exceptions.
 

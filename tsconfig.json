@@ -48,7 +48,7 @@
     // Qualidade
     "forceConsistentCasingInFileNames": true,
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
     // Build
     // "incremental": true,
     // "tsBuildInfoFile": "./tsbuildinfo"
@@ -59,9 +59,10 @@
   "exclude": [
     "node_modules",
     "dist",
-    "docs/*",
-    "tests/*",
-    "vitest/*",
+    "docs",
+    "tests",
+    "vitest",
+    "examples",
     "**/*.spec.ts",
     "**/*.test.ts"
   ]

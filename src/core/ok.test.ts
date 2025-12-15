@@ -53,7 +53,7 @@ describe('Ok', () => {
       { method: 'unwrapOr', args: [0], expected: 42 },
       { method: 'unwrapOrElse', args: [() => 0], expected: 42 },
     ])('should ignore fallback in $method', ({ method, args, expected }) => {
-      // biome-ignore lint/suspicious/noExplicitAny: false positive
+      // biome-ignore lint/suspicious/noExplicitAny: test file
       expect((okValue as any)[method](...args)).toBe(expected)
     })
   })
@@ -72,7 +72,7 @@ describe('Ok', () => {
       { method: 'mapOr', args: [(x: number) => x * 2, 0], expected: 84 },
       { method: 'mapOrElse', args: [(x: number) => x * 2, () => 0], expected: 84 },
     ])('should use Ok function in $method', ({ method, args, expected }) => {
-      // biome-ignore lint/suspicious/noExplicitAny: false positive
+      // biome-ignore lint/suspicious/noExplicitAny: test file
       expect((okValue as any)[method](...args)).toBe(expected)
     })
 
@@ -262,7 +262,7 @@ describe('Ok', () => {
         { method: 'mapOrAsync', args: [async (x: number) => x * 2, 0] },
         { method: 'mapOrElseAsync', args: [async (x: number) => x * 2, async () => 0] },
       ])('should use Ok function in $method', async ({ method, args }) => {
-        // biome-ignore lint/suspicious/noExplicitAny: false positive
+        // biome-ignore lint/suspicious/noExplicitAny: test file
         const result = await (okValue as any)[method](...args)
         expect(result).toBe(84)
       })
@@ -290,14 +290,6 @@ describe('Ok', () => {
         expect(expectOk(result1)).toBe(42)
         expect(expectOk(result2)).toBe(42)
       })
-    })
-  })
-
-  //# ==================== METADATA ====================
-  describe('Metadata', () => {
-    it('should have correct Symbol.toStringTag', () => {
-      expect(okValue[Symbol.toStringTag]).toBe('Result.Ok')
-      expect(Object.prototype.toString.call(okValue)).toBe('[object Result.Ok]')
     })
   })
 

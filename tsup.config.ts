@@ -1,25 +1,17 @@
 import { defineConfig } from 'tsup'
 import { banner } from './src/banner'
 
+const entry = ['./src/index.ts']
+
 export default defineConfig([
   {
-    entry: ['./src/index.ts'],
+    entry,
     treeshake: true,
-    format: 'esm',
-    dts: {
-      only: true,
-      banner: banner,
-    },
-  },
-  {
-    entry: ['./src/index.ts'],
-    treeshake: true,
+    dts: true,
+    cjsInterop: true,
     format: ['esm', 'cjs'],
-    outExtension: ({ format }) => ({
-      js: format === 'esm' ? '.mjs' : '.cjs',
-    }),
     banner: {
       js: banner,
     },
-  },
+  }
 ])

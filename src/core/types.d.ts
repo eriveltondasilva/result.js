@@ -1,87 +1,44 @@
-import type { Err } from './err.js'
 import type { Ok } from './ok.js'
+import type { Err } from './err.js'
 
-// #region TYPES
-
-/**
- * Represents a result that can be either success (Ok) or failure (Err).
- *
- * @see {@link AsyncResultType} for async version
- * @template T - Success value type
- * @template E - Error type
- *
- * @example
- * ```ts
- * function divide(a: number, b: number): ResultType<number, string> {
- *   return b === 0 ? Result.err('Division by zero') : Result.ok(a / b)
- * }
- *
- * const result = divide(10, 2)
- *
- * if (result.isOk()) {
- *   console.log(result.unwrap()) // 5
- * }
- * ```
- */
-export type ResultType<T, E> = Ok<T, E> | Err<T, E>
-
-/**
- * Represents a Promise that resolves to a Result.
- *
- * @template T - Success value type
- * @template E - Error type
- *
- * @example
- * ```ts
- * async function fetchUser(id: string): AsyncResultType<User, Error> {
- *   return Result.fromPromise(
- *     async () => {
- *       const response = await fetch(`/api/users/${id}`)
- *       return response.json()
- *     }
- *   )
- * }
- * ```
- */
-export type AsyncResultType<T, E> = Promise<ResultType<T, E>>
-
-// #endregion
+import type { Result, AsyncResult } from '../index.js'
+export type { Result, AsyncResult }
 
 // #region INFERENCE
 
 /**
- * Extracts the success value type (T) from a ResultType.
- * Returns never if the input is not a ResultType.
+ * Extracts the success value type (T) from a Result.
+ * Returns never if the input is not a Result.
  * @internal
  */
-export type InferOk<R> = R extends ResultType<infer T, unknown> ? T : never
+export type InferOk<R> = R extends Result<infer T, unknown> ? T : never
 
 /**
- * Extracts the error type (E) from a ResultType.
- * Returns never if the input is not a ResultType.
+ * Extracts the error type (E) from a Result.
+ * Returns never if the input is not a Result.
  * @internal
  */
-export type InferErr<R> = R extends ResultType<unknown, infer E> ? E : never
+export type InferErr<R> = R extends Result<unknown, infer E> ? E : never
 
 // #endregion
 
 // #region TUPLES
 
 /**
- * Infers a tuple of success types from an array of ResultTypes.
- * @template T - A tuple of ResultType instances.
+ * Infers a tuple of success types from an array of Results.
+ * @template T - A tuple of Result instances.
  * @internal
  */
-export type OkTuple<T extends readonly ResultType<unknown, unknown>[]> = {
+export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
   [K in keyof T]: InferOk<T[K]>
 }
 
 /**
- * Infers a tuple of error types from an array of ResultTypes.
- * @template T - A tuple of ResultType instances.
+ * Infers a tuple of error types from an array of Results.
+ * @template T - A tuple of Result instances.
  * @internal
  */
-export type ErrTuple<T extends readonly ResultType<unknown, unknown>[]> = {
+export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
   [K in keyof T]: InferErr<T[K]>
 }
 
@@ -90,18 +47,18 @@ export type ErrTuple<T extends readonly ResultType<unknown, unknown>[]> = {
 // #region UNION
 
 /**
- * Infers a union of all possible success types from an array of ResultTypes.
- * @template T - A tuple/array of ResultType instances.
+ * Infers a union of all possible success types from an array of Results.
+ * @template T - A tuple/array of Result instances.
  * @internal
  */
-export type OkUnion<T extends readonly ResultType<unknown, unknown>[]> = InferOk<T[number]>
+export type OkUnion<T extends readonly Result<unknown, unknown>[]> = InferOk<T[number]>
 
 /**
- * Infers a union of all possible error types from an array of ResultTypes.
- * @template T - A tuple/array of ResultType instances.
+ * Infers a union of all possible error types from an array of Results.
+ * @template T - A tuple/array of Result instances.
  * @internal
  */
-export type ErrUnion<T extends readonly ResultType<unknown, unknown>[]> = InferErr<T[number]>
+export type ErrUnion<T extends readonly Result<unknown, unknown>[]> = InferErr<T[number]>
 
 // #endregion
 
@@ -136,10 +93,10 @@ export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
  */
 export interface ResultMethods<T, E> {
   // #region VALIDATION
-  isOk(): this is Ok<T, never>
-  isErr(): this is Err<never, E>
-  isOkAnd(predicate: (value: T) => boolean): this is Ok<T, never>
-  isErrAnd(predicate: (error: E) => boolean): this is Err<never, E>
+  isOk(): this is Ok<T>
+  isErr(): this is Err<E>
+  isOkAnd(predicate: (value: T) => boolean): this is Ok<T>
+  isErrAnd(predicate: (error: E) => boolean): this is Err<E>
   // #endregion
 
   // #region ACCESS
@@ -157,31 +114,26 @@ export interface ResultMethods<T, E> {
   // #endregion
 
   // #region TRANSFORMATION
-  map<U, F = never>(
-    mapper: (value: T) => U | ResultType<U, F>,
-  ): ResultType<U, E> | ResultType<U, E | F>
+  map<U>(mapper: (value: T) => U): Result<U, E>
   mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
   mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U
-  mapErr<F>(mapper: (error: E) => F): ResultType<T, F>
-  filter(
-    predicate: (value: T) => boolean,
-    onReject?: (value: T) => E | Error,
-  ): ResultType<T, E | Error>
-  flatten<U, F>(this: ResultType<ResultType<U, F>, E>): ResultType<U, E | F>
+  mapErr<E2>(mapper: (error: E) => E2): Result<T, E2>
+  filter(predicate: (value: T) => boolean, onReject?: (value: T) => E | Error): Result<T, E | Error>
+  flatten<U, E2>(this: Result<Result<U, E2>, E>): Result<U, E | E2>
   // #endregion
 
   // #region CHAINING
-  andThen<U>(flatMapper: (value: T) => ResultType<U, E>): ResultType<U, E>
-  orElse(onError: (error: E) => ResultType<T, E>): ResultType<T, E>
-  and<U>(result: ResultType<U, E>): ResultType<U, E>
-  or(result: ResultType<T, E>): ResultType<T, E>
-  zip<U, F>(result: ResultType<U, F>): ResultType<[T, U], E | F>
+  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E>
+  orElse(onError: (error: E) => Result<T, E>): Result<T, E>
+  and<U>(result: Result<U, E>): Result<U, E>
+  or(result: Result<T, E>): Result<T, E>
+  zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2>
   // #endregion
 
   // #region INSPECTION
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R
-  inspect(visitor: (value: T) => void): ResultType<T, E>
-  inspectErr(visitor: (error: E) => void): ResultType<T, E>
+  inspect(visitor: (value: T) => void): Result<T, E>
+  inspectErr(visitor: (error: E) => void): Result<T, E>
   // #endregion
 
   // #region COMPARISON
@@ -196,25 +148,16 @@ export interface ResultMethods<T, E> {
   // #endregion
 
   // #region ASYNC OPERATIONS
-  mapAsync<U, F = never>(
-    mapperAsync: (value: T) => Promise<U | ResultType<U, F>>,
-  ): Promise<ResultType<U, E> | ResultType<U, E | F>>
-  mapErrAsync<F>(mapperAsync: (error: E) => Promise<F>): AsyncResultType<T, F>
+  mapAsync<U>(mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E>
+  mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2>
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U>
   mapOrElseAsync<U>(
-    okMapperAsync: (value: T) => Promise<U>,
-    errMapperAsync: (error: E) => Promise<U>,
+    okAsync: (value: T) => Promise<U>,
+    errAsync: (error: E) => Promise<U>,
   ): Promise<U>
-  andThenAsync<U>(flatMapperAsync: (value: T) => AsyncResultType<U, E>): AsyncResultType<U, E>
-  andAsync<U>(result: AsyncResultType<U, E>): AsyncResultType<U, E>
-  orAsync(result: AsyncResultType<T, E>): AsyncResultType<T, E>
-  orElseAsync(onErrorAsync: (error: E) => AsyncResultType<T, E>): AsyncResultType<T, E>
-  // #endregion
-
-  // #region METADATA
-  /** @hidden */
-  readonly [Symbol.toStringTag]: string
-  /** @hidden */
-  [Symbol.for('nodejs.util.inspect.custom')]: string
+  andThenAsync<U>(mapAsync: (value: T) => AsyncResult<U, E>): AsyncResult<U, E>
+  andAsync<U>(result: AsyncResult<U, E>): AsyncResult<U, E>
+  orAsync(result: AsyncResult<T, E>): AsyncResult<T, E>
+  orElseAsync(onErrorAsync: (error: E) => AsyncResult<T, E>): AsyncResult<T, E>
   // #endregion
 }

@@ -15,15 +15,21 @@ npm install @eriveltonsilva/result.js
 
 ### ESM (Recommended)
 
-```typescript
+::: code-group
+
+```typescript [ESM (Recommended)]
 import { Result } from '@eriveltonsilva/result.js'
 ```
 
-### CommonJS
+```typescript [ESM - default]
+import Result from '@eriveltonsilva/result.js'
+```
 
-```javascript
+```javascript [CommonJS]
 const { Result } = require('@eriveltonsilva/result.js')
 ```
+
+:::
 
 ## TypeScript Setup
 
