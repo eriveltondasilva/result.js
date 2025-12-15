@@ -1,6 +1,5 @@
 import type { Ok } from './ok.js'
 import type { Err } from './err.js'
-
 import type { Result, AsyncResult } from '../index.js'
 export type { Result, AsyncResult }
 
