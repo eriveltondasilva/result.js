@@ -6,7 +6,7 @@ export default defineConfig({
   lang: 'en',
   title: 'Result.js',
   description: 'Explicit, type-safe error handling for JavaScript & TypeScript',
-  head: [['link', { rel: 'icon', href: '/resultjs-icon.ico' }]],
+  head: [['link', { rel: 'icon', href: '/result.js/resultjs-icon.ico' }]],
   base: '/result.js/',
 
   themeConfig: {
