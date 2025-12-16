@@ -1,10 +1,10 @@
 # Type Safety
 
-How TypeScript enforces error handling with Result.js.
+How Typescript enforces error handling with Result.js.
 
 ## Compiler-Enforced Error Handling
 
-TypeScript knows when a Result might be an error and forces you to handle it:
+Typescript knows when a Result might be an error and forces you to handle it:
 
 ```typescript
 function fetchUser(id: string): Result<User, ApiError> {
@@ -24,16 +24,16 @@ if (result.isOk()) {
 
 ## Type Narrowing
 
-After checking with `isOk()` or `isErr()`, TypeScript automatically narrows the type:
+After checking with `isOk()` or `isErr()`, Typescript automatically narrows the type:
 
 ```typescript
 function process(result: Result<number, string>) {
   if (result.isOk()) {
-    // TypeScript knows: Ok<number, never>
+    // Typescript knows: Ok<number, never>
     const value: number = result.unwrap()
     console.log(value + 1)
   } else {
-    // TypeScript knows: Err<never, string>
+    // Typescript knows: Err<never, string>
     const error: string = result.unwrapErr()
     console.log('Error:', error)
   }
@@ -55,7 +55,7 @@ function fetchUser(id: string): Result<User, ApiError> {
   // Implementation...
 }
 
-// TypeScript ensures all cases are handled
+// Typescript ensures all cases are handled
 const result = fetchUser('123')
 
 result.match({
@@ -81,7 +81,7 @@ result.match({
 
 ## Type Inference
 
-TypeScript automatically infers generic types:
+Typescript automatically infers generic types:
 
 ```typescript
 // Types inferred automatically
@@ -118,7 +118,7 @@ type Error = MyResult extends Result<any, infer E> ? E : never    // ApiError
 
 ## Preventing Common Mistakes
 
-TypeScript catches errors that would be silent with exceptions:
+Typescript catches errors that would be silent with exceptions:
 
 ```typescript
 // ✗ Won't compile: Can't pass Result<T> where T expected
@@ -142,7 +142,7 @@ result.match({
 
 Type safety with zero runtime cost:
 
-- TypeScript erases all generic types at runtime
+- Typescript erases all generic types at runtime
 - No reflection or runtime type checking
 - Same performance as manual if-else checks
 

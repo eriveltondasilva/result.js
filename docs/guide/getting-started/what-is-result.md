@@ -1,6 +1,6 @@
 # What is Result?
 
-Result.js implements Rust's `Result<T, E>` pattern for JavaScript/TypeScript, providing explicit, type-safe error handling without exceptions.
+Result.js implements Rust's `Result<T, E>` pattern for Javascript/Typescript, providing explicit, type-safe error handling without exceptions.
 
 ## The Result Type
 
@@ -18,8 +18,9 @@ type Result<T, E> = Ok<T, E> | Err<T, E>
 | Aspect | Exception | Result |
 |--------|-----------|--------|
 | **Error visibility** | Hidden in types | Explicit in signature |
-| **Compiler enforcement** | None | Enforced by TypeScript |
+| **Compiler enforcement** | None | Enforced by Typescript |
 | **Composition** | Nested try-catch | Fluent chaining |
+| **Recovery** | Limited patterns | Pattern matching |
 | **Performance** | Stack unwinding | Zero overhead |
 
 ## Example: Before and After
@@ -60,7 +61,7 @@ result.match({
 
 ### Immutability
 
-All operations return new Results—originals are never modified:
+All operations return new Results — originals are never modified:
 
 ```typescript
 const original = Result.ok(5)
@@ -72,7 +73,7 @@ console.log(doubled.unwrap())  // 10
 
 ### No Silent Failures
 
-You cannot access values without handling errors:
+You cannot access values without handling errors. Typescript enforces this:
 
 ```typescript
 const result = Result.ok(42)
@@ -96,7 +97,7 @@ result.match({
 
 **Use Result for:**
 
-- Expected errors (validation, not found, parsing)
+- Expected errors (validation, not found, parsing failures)
 - Business logic failures (permission denied, insufficient funds)
 - Recoverable failures (network timeout, cache miss)
 - APIs where errors are common
@@ -106,7 +107,7 @@ result.match({
 - Unexpected errors (out of memory, programmer mistakes)
 - Fatal errors that can't be recovered
 
-## Core Methods
+## Core Methods Reference
 
 | Method | Purpose |
 |--------|---------|
@@ -115,13 +116,15 @@ result.match({
 | `result.isOk()` | Check if Ok |
 | `result.isErr()` | Check if Err |
 | `result.unwrap()` | Extract value (throws if Err) |
-| `result.unwrapOr(fallback)` | Extract with default |
+| `result.unwrapOr(def)` | Extract with default |
 | `result.map(fn)` | Transform success value |
 | `result.andThen(fn)` | Chain operations |
 | `result.match({ok, err})` | Handle both cases |
+
+For complete reference, see [API Reference](../../api-reference.md).
 
 ## Next Steps
 
 - **[Installation](./installation.md)** — Set up in your project
 - **[Quick Start](./quick-start.md)** — Practical examples
-- **[Type Safety](../core-concepts/type-safety.md)** — How TypeScript helps
+- **[Type Safety](../core-concepts/type-safety.md)** — How Typescript helps

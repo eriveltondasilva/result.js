@@ -20,7 +20,7 @@ type ApiError =
 function process(data: Data): Result<Output, ApiError>
 ```
 
-Benefits: TypeScript enforces handling all cases, enables precise recovery, self-documenting code.
+Benefits: Typescript enforces handling all cases, enables precise recovery, self-documenting code.
 
 ## 2. Prefer Chaining Over Nested Checks
 

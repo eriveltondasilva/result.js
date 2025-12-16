@@ -7,19 +7,19 @@ Master the essentials with 8 practical examples.
 ```typescript
 import { Result } from '@eriveltonsilva/result.js'
 
-Result.ok(42)                    // Success
-Result.err('failed')             // Failure
+Result.ok(42)                            // Success
+Result.err('failed')                     // Failure
 Result.fromTry(() => JSON.parse('...'))  // Wrap try-catch
-Result.fromNullable(maybeValue)  // Convert null/undefined to Err
+Result.fromNullable(maybeValue)          // Convert null/undefined to Err
 ```
 
 ## 2. Checking State
 
 ```typescript
-result.isOk()              // true or false
-result.isErr()             // true or false
-result.isOkAnd(x => x > 0) // true if Ok AND predicate passes
-result.isErrAnd(e => e.code === 404) // true if Err AND predicate passes
+result.isOk()                           // true or false
+result.isErr()                          // true or false
+result.isOkAnd((x) => x > 0)            // true if Ok AND predicate passes
+result.isErrAnd((e) => e.code === 404)  // true if Err AND predicate passes
 ```
 
 ## 3. Extracting Values
@@ -75,14 +75,14 @@ Handle both cases explicitly:
 
 ```typescript
 result.match({
-  ok: (val) => console.log('Success:', val),
-  err: (err) => console.error('Error:', err)
+  ok: (value) => console.log('Success:', value),
+  err: (error) => console.error('Error:', error)
 })
 
 // Returns the result of whichever handler is called
 const message = result.match({
-  ok: (val) => `Got ${val}`,
-  err: (err) => `Failed with ${err}`
+  ok: (value) => `Got ${value}`,
+  err: (error) => `Failed with ${error}`
 })
 ```
 
@@ -118,13 +118,11 @@ function validateAge(age: number): Result<number, ValidationError> {
   if (age < 18) {
     return Result.err({ field: 'age', message: 'Must be 18+' })
   }
+
   return Result.ok(age)
 }
 
-async function registerUser(
-  email: string,
-  age: number
-): Promise<void> {
+async function registerUser(email: string, age: number): Promise<void> {
   const result = validateAge(age)
 
   result.match({
@@ -138,6 +136,6 @@ await registerUser('user@example.com', 25)
 
 ## Next Steps
 
-- **[Type Safety](../core-concepts/type-safety.md)** — Understand TypeScript integration
+- **[Type Safety](../core-concepts/type-safety.md)** — Understand Typescript integration
 - **[Error Handling](../core-concepts/error-handling.md)** — Error strategies and patterns
 - **[Operation Chaining](../core-concepts/chaining.md)** — Advanced composition

@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- **Node.js:** ≥ 22.0.0
-- **TypeScript:** ≥ 5.0 *(optional, but recommended)*
+- **Node.js:** 22.0.0+
+- **Typescript:** 5.0+ *(optional, but recommended)*
 
 ## Package Installation
 
@@ -31,7 +31,7 @@ const { Result } = require('@eriveltonsilva/result.js')
 
 :::
 
-## TypeScript Setup
+## Typescript Setup
 
 Result.js is fully typed. No additional configuration needed.
 

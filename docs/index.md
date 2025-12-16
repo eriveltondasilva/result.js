@@ -4,14 +4,15 @@ layout: home
 hero:
   name: Result.js
   text: Explicit Error Handling
-  tagline: Type-safe Result<T, E> pattern inspired by Rust, for JavaScript & TypeScript
+  tagline: Type-safe Result<T, E> pattern inspired by Rust, for Javascript & Typescript
   image:
     src: /resultjs-icon.png
     alt: Result.js
   actions:
     - theme: brand
-      text: Get Started
-      link: ./guide/getting-started/what-is-result.md
+      text: Quick Start
+      link: ./guide/getting-started/quick-start.md
+
     - theme: alt
       text: View on GitHub
       link: https://github.com/eriveltondasilva/result.js
@@ -19,23 +20,23 @@ hero:
 features:
   - icon: 🦀
     title: Rust-Inspired
-    details: Familiar Result<T, E> API bringing robustness and clarity to JavaScript
+    details: Familiar Result<T, E> API bringing robustness and clarity to Javascript
 
   - icon: 🎯
     title: Type-Safe
-    details: Full TypeScript support with automatic type inference and smart type guards
+    details: Full Typescript support with automatic type inference and smart type guards
 
   - icon: ⚡
     title: Zero Dependencies
-    details: Lightweight library (~3KB minified) with no external dependencies
+    details: Lightweight library with no external dependencies
 
   - icon: 🔗
     title: Fluent API
-    details: Chain operations naturally with map, andThen, orElse, and 40+ methods
+    details: Chain operations naturally with `map`, `andThen`, `orElse`, and 40+ methods
 
   - icon: 🌳
     title: Tree-Shakeable
-    details: Optimized for modern bundlers—import only what you need
+    details: Optimized for modern bundlers — import only what you need
 
   - icon: 🛡️
     title: No Exceptions
@@ -47,6 +48,10 @@ features:
 ```bash
 npm install @eriveltonsilva/result.js
 ```
+
+::: warning
+Requires node.js 22.0.0+
+:::
 
 ## Basic Example
 
@@ -70,8 +75,9 @@ console.log(result) // 20
 
 ### ✓ Errors in Types
 
+With Result, errors are explicit in your function signatures:
+
 ```typescript
-// With Result: errors are explicit
 function divide(a: number, b: number): Result<number, string> {
   if (b === 0) return Result.err('Division by zero')
   return Result.ok(a / b)
@@ -90,16 +96,26 @@ result.match({
 Chain operations without nested try-catch blocks:
 
 ```typescript
-const user = await Result.ok(userId)
-  .mapAsync((id) => fetchUser(id))
-  .then((r) => r.andThenAsync(validateUser))
+async function loadUserData(userId: string): AsyncResult<User, ApiError> {
+  return (await fetchUser(userId))
+    .andThenAsync((user) => validateUser(user))
+    .andThenAsync((user) => saveToCache(user))
+    .orElseAsync(() => fetchFromBackup(userId))
+}
+
+const result = await loadUserData('123')
+
+result.match({
+  ok: (user) => console.log('User:', user),
+  err: (error) => console.error('Failed:', error)
+})
 ```
 
-## Key Advantages
+## Core Benefits
 
-- **Explicit errors** — No hidden exceptions in types
-- **Type safety** — TypeScript enforces error handling
-- **Clean composition** — Chain operations without nesting
-- **Pattern matching** — Elegant `match()` for both cases
-- **Async support** — Full Promise/async-await integration
-- **ESM + CommonJS** — Works everywhere
+- **Explicit errors** — No hidden exceptions in types; Typescript enforces handling
+- **Type safety** — Compiler prevents accessing values from error states
+- **Clean composition** — Chain operations without nesting or try-catch blocks
+- **Pattern matching** — Elegant `match()` for handling both success and failure
+- **Async support** — Full Promise and async/await integration
+- **Universal compatibility** — Works with ESM and CommonJS

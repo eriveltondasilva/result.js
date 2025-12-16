@@ -11,12 +11,12 @@
 
 **Available in:** [Português](./README.pt.md) | [Español](./README.es.md)
 
-A lightweight, Rust-inspired Result type for JavaScript and TypeScript. Handle success and error cases explicitly without exceptions.
+A lightweight, Rust-inspired Result type for Javascript and Typescript. Handle success and error cases explicitly without exceptions.
 
 ## Features
 
 - 🦀 **Rust-inspired API** - Familiar `Result<T, E>` pattern
-- 🎯 **Type-safe** - Full TypeScript support with excellent inference
+- 🎯 **Type-safe** - Full Typescript support with excellent inference
 - 📦 **Zero dependencies** - Lightweight and focused
 - 🔗 **Chainable** - Fluent API with `map`, `andThen`, and more
 - ⚡ **Tree-shakeable** - Optimized bundle size
