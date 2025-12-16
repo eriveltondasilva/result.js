@@ -1,5 +1,7 @@
 import { isResult } from './factories.js'
 import type { Ok } from './ok.js'
+import { valueToDisplayString } from './utils.js'
+
 import type { AsyncResult, Result, ResultMethods } from './types.d.ts'
 
 /**
@@ -641,6 +643,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    */
   inspectErr(visitor: (error: E) => void): Result<T, E> {
     visitor(this.#error)
+
     return this
   }
 
@@ -736,7 +739,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // "Err(Error: oops)"
    */
   toString(): string {
-    return `Err(${this.#error})`
+    return `Err(${valueToDisplayString(this.#error)})`
   }
 
   /**

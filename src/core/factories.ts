@@ -1,5 +1,8 @@
 import { Err } from './err.js'
 import { Ok } from './ok.js'
+
+import { assertArray, unknownToError, valueToDisplayString } from './utils.js'
+
 import type {
   AsyncResult,
   ErrTuple,
@@ -9,22 +12,6 @@ import type {
   Result,
   SettledResult,
 } from './types.d.ts'
-
-function unknownToError(error: unknown): Error {
-  if (error instanceof Error) {
-    return error
-  }
-
-  if (error === null || error === undefined) {
-    return new Error('Unknown error: null or undefined value')
-  }
-
-  return new Error(String(error))
-}
-
-function ensureArray(results: unknown): boolean {
-  return Array.isArray(results) && results.length > 0
-}
 
 // #region CREATION
 
@@ -167,10 +154,11 @@ export function validate<T, E = Error>(
   onError?: (value: T) => E | Error,
 ): Result<T, E | Error> {
   if (!predicate(value)) {
-    const mappedError = onError
-      ? onError(value)
-      : new Error(`Validation failed for value: ${value}`)
-    return new Err(mappedError)
+    return new Err(
+      onError
+        ? onError(value)
+        : new Error(`Validation failed for value: ${valueToDisplayString(value)}`),
+    )
   }
 
   return new Ok(value)
@@ -520,7 +508,7 @@ export async function fromPromise<T, E>(
 export function all<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Result<OkTuple<T>, ErrUnion<T>> {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return new Ok([]) as Result<OkTuple<T>, ErrUnion<T>>
   }
 
@@ -582,7 +570,7 @@ export function all<const T extends readonly Result<unknown, unknown>[]>(
 export function allSettled<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return new Ok([])
   }
 
@@ -645,7 +633,7 @@ export function allSettled<const T extends readonly Result<unknown, unknown>[]>(
 export function any<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Result<OkUnion<T>, ErrTuple<T>> {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return new Err([]) as Result<OkUnion<T>, ErrTuple<T>>
   }
 
@@ -706,7 +694,7 @@ export function any<const T extends readonly Result<unknown, unknown>[]>(
  * Result.partition([]) // [[], []]
  */
 export function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return [[], []]
   }
 
@@ -746,7 +734,7 @@ export function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  * // [1, 2]
  */
 export function values<T, E>(results: readonly Result<T, E>[]): T[] {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return []
   }
 
@@ -788,7 +776,7 @@ export function values<T, E>(results: readonly Result<T, E>[]): T[] {
  * // ["fail A", "fail B"]
  */
 export function errors<T, E>(results: readonly Result<T, E>[]): E[] {
-  if (!ensureArray(results)) {
+  if (!assertArray(results)) {
     return []
   }
 

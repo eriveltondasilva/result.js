@@ -1,5 +1,7 @@
 import { Err } from './err.js'
 import { isResult } from './factories.js'
+import { valueToDisplayString } from './utils.js'
+
 import type { AsyncResult, Result, ResultMethods } from './types.d.ts'
 
 /**
@@ -19,7 +21,7 @@ import type { AsyncResult, Result, ResultMethods } from './types.d.ts'
  * @example
  * const result = Result.ok(42)
  * console.log(result.unwrap()) // 42
- * console.log(result.isOk()) // true
+ * console.log(result.isOk())   // true
  */
 export class Ok<T, E = never> implements ResultMethods<T, E> {
   readonly #value: T
@@ -169,7 +171,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // throws Error("Called unwrapErr on an Ok value: 42")
    */
   unwrapErr(): never {
-    throw new Error(`Called unwrapErr on an Ok value: ${String(this.#value)}`)
+    throw new Error(`Called unwrapErr on an Ok value: ${valueToDisplayString(this.#value)}`)
   }
 
   /**
@@ -204,7 +206,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // throws Error("should be error: 42")
    */
   expectErr(message: string): never {
-    throw new Error(`${message}: ${String(this.#value)}`)
+    throw new Error(`${message}: ${valueToDisplayString(this.#value)}`)
   }
 
   // #endregion
@@ -397,10 +399,11 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     onReject?: (value: T) => E | Error,
   ): Result<T, E | Error> {
     if (!predicate(this.#value)) {
-      const error = onReject
-        ? onReject(this.#value)
-        : new Error(`Filter predicate failed for value: ${String(this.#value)}`)
-      return new Err(error)
+      return new Err(
+        onReject
+          ? onReject(this.#value)
+          : new Error(`Filter predicate failed for value: ${valueToDisplayString(this.#value)}`),
+      )
     }
 
     return this
@@ -416,7 +419,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @template U - Inner Result value type
    * @template E2 - Inner Result error type
    * @param {Ok<Result<U, E2>, E>} this - Nested Result
-   * @returns {Result<U, E | E2>} Flattened Result
+   * @returns {Result<U, E | E2>} Result with same value, different error type
    * @throws {Error} If Ok doesn't contain a Result
    *
    * @example
@@ -647,6 +650,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    */
   inspect(visitor: (value: T) => void): Result<T, E> {
     visitor(this.#value)
+
     return this
   }
 
@@ -748,7 +752,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // "Ok([object Object])"
    */
   toString(): string {
-    return `Ok(${String(this.#value)})`
+    return `Ok(${valueToDisplayString(this.#value)})`
   }
 
   /**
