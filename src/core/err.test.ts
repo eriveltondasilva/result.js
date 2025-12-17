@@ -6,6 +6,8 @@ import { Ok } from './ok.js'
 
 import { expectErr, expectOk } from './test-helpers.js'
 
+import type { Result } from './types.d.ts'
+
 describe('Err', () => {
   let errValue: Err<number, Error>
 
@@ -363,9 +365,9 @@ describe('Err', () => {
     })
 
     it('should preserve type through transformations', () => {
-      const err: Err<number, Error> = new Err(new Error('test'))
-      const mapped: Err<string, Error> = err.map((x) => String(x))
-      const errorMapped: Err<string, string> = mapped.mapErr((e) => e.message)
+      const err: Result<number, Error> = new Err(new Error('test'))
+      const mapped: Result<string, Error> = err.map((x) => String(x))
+      const errorMapped: Result<string, string> = mapped.mapErr((e) => e.message)
 
       expect(errorMapped.isErr()).toBe(true)
     })
