@@ -1,7 +1,7 @@
 import * as factories from './core/factories.js'
 
-import type { Err } from './core/err.js'
-import type { Ok } from './core/ok.js'
+import { Err } from './core/err.js'
+import { Ok } from './core/ok.js'
 
 // #region TYPE
 
@@ -15,7 +15,11 @@ import type { Ok } from './core/ok.js'
  * @example
  * ```ts
  * function divide(a: number, b: number): Result<number, string> {
- *   return b === 0 ? Result.err('Division by zero') : Result.ok(a / b)
+ *   if (b === 0) {
+ *     return Result.err('Division by zero')
+ *   }
+ *
+ *   return Result.ok(a / b)
  * }
  *
  * const result = divide(10, 2)
@@ -96,4 +100,5 @@ export type AsyncResult<T, E> = Promise<Result<T, E>>
  */
 export const Result = Object.freeze({ ...factories } as const)
 
+export { Ok, Err }
 export default Result

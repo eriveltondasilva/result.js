@@ -1,0 +1,21 @@
+{
+  // "$schema": "https://typedoc.org/schema.json",
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "entryPoints": [
+    "src/index.ts",
+  ],
+  "out": "docs/reference",
+  "entryFileName": "index",
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter"
+  ],
+  "frontmatterGlobals": {
+    "editLink": false,
+  },
+  "readme": "none",
+  "includeVersion": true,
+  "flattenOutputFiles": true,
+  "hideBreadcrumbs": true,
+  "hidePageHeader": true,
+}

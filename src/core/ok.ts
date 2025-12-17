@@ -36,18 +36,18 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     throw new Error(`${method}() called on Ok that does not contain a Result`)
   }
 
-  // #region VALIDATION
+  // #region CHECKING
 
   /**
    * Checks if this Result is the Ok variant.
    *
-   * @group Validation
+   * @group Checking
    * @see {@link isErr} for the opposite check
    * @returns {boolean} Always true for Ok
    *
    * @example
-   * Result.ok(42).isOk() // true
-   * Result.err('fail').isOk() // false
+   * Result.ok(42).isOk()       // true
+   * Result.err('fail').isOk()  // false
    */
   isOk(): this is Ok<T> {
     return true
@@ -56,7 +56,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Checks if this Result is the Err variant.
    *
-   * @group Validation
+   * @group Checking
    * @see {@link isOk} for the opposite check
    * @returns {boolean} Always false for Ok
    *
@@ -72,14 +72,14 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * Useful for conditional validations in chains.
    *
-   * @group Validation
+   * @group Checking
    * @see {@link isOkAnd} for the opposite check
    * @param {(value: T) => boolean} predicate - Validation function
    * @returns {boolean} true if Ok and predicate passes
    *
    * @example
-   * Result.ok(10).isOkAnd((x) => x > 5) // true
-   * Result.ok(3).isOkAnd((x) => x > 5) // false
+   * Result.ok(10).isOkAnd((x) => x > 5)  // true
+   * Result.ok(3).isOkAnd((x) => x > 5)   // false
    *
    * @example
    * // Conditional validation
@@ -94,7 +94,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Checks if it's Err and if the error satisfies a predicate.
    *
-   * @group Validation
+   * @group Checking
    * @see {@link isErrAnd} for the opposite check
    * @param {(error: E) => boolean} _predicate - Validation function (ignored)
    * @returns {boolean} Always false for Ok
@@ -105,14 +105,14 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // #region ACCESS
+  // #region ACCESSING: ok, err, unwrap, unwrapErr, unwrapOr, unwrapOrElse, expect, expectEr
 
   /**
    * Gets the success value or null.
    *
    * Read-only property for safe value access without throwing exceptions.
    *
-   * @group Access
+   * @group Accessing
    * @returns {T} The encapsulated value
    *
    * @example
@@ -130,7 +130,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Gets the error or null.
    *
-   * @group Access
+   * @group Accessing
    * @returns {null} Always null for Ok
    *
    * @example
@@ -146,7 +146,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * For Ok, returns the encapsulated value. Equivalent to accessing `.ok`.
    * Use when you're sure the Result is Ok.
    *
-   * @group Access
+   * @group Accessing
    * @see {@link unwrapErr} for Err variant
    * @see {@link unwrapOr} for default value
    * @returns {T} The encapsulated value
@@ -168,7 +168,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Attempts to extract the error (always fails for Ok).
    *
-   * @group Access
+   * @group Accessing
    * @returns {never} Never returns
    * @throws {Error} Always throws error indicating incorrect usage
    *
@@ -181,51 +181,12 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   }
 
   /**
-   * Extracts value with custom error message (for Err).
-   *
-   * For Ok, ignores the message and returns the value.
-   * For Err, would throw error with the provided message.
-   *
-   * @group Access
-   * @see {@link expectErr} for Err variant
-   * @param {string} _message - Error message (ignored for Ok)
-   * @returns {T} The encapsulated value
-   *
-   * @example
-   * const value = Result.ok(42).expect('should exist')
-   * console.log(value) // 42
-   */
-  expect(_message: string): T {
-    return this.#value
-  }
-
-  /**
-   * Attempts to extract error with custom message (always fails for Ok).
-   *
-   * @group Access
-   * @param {string} message - Error message
-   * @returns {never} Never returns
-   * @throws {Error} Always throws with provided message
-   *
-   * @example
-   * Result.ok(42).expectErr('should be error')
-   * // throws Error("should be error: 42")
-   */
-  expectErr(message: string): never {
-    throw new Error(`${message}: ${valueToDisplayString(this.#value)}`)
-  }
-
-  // #endregion
-
-  // #region RECOVERY
-
-  /**
    * Extracts value or returns default.
    *
    * For Ok, ignores the default and returns the value.
    * For Err, would return the default.
    *
-   * @group Recovery
+   * @group Accessing
    * @see {@link unwrap} for Ok variant
    * @see {@link unwrapOrElse} for computed default
    * @param {T} _defaultValue - Default value (ignored for Ok)
@@ -244,29 +205,64 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * For Ok, ignores the function and returns the value.
    *
-   * @group Recovery
+   * @group Accessing
    * @see {@link unwrapOr} for static default
    * @param {(error: E) => T} _onError - Default value generator (ignored)
    * @returns {T} The encapsulated value
    *
    * @example
-   * Result.ok(42).unwrapOrElse(e => 0) // 42
-   * Result.err('fail').unwrapOrElse(e => 0) // 0
+   * Result.ok(42).unwrapOrElse((e) => 0) // 42
+   * Result.err('fail').unwrapOrElse((e) => 0) // 0
    */
   unwrapOrElse(_onError: (error: E) => T): T {
     return this.#value
   }
 
+  /**
+   * Extracts value with custom error message (for Err).
+   *
+   * For Ok, ignores the message and returns the value.
+   * For Err, would throw error with the provided message.
+   *
+   * @group Accessing
+   * @see {@link expectErr} for Err variant
+   * @param {string} _message - Error message (ignored for Ok)
+   * @returns {T} The encapsulated value
+   *
+   * @example
+   * const value = Result.ok(42).expect('should exist')
+   * console.log(value) // 42
+   */
+  expect(_message: string): T {
+    return this.#value
+  }
+
+  /**
+   * Attempts to extract error with custom message (always fails for Ok).
+   *
+   * @group Accessing
+   * @param {string} message - Error message
+   * @returns {never} Never returns
+   * @throws {Error} Always throws with provided message
+   *
+   * @example
+   * Result.ok(42).expectErr('should be error')
+   * // throws Error("should be error: 42")
+   */
+  expectErr(message: string): never {
+    throw new Error(`${message}: ${valueToDisplayString(this.#value)}`)
+  }
+
   // #endregion
 
-  // #region TRANSFORMATION
+  // #region TRANSFORMING: map, mapOr, mapOrElse, mapErr, filter, flatten
 
   /**
    * Transforms the success value.
    *
    * Applies function to value and returns new Ok with result.
    *
-   * @group Transformation
+   * @group Transforming
    * @see {@link mapAsync} for async version
    * @see {@link mapOr} for default value
    * @see {@link mapErr} to transform the error part (not the value)
@@ -277,19 +273,19 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @example
    * // Simple transformation
-   * Result.ok(5).map(x => x * 2)
+   * Result.ok(5).map((x) => x * 2)
    * // Ok(10)
    *
    * @example
    * // Chaining multiple maps
    * Result.ok('42')
-   *   .map(s => parseInt(s, 10))
-   *   .map(n => n * 2)
+   *   .map((s) => parseInt(s, 10))
+   *   .map((n) => n * 2)
    * // Ok(84)
    *
    * @example
    * // On error, map is skipped
-   * Result.err('oops').map(x => x * 2)
+   * Result.err('oops').map((x) => x * 2)
    * // Err('oops')
    */
   map<U>(mapper: (value: T) => U): Result<U, E> {
@@ -302,7 +298,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * For Ok, applies mapper and returns result.
    * For Err, would return the default.
    *
-   * @group Transformation
+   * @group Transforming
    * @see {@link mapOrAsync} for async version
    * @see {@link mapOrElse} for computed default
    * @template U - Transformed value type
@@ -311,8 +307,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @returns {U} Transformed value
    *
    * @example
-   * Result.ok(5).mapOr(x => x * 2, 0) // 10
-   * Result.err('fail').mapOr(x => x * 2, 0) // 0
+   * Result.ok(5).mapOr((x) => x * 2, 0) // 10
+   * Result.err('fail').mapOr((x) => x * 2, 0) // 0
    */
   mapOr<U>(mapper: (value: T) => U, _defaultValue: U): U {
     return mapper(this.#value)
@@ -324,7 +320,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * For Ok, uses success mapper.
    * For Err, would use error mapper.
    *
-   * @group Transformation
+   * @group Transforming
    * @see {@link mapOrElseAsync} for async version
    * @template U - Result type
    * @param {(value: T) => U} okMapper - Success mapper
@@ -333,8 +329,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @example
    * Result.ok(5).mapOrElse(
-   *   x => x * 2,
-   *   e => -1
+   *   (x) => x * 2,
+   *   (e) => -1
    * )
    * // 10
    */
@@ -347,14 +343,14 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * For Ok, keeps the value and only adjusts error type.
    *
-   * @group Transformation
+   * @group Transforming
    * @see {@link mapErrAsync} for async version
    * @template E2 - New error type
    * @param {(error: E) => E2} _mapper - Error transformer (ignored)
    * @returns {Result<T, E2>} Result with same value, different error type
    *
    * @example
-   * Result.ok(42).mapErr(e => new Error(e))
+   * Result.ok(42).mapErr((e) => new Error(e))
    * // Result(42) - type adjusted, but value unchanged
    */
   mapErr<E2>(_mapper: (error: E) => E2): Result<T, E2> {
@@ -368,16 +364,16 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * If it fails, converts to Err.
    *
    * @overload
-   * @group Transformation
+   * @group Transforming
    * @see {@link isOkAnd} for validation without modification
    * @param predicate - Validation function
    * @returns Ok if passes, Err with default error if fails
    *
    * @example
-   * Result.ok(10).filter(x => x > 5)
+   * Result.ok(10).filter((x) => x > 5)
    * // Ok(10)
    *
-   * Result.ok(3).filter(x => x > 5)
+   * Result.ok(3).filter((x) => x > 5)
    * // Err(Error: Filter predicate failed for value: 3)
    */
   filter(predicate: (value: T) => boolean): Result<T, Error>
@@ -386,15 +382,15 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Filters Ok value with custom error.
    *
    * @overload
-   * @group Transformation
+   * @group Transforming
    * @param {(value: T) => boolean} predicate - Validation function
    * @param {(value: T) => E} onReject - Error generator on rejection
    * @returns {Result<T, E>} Ok if passes, custom Err if fails
    *
    * @example
    * Result.ok(3).filter(
-   *   x => x > 5,
-   *   x => new Error(`${x} is too small`)
+   *   (x) => x > 5,
+   *   (x) => new Error(`${x} is too small`)
    * )
    * // Err(Error: 3 is too small)
    */
@@ -421,7 +417,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * If Ok contains another Result, extracts the inner Result.
    * Useful for simplifying nested Results.
    *
-   * @group Transformation
+   * @group Transforming
    * @template U - Inner Result value type
    * @template E2 - Inner Result error type
    * @param {Ok<Result<U, E2>, E>} this - Nested Result
@@ -447,58 +443,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // #region CHAINING
-
-  /**
-   * Chains operation that returns Result.
-   *
-   * Similar to map(), but mapper must return Result explicitly.
-   * Doesn't do automatic flattening.
-   *
-   * @group Chaining
-   * @see {@link andThenAsync} for async version
-   * @see {@link map} for alternative with auto-flatten
-   * @template U - New success type
-   * @param {(value: T) => Result<U, E>} flatMapper - Chaining function
-   * @returns {Result<U, E>} Result returned by flatMapper
-   *
-   * @example
-   * Result.ok(5).andThen(x => Result.ok(x * 2))
-   * // Ok(10)
-   *
-   * Result.ok(5).andThen(x => Result.err('failure'))
-   * // Err("failure")
-   *
-   * @example
-   * // Validation pipeline
-   * Result.ok(userData)
-   *   .andThen(validateEmail)
-   *   .andThen(validateAge)
-   *   .andThen(saveToDatabase)
-   */
-  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E> {
-    return flatMapper(this.#value)
-  }
-
-  /**
-   * Returns this Result or executes error recovery.
-   *
-   * For Ok, ignores recovery and returns self.
-   * For Err, would execute the recovery function.
-   *
-   * @group Chaining
-   * @see {@link orElseAsync} for async version
-   * @see {@link or} for static alternative
-   * @param {(error: E) => Result<T, E>} _onError - Recovery (ignored)
-   * @returns {Ok<T, E>} This Ok instance
-   *
-   * @example
-   * Result.ok(42).orElse(e => Result.ok(0))
-   * // Ok(42)
-   */
-  orElse(_onError: (error: E) => Result<T, E>): Result<T, E> {
-    return this
-  }
+  // #region CHAINING: and, andThen, or, orElse, zip
 
   /**
    * Returns second Result if this is Ok.
@@ -527,6 +472,37 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   }
 
   /**
+   * Chains operation that returns Result.
+   *
+   * Similar to map(), but mapper must return Result explicitly.
+   * Doesn't do automatic flattening.
+   *
+   * @group Chaining
+   * @see {@link andThenAsync} for async version
+   * @see {@link map} for alternative with auto-flatten
+   * @template U - New success type
+   * @param {(value: T) => Result<U, E>} flatMapper - Chaining function
+   * @returns {Result<U, E>} Result returned by flatMapper
+   *
+   * @example
+   * Result.ok(5).andThen((x) => Result.ok(x * 2))
+   * // Ok(10)
+   *
+   * Result.ok(5).andThen((x) => Result.err('failure'))
+   * // Err("failure")
+   *
+   * @example
+   * // Validation pipeline
+   * Result.ok(userData)
+   *   .andThen(validateEmail)
+   *   .andThen(validateAge)
+   *   .andThen(saveToDatabase)
+   */
+  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E> {
+    return flatMapper(this.#value)
+  }
+
+  /**
    * Returns this Result or alternative.
    *
    * For Ok, ignores alternative and returns self.
@@ -547,6 +523,26 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   or(result: Result<T, E>): Result<T, E> {
     this.validateResult(result, 'or')
 
+    return this
+  }
+
+  /**
+   * Returns this Result or executes error recovery.
+   *
+   * For Ok, ignores recovery and returns self.
+   * For Err, would execute the recovery function.
+   *
+   * @group Chaining
+   * @see {@link orElseAsync} for async version
+   * @see {@link or} for static alternative
+   * @param {(error: E) => Result<T, E>} _onError - Recovery (ignored)
+   * @returns {Ok<T, E>} This Ok instance
+   *
+   * @example
+   * Result.ok(42).orElse((e) => Result.ok(0))
+   * // Ok(42)
+   */
+  orElse(_onError: (error: E) => Result<T, E>): Result<T, E> {
     return this
   }
 
@@ -589,88 +585,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // #region INSPECTION
-
-  /**
-   * Pattern matching on Result state.
-   *
-   * Executes appropriate handler based on state (Ok/Err).
-   * Useful for structured handling of both cases.
-   *
-   * @group Inspection
-   * @template L - Ok handler return type
-   * @template R - Err handler return type
-   * @param {{ ok: (value: T) => L; err: (error: E) => R }} handlers - Handlers for each case
-   * @returns {L | R} Result from corresponding handler
-   *
-   * @example
-   * const msg = Result.ok(5).match({
-   *   ok: x => `Success: ${x * 2}`,
-   *   err: e => `Error: ${e}`
-   * })
-   * // "Success: 10"
-   *
-   * @example
-   * // Converting to React component
-   * result.match({
-   *   ok: user => <UserProfile user={user} />,
-   *   err: error => <ErrorMessage error={error} />
-   * })
-   */
-  match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
-    return handlers.ok(this.#value)
-  }
-
-  /**
-   * Performs side effect on success value.
-   *
-   * Useful for logging, debugging, or side effects
-   * without breaking chaining.
-   *
-   * @group Inspection
-   * @see {@link inspectErr} for error inspection
-   * @see {@link match} for pattern matching
-   * @param {(value: T) => void} visitor - Side effect function
-   * @returns {Result<T, E>} This instance for chaining
-   *
-   * @example
-   * Result.ok(42)
-   *   .inspect(x => console.log('value:', x))
-   *   .map(x => x * 2)
-   * // logs "value: 42", returns Ok(84)
-   *
-   * @example
-   * // Debug in pipeline
-   * fetchUser(id)
-   *   .inspect(user => console.log('user loaded'))
-   *   .andThen(validateUser)
-   *   .inspect(user => console.log('user validated'))
-   */
-  inspect(visitor: (value: T) => void): Result<T, E> {
-    visitor(this.#value)
-
-    return this
-  }
-
-  /**
-   * Performs side effect on error (not applicable for Ok).
-   *
-   * @group Inspection
-   * @see {@link inspect} for value inspection
-   * @param {(error: E) => void} _visitor - Effect function (ignored)
-   * @returns {Result<T, E>} This instance unchanged
-   *
-   * @example
-   * Result.ok(42).inspectErr(e => console.log('error:', e))
-   * // Ok(42) - nothing is logged
-   */
-  inspectErr(_visitor: (error: E) => void): Result<T, E> {
-    return this
-  }
-
-  // #endregion
-
-  // #region COMPARISON
+  // #region INSPECTING: contains, containsErr, match, inspect, inspectErr
 
   /**
    * Checks if Ok contains specific value.
@@ -678,7 +593,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Uses strict equality (===) by default.
    * Custom comparator allows checking complex objects.
    *
-   * @group Comparison
+   * @group Inspecting
    * @param {T} value - Value to compare
    * @param {(actual: T, expected: T) => boolean} [comparator] - Custom comparator
    * @returns {boolean} true if values match
@@ -702,7 +617,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Checks if Err contains specific error (always false for Ok).
    *
-   * @group Comparison
+   * @group Inspecting
    * @param {E} _error - Error to compare (ignored)
    * @param {(actual: E, expected: E) => boolean} [_comparator] - Comparator (ignored)
    * @returns {boolean} Always false
@@ -714,9 +629,86 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     return false
   }
 
+  /**
+   * Pattern matching on Result state.
+   *
+   * Executes appropriate handler based on state (Ok/Err).
+   * Useful for structured handling of both cases.
+   *
+   * @group Inspecting
+   * @template L - Ok handler return type
+   * @template R - Err handler return type
+   * @param {{ ok: (value: T) => L; err: (error: E) => R }} handlers - Handlers for each case
+   * @returns {L | R} Result from corresponding handler
+   *
+   * @example
+   * const msg = Result.ok(5).match({
+   *   ok: (x) => `Success: ${x * 2}`,
+   *   err: (e) => `Error: ${e}`
+   * })
+   * // "Success: 10"
+   *
+   * @example
+   * // Converting to React component
+   * result.match({
+   *   ok: (user) => <UserProfile user={user} />,
+   *   err: (error) => <ErrorMessage error={error} />,
+   * })
+   */
+  match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
+    return handlers.ok(this.#value)
+  }
+
+  /**
+   * Performs side effect on success value.
+   *
+   * Useful for logging, debugging, or side effects
+   * without breaking chaining.
+   *
+   * @group Inspecting
+   * @see {@link inspectErr} for error inspection
+   * @see {@link match} for pattern matching
+   * @param {(value: T) => void} visitor - Side effect function
+   * @returns {Result<T, E>} This instance for chaining
+   *
+   * @example
+   * Result.ok(42)
+   *   .inspect((x) => console.log('value:', x))
+   *   .map((x) => x * 2)
+   * // logs "value: 42", returns Ok(84)
+   *
+   * @example
+   * // Debug in pipeline
+   * fetchUser(id)
+   *   .inspect((user) => console.log('user loaded'))
+   *   .andThen(validateUser)
+   *   .inspect((user) => console.log('user validated'))
+   */
+  inspect(visitor: (value: T) => void): Result<T, E> {
+    visitor(this.#value)
+
+    return this
+  }
+
+  /**
+   * Performs side effect on error (not applicable for Ok).
+   *
+   * @group Inspecting
+   * @see {@link inspect} for value inspection
+   * @param {(error: E) => void} _visitor - Effect function (ignored)
+   * @returns {Result<T, E>} This instance unchanged
+   *
+   * @example
+   * Result.ok(42).inspectErr((e) => console.log('error:', e))
+   * // Ok(42) - nothing is logged
+   */
+  inspectErr(_visitor: (error: E) => void): Result<T, E> {
+    return this
+  }
+
   // #endregion
 
-  // #region CONVERSION
+  // #region CONVERSION: toPromise, toString, toJSON
 
   /**
    * Converts Result to resolved Promise.
@@ -774,24 +766,24 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
 
   // #endregion
 
-  // #region ASYNC OPERATIONS
+  // #region ASYNC: mapAsync, mapErrAsync, mapOrAsync, mapOrElseAsync, andThenAsync, andAsync, orAsync, orElseAsync
 
   /**
    * Transforms value asynchronously.
    *
    * Async version of map().
    *
-   * @group Async Operations
+   * @group Async
    * @template U - Transformed value type
    * @param {(value: T) => Promise<U>} mapperAsync - Async transformation function
    * @returns {AsyncResult<U, E>} Promise of transformed Ok
    *
    * @example
-   * await Result.ok(5).mapAsync(async x => x * 2)
+   * await Result.ok(5).mapAsync(async (x) => x * 2)
    * // Ok(10)
    *
    * @example
-   * await Result.ok(userId).mapAsync(async id => {
+   * await Result.ok(userId).mapAsync(async (id) => {
    *   return await fetchUser(id)
    * })
    * // Ok(user)
@@ -803,13 +795,13 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Transforms error asynchronously (not applicable for Ok).
    *
-   * @group Async Operations
+   * @group Async
    * @template E2 - New error type
    * @param {(error: E) => Promise<E2>} _mapperAsync - Async transformation (ignored)
    * @returns {AsyncResult<T, E2>} Promise of Ok with same value
    *
    * @example
-   * await Result.ok(5).mapErrAsync(async e => e + 1)
+   * await Result.ok(5).mapErrAsync(async (e) => e + 1)
    * // Ok(5)
    */
   mapErrAsync<E2>(_mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {
@@ -819,14 +811,14 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Transforms value asynchronously or returns default.
    *
-   * @group Async Operations
+   * @group Async
    * @template U - Transformed value type
    * @param {(value: T) => Promise<U>} mapperAsync - Async transformation
    * @param {U} _defaultValue - Default value (ignored)
    * @returns {Promise<U>} Promise of transformed value
    *
    * @example
-   * await Result.ok(5).mapOrAsync(async x => x * 2, 0)
+   * await Result.ok(5).mapOrAsync(async (x) => x * 2, 0)
    * // 10
    */
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, _defaultValue: U): Promise<U> {
@@ -836,7 +828,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Transforms using appropriate async mapper.
    *
-   * @group Async Operations
+   * @group Async
    * @template U - Result type
    * @param {(value: T) => Promise<U>} okAsync - Async success mapper
    * @param {(error: E) => Promise<U>} _errAsync - Error mapper (ignored)
@@ -844,8 +836,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    *
    * @example
    * await Result.ok(5).mapOrElseAsync(
-   *   async x => x * 2,
-   *   async e => -1
+   *   async (x) => x * 2,
+   *   async (e) => -1
    * )
    * // 10
    */
@@ -859,13 +851,13 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Chains async operation that returns Result.
    *
-   * @group Async Operations
+   * @group Async
    * @template U - New success type
    * @param {(value: T) => AsyncResult<U, E>} mapAsync - Async chaining
    * @returns {AsyncResult<U, E>} Promise of returned Result
    *
    * @example
-   * await Result.ok(userId).andThenAsync(async id => {
+   * await Result.ok(userId).andThenAsync(async (id) => {
    *   const user = await fetchUser(id)
    *   return user ? Result.ok(user) : Result.err('not found')
    * })
@@ -877,7 +869,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Returns async Result if this is Ok.
    *
-   * @group Async Operations
+   * @group Async
    * @template U - Second Result success type
    * @param {AsyncResult<U, E>} result - Async Result
    * @returns {AsyncResult<U, E>} The provided Promise
@@ -895,7 +887,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Returns this Result or async alternative.
    *
-   * @group Async Operations
+   * @group Async
    * @param {AsyncResult<T, E>} _result - Async alternative (ignored)
    * @returns {AsyncResult<T, E>} Promise of this instance
    *
@@ -912,13 +904,13 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   /**
    * Returns this Result or executes async recovery.
    *
-   * @group Async Operations
+   * @group Async
    * @param {(error: E) => AsyncResult<T, E>} _onErrorAsync - Async recovery (ignored)
    * @returns {AsyncResult<T, E>} Promise of this instance
    *
    * @example
    * await Result.ok(5).orElseAsync(
-   *   async e => Result.ok(0)
+   *   async (e) => Result.ok(0)
    * )
    * // Ok(5)
    */

@@ -81,9 +81,9 @@ Para guias abrangentes, referência de API e padrões avançados de uso, consult
 
 Saiba mais:
 
-- [Início Rápido](https://eriveltondasilva.github.io/result.js/guide/getting-started/quick-start)
-- [Exemplos](https://eriveltondasilva.github.io/result.js/examples/patterns)
-- [Referência de API](https://eriveltondasilva.github.io/result.js/api-reference)
+- [Início Rápido](https://eriveltondasilva.github.io/result.js/guide/getting-started/quick-start.md)
+- [Exemplos](https://eriveltondasilva.github.io/result.js/examples/patterns.md)
+- [Referência de API](https://eriveltondasilva.github.io/result.js/reference/index.md)
 
 ## Contribuindo
 
