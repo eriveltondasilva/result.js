@@ -97,28 +97,25 @@ export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
  * @template E - Error type
  */
 export interface ResultMethods<T, E> {
-  // #region VALIDATION
+  // #region CHECKING
   isOk(): this is Ok<T>
   isErr(): this is Err<E>
   isOkAnd(predicate: (value: T) => boolean): this is Ok<T>
   isErrAnd(predicate: (error: E) => boolean): this is Err<E>
   // #endregion
 
-  // #region ACCESS
+  // #region ACCESSING
   readonly ok: T | null
   readonly err: E | null
   unwrap(): T
   unwrapErr(): E
+  unwrapOr(defaultValue: T): T
+  unwrapOrElse(onError: (error: E) => T): T
   expect(message: string): T
   expectErr(message: string): E
   // #endregion
 
-  // #region RECOVERY
-  unwrapOr(defaultValue: T): T
-  unwrapOrElse(onError: (error: E) => T): T
-  // #endregion
-
-  // #region TRANSFORMATION
+  // #region TRANSFORMING
   map<U>(mapper: (value: T) => U): Result<U, E>
   mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
   mapOrElse<U>(okMapper: (value: T) => U, errorMapper: (error: E) => U): U
@@ -128,22 +125,19 @@ export interface ResultMethods<T, E> {
   // #endregion
 
   // #region CHAINING
-  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E>
-  orElse(onError: (error: E) => Result<T, E>): Result<T, E>
   and<U>(result: Result<U, E>): Result<U, E>
+  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E>
   or(result: Result<T, E>): Result<T, E>
+  orElse(onError: (error: E) => Result<T, E>): Result<T, E>
   zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2>
   // #endregion
 
-  // #region INSPECTION
+  // #region INSPECTING
+  contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean
+  containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R
   inspect(visitor: (value: T) => void): Result<T, E>
   inspectErr(visitor: (error: E) => void): Result<T, E>
-  // #endregion
-
-  // #region COMPARISON
-  contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean
-  containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean
   // #endregion
 
   // #region CONVERSION
@@ -152,7 +146,7 @@ export interface ResultMethods<T, E> {
   toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
   // #endregion
 
-  // #region ASYNC OPERATIONS
+  // #region ASYNC
   mapAsync<U>(mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E>
   mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2>
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U>
