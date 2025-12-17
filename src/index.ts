@@ -1,4 +1,3 @@
-// biome-ignore assist/source/organizeImports: no need to organize imports
 import * as factories from './core/factories.js'
 
 import type { Err } from './core/err.js'
