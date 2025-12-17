@@ -30,6 +30,7 @@ export function unknownToError(error: unknown): Error {
  * @internal
  */
 export function valueToDisplayString(value: unknown): string {
+  if (value instanceof Error) return `[Error: ${value.message}]`
   if (value === null) return 'null'
   if (value === undefined) return 'undefined'
 

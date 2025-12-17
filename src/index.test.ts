@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Result } from './index.js'
 
-describe('Module Exports', () => {
+describe('index.ts', () => {
   const factoryMethods = [
     'all',
     'allSettled',

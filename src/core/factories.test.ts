@@ -17,7 +17,7 @@ import {
 
 import { expectErr, expectOk } from './test-helpers.js'
 
-describe('Factories', () => {
+describe('factories.ts', () => {
   //# ==================== CREATION ====================
   describe('Basic Creation', () => {
     it.each([

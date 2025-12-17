@@ -5,7 +5,7 @@ import { Ok } from './ok.js'
 
 import { expectErr, expectOk } from './test-helpers.js'
 
-describe('Ok', () => {
+describe('ok.ts', () => {
   let okValue: Ok<number, Error>
 
   beforeEach(() => {

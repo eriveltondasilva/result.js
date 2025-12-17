@@ -8,7 +8,7 @@ import { expectErr, expectOk } from './test-helpers.js'
 
 import type { Result } from './types.d.ts'
 
-describe('Err', () => {
+describe('err.ts', () => {
   let errValue: Err<number, Error>
 
   beforeEach(() => {
@@ -255,7 +255,7 @@ describe('Err', () => {
     })
 
     it('should convert to string', () => {
-      expect(errValue.toString()).toBe('Err(Error: Test error)')
+      expect(errValue.toString()).toBe('Err([Error: Test error])')
     })
 
     it.each([
