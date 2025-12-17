@@ -1,6 +1,6 @@
 import { expect } from 'vitest'
 
-import type { Result } from './types.js'
+import type { Result } from './types.d.ts'
 
 export function expectOk<T, E>(result: Result<T, E>): T {
   expect(result.isOk()).toBe(true)

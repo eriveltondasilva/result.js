@@ -1,6 +1,7 @@
-import type { Ok } from './ok.js'
 import type { Err } from './err.js'
+import type { Ok } from './ok.js'
 import type { Result, AsyncResult } from '../index.js'
+
 export type { Result, AsyncResult }
 
 // #region INFERENCE
@@ -8,6 +9,7 @@ export type { Result, AsyncResult }
 /**
  * Extracts the success value type (T) from a Result.
  * Returns never if the input is not a Result.
+ *
  * @internal
  */
 export type InferOk<R> = R extends Result<infer T, unknown> ? T : never
@@ -15,6 +17,7 @@ export type InferOk<R> = R extends Result<infer T, unknown> ? T : never
 /**
  * Extracts the error type (E) from a Result.
  * Returns never if the input is not a Result.
+ *
  * @internal
  */
 export type InferErr<R> = R extends Result<unknown, infer E> ? E : never
@@ -25,7 +28,7 @@ export type InferErr<R> = R extends Result<unknown, infer E> ? E : never
 
 /**
  * Infers a tuple of success types from an array of Results.
- * @template T - A tuple of Result instances.
+ *
  * @internal
  */
 export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
@@ -34,7 +37,7 @@ export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
 
 /**
  * Infers a tuple of error types from an array of Results.
- * @template T - A tuple of Result instances.
+ *
  * @internal
  */
 export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
@@ -47,14 +50,14 @@ export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
 
 /**
  * Infers a union of all possible success types from an array of Results.
- * @template T - A tuple/array of Result instances.
+ *
  * @internal
  */
 export type OkUnion<T extends readonly Result<unknown, unknown>[]> = InferOk<T[number]>
 
 /**
  * Infers a union of all possible error types from an array of Results.
- * @template T - A tuple/array of Result instances.
+ *
  * @internal
  */
 export type ErrUnion<T extends readonly Result<unknown, unknown>[]> = InferErr<T[number]>
@@ -65,18 +68,21 @@ export type ErrUnion<T extends readonly Result<unknown, unknown>[]> = InferErr<T
 
 /**
  * Represents a successful outcome in a settled result structure (e.g., from Result.allSettled).
+ *
  * @internal
  */
 export type SettledOk<T> = { status: 'ok'; value: T }
 
 /**
  * Represents a failed outcome in a settled result structure (e.g., from Result.allSettled).
+ *
  * @internal
  */
 export type SettledErr<E> = { status: 'err'; reason: E }
 
 /**
  * Represents a final outcome of a Result operation, whether success or failure.
+ *
  * @internal
  */
 export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
@@ -87,7 +93,7 @@ export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
  * Interface that both Ok and Err must implement.
  *
  * @internal
- * @template T - Success value type
+ * @template T - Success type
  * @template E - Error type
  */
 export interface ResultMethods<T, E> {
