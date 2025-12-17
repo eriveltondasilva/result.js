@@ -121,7 +121,7 @@ result.match({
 | `result.andThen(fn)` | Chain operations |
 | `result.match({ok, err})` | Handle both cases |
 
-For complete reference, see [API Reference](../../api-reference.md).
+For complete reference, see [API Reference](../../reference/index.md).
 
 ## Next Steps
 

@@ -6,14 +6,14 @@ export default defineConfig({
   lang: 'en',
   title: 'Result.js',
   description: 'Explicit, type-safe error handling for JavaScript & TypeScript',
-  head: [['link', { rel: 'icon', href: '/result.js/resultjs-icon.ico' }]],
+  head: [['link', { rel: 'icon', href: '/result.js/resultjs-icon.ico', type: 'image/x-icon' }]],
   base: '/result.js/',
 
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started/what-is-result.md' },
       { text: 'Examples', link: '/examples/patterns.md' },
-      { text: 'Reference', link: '/api-reference.md' },
+      { text: 'Reference', link: '/reference/index.md' },
     ],
 
     sidebar: {
