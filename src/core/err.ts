@@ -30,6 +30,12 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
     this.#error = error
   }
 
+  private validateResult(value: unknown, method: string): void {
+    if (isResult(value)) return
+
+    throw new Error(`${method}() called on Err that does not contain a Result`)
+  }
+
   // #region VALIDATION
 
   /**
@@ -500,17 +506,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @see {@link andAsync} for async version
    * @see {@link andThen} for explicit chaining
    * @template U - Second Result success type
-   * @param {Result<U, E>} _result - Result (ignored)
+   * @param {Result<U, E>} result - Result (ignored)
    * @returns {Result<U, E>} Err with same error
    *
    * @example
    * Result.err('fail').and(Result.ok(42))
    * // Err("fail")
    */
-  and<U>(_result: Result<U, E>): Result<U, E> {
-    if (!isResult(_result)) {
-      throw new Error('and() called on Err that does not contain a Result')
-    }
+  and<U>(result: Result<U, E>): Result<U, E> {
+    this.validateResult(result, 'and')
 
     return this as unknown as Result<U, E>
   }
@@ -534,9 +538,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // Err("backup")
    */
   or(result: Result<T, E>): Result<T, E> {
-    if (!isResult(result)) {
-      throw new Error('or() called on Err that does not contain a Result')
-    }
+    this.validateResult(result, 'or')
 
     return result
   }
@@ -548,17 +550,15 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @see {@link and} for chaining and discarding the first Ok value.
    * @template U - Second Result success type
    * @template E2 - Second Result error type
-   * @param {Result<U, E2>} _result - Result to combine (ignored)
+   * @param {Result<U, E2>} result - Result to combine (ignored)
    * @returns {Result<[T, U], E | E2>} Err with this error
    *
    * @example
    * Result.err('fail').zip(Result.ok(2))
    * // Err("fail")
    */
-  zip<U, E2>(_result: Result<U, E2>): Result<[T, U], E | E2> {
-    if (!isResult(_result)) {
-      throw new Error('zip() called on Err that does not contain a Result')
-    }
+  zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2> {
+    this.validateResult(result, 'zip')
 
     return this as unknown as Result<[T, U], E | E2>
   }

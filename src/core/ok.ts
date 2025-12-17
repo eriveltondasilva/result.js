@@ -30,6 +30,12 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
     this.#value = value
   }
 
+  private validateResult(value: unknown, method: string): void {
+    if (isResult(value)) return
+
+    throw new Error(`${method}() called on Ok that does not contain a Result`)
+  }
+
   // #region VALIDATION
 
   /**
@@ -434,9 +440,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // throws Error: flatten() called on Ok that does not contain a Result
    */
   flatten<U, E2>(this: Ok<Result<U, E2>, E>): Result<U, E | E2> {
-    if (!isResult(this.#value)) {
-      throw new Error('flatten() called on Ok that does not contain a Result')
-    }
+    this.validateResult(this.#value, 'flatten')
 
     return this.#value
   }
@@ -517,9 +521,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Err("fail")
    */
   and<U>(result: Result<U, E>): Result<U, E> {
-    if (!isResult(result)) {
-      throw new Error('and() called on Ok that does not contain a Result')
-    }
+    this.validateResult(result, 'and')
 
     return result
   }
@@ -532,7 +534,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * @group Chaining
    * @see {@link orAsync} for async version
    * @see {@link orElse} for function-based alternative
-   * @param {Result<T, E>} _result - Alternative Result (ignored)
+   * @param {Result<T, E>} result - Alternative Result (ignored)
    * @returns {Ok<T, E>} This Ok instance
    *
    * @example
@@ -542,10 +544,8 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * Result.ok(1).or(Result.err('fail'))
    * // Ok(1)
    */
-  or(_result: Result<T, E>): Result<T, E> {
-    if (!isResult(_result)) {
-      throw new Error('or() called on Ok that does not contain a Result')
-    }
+  or(result: Result<T, E>): Result<T, E> {
+    this.validateResult(result, 'or')
 
     return this
   }
@@ -578,9 +578,7 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // Ok([id, name]) or first error
    */
   zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2> {
-    if (!isResult(result)) {
-      throw new Error('zip() called on Ok that does not contain a Result')
-    }
+    this.validateResult(result, 'zip')
 
     if (result.isErr()) {
       return new Err<[T, U], E | E2>(result.unwrapErr())
