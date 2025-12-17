@@ -1,7 +1,7 @@
 import * as factories from './core/factories.js'
 
-import type { Err } from './core/err.js'
-import type { Ok } from './core/ok.js'
+import { Err } from './core/err.js'
+import { Ok } from './core/ok.js'
 
 // #region TYPE
 
@@ -96,4 +96,5 @@ export type AsyncResult<T, E> = Promise<Result<T, E>>
  */
 export const Result = Object.freeze({ ...factories } as const)
 
+export { Ok, Err }
 export default Result
