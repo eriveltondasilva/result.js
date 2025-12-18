@@ -69,6 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [1.1.0]: https://github.com/eriveltondasilva/result.js/compare/v1.0.7...v1.1.0
 
-## [1.0.0] - 2025-11-20
+## 1.0.0 - 2025-11-20
 
 First stable version for production use.

@@ -85,6 +85,10 @@ Saiba mais:
 - [Exemplos](https://eriveltondasilva.github.io/result.js/examples/patterns.md)
 - [Referência de API](https://eriveltondasilva.github.io/result.js/reference/index.md)
 
+## Changelog
+
+Consulte [CHANGELOG.md](./CHANGELOG.md) para uma lista detalhada de mudanças em cada versão.
+
 ## Contribuindo
 
 Contribuições são bem-vindas! Por favor, leia nosso [Guia de Contribuição](./CONTRIBUTING.md) para mais detalhes.
