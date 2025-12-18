@@ -14,6 +14,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started/what-is-result.md' },
       { text: 'Examples', link: '/examples/patterns.md' },
       { text: 'Reference', link: '/reference/index.md' },
+      { text: 'Changelog', link: '/changelog.md' },
     ],
 
     sidebar: {
