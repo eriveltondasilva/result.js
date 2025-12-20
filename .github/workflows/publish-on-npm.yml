@@ -1,32 +1,39 @@
-name: Publish on NPM
+name: Publish On NPM
 
 on:
   push:
-    tags:
-      - "v*.*.*"
-
+    tags: [v*.*.*]
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (e.g., 1.0.0)"
+        description: Version to publish (e.g., 1.0.0)
         required: true
         type: string
 
+concurrency:
+  group: publish-on-npm
+  cancel-in-progress: false
+
 jobs:
-  validate:
+  code-quality:
+    uses: ./.github/workflows/code-quality.yml
+
+  unit-tests:
+    uses: ./.github/workflows/unit-tests.yml
+
+  version-check:
+    name: Version Check
     runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
 
     steps:
-      - name: ✅ Checkout
-        uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-      - name: 🐢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: 🔑 Get tag version
+      - name: Get tag version
         id: tag
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -35,7 +42,7 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🔎 Verify package.json version matches tag
+      - name: Verify package.json version matches tag
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           if [ "$PACKAGE_VERSION" != "${{ steps.tag.outputs.version }}" ]; then
@@ -43,35 +50,32 @@ jobs:
             exit 1
           fi
 
-      - name: 📦 Install Dependencies
-        run: npm ci
-
-      - name: 🔎 Run validation
-        run: npm run validate
-
   publish:
-    needs: validate
+    name: Publish
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    needs: [code-quality, unit-tests, version-check]
 
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - name: ✅ Checkout
-        uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-      - name: 🐢 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: 22.x
           registry-url: "https://registry.npmjs.org/"
           cache: "npm"
 
-      - name: 📦 Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🚀 Publish package
+      - name: Publish package
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
