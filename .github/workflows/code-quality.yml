@@ -8,7 +8,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: code-quality
   cancel-in-progress: true
 
 jobs:
