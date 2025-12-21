@@ -79,3 +79,8 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-docs:
+    needs: [publish]
+    uses: ./.github/workflows/deploy-docs.yml
+    secrets: inherit

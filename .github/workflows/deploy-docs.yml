@@ -1,9 +1,8 @@
 name: Deploy VitePress site to Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -15,18 +14,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  code-quality:
-    uses: ./.github/workflows/code-quality.yml
-
-  unit-tests:
-    uses: ./.github/workflows/unit-tests.yml
-
   build:
     name: Build
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-
-    needs: [code-quality, unit-tests]
 
     steps:
       - name: Checkout code
