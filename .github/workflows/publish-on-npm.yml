@@ -84,3 +84,7 @@ jobs:
     needs: [publish]
     uses: ./.github/workflows/deploy-docs.yml
     secrets: inherit
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
