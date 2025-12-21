@@ -279,7 +279,8 @@ async function loadUserData(userId: string): AsyncResult<UserData, AppError> {
 | **Fail-Fast** | Dependent operations | Validation pipeline |
 | **Collect All** | Independent validations | Form fields |
 | **Status Gathering** | Batch processing | Import 100 records |
-| **Fallback Chain** | Multiple sources | Cache → DB → API |
+| **Fallback Chain (orElse)** | Sequential sources | Cache → DB → API |
+| **Parallel Try (any)** | Multiple independent sources | Retry servers |
 | **Conditional Recovery** | Error-specific handling | Retry on timeout |
 | **Logging** | Debugging and monitoring | All operations |
 

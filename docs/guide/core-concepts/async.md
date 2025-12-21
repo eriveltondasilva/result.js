@@ -50,6 +50,100 @@ const result = await Result.fromPromise(async () => {
 })
 ```
 
+## Converting Result to Promise
+
+### Ok Result to Resolved Promise
+
+Convert Ok Result into a Promise that resolves with the value:
+
+```typescript
+const result = Result.ok(42)
+const promise = result.toPromise()
+
+const value = await promise
+console.log(value) // 42
+```
+
+### Err Result to Rejected Promise
+
+Convert Err Result into a Promise that rejects with the error:
+
+```typescript
+const result = Result.err(new Error('failed'))
+const promise = result.toPromise()
+
+try {
+  await promise
+} catch (error) {
+  console.log(error) // Error: failed
+}
+```
+
+## Integrating with Promise-Based Code
+
+Use `toPromise()` when converting Result back to Promise-based APIs:
+
+```typescript
+// Result-based function
+function fetchUserResult(id: string): Result<User, ApiError> {
+  // ...
+}
+
+// Convert to Promise for legacy code
+async function legacyHandler(id: string) {
+  const promise = fetchUserResult(id).toPromise()
+  
+  try {
+    const user = await promise
+    console.log('User:', user)
+  } catch (error) {
+    console.error('Failed:', error)
+  }
+}
+```
+
+## Result.fromPromise() vs toPromise()
+
+- **`Result.fromPromise()`** — Promise → Result (wrap Promise)
+- **`toPromise()`** — Result → Promise (unwrap Result)
+
+```typescript
+// Wrap: Promise to Result
+const result = await Result.fromPromise(
+  async () => fetch('/api/user').then(r => r.json())
+)
+
+// Unwrap: Result back to Promise
+const promise = result.toPromise()
+const user = await promise
+```
+
+## Real-World: Mixed Codebase
+
+Bridge between Result and Promise-based code:
+
+```typescript
+// New Result-based code
+async function processUser(id: string): AsyncResult<User, Error> {
+  return (await fetchUser(id))
+    .andThenAsync((user) => validateUser(user))
+}
+
+// Legacy Promise-based integration
+export async function legacyAPI(id: string): Promise<User> {
+  const result = await processUser(id)
+  return result.toPromise() // Convert to Promise for legacy code
+}
+
+// Usage in legacy code
+try {
+  const user = await legacyAPI('123')
+  console.log(user)
+} catch (error) {
+  console.error(error)
+}
+```
+
 ## Async Transformations
 
 ### mapAsync()
