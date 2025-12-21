@@ -436,8 +436,6 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
    * // throws Error: flatten() called on Ok that does not contain a Result
    */
   flatten<U, E2>(this: Ok<Result<U, E2>, E>): Result<U, E | E2> {
-    this.validateResult(this.#value, 'flatten')
-
     return this.#value
   }
 
