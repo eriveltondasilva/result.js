@@ -1,8 +1,6 @@
 import { Result } from './index.js'
 
-const result = Result.ok(1)
-
-Result.all([Result.ok(1), Result.ok(2), Result.ok(3)])
+const result = Result.ok(42)
 
 if (result.isOk()) {
   console.log(result.unwrap())
