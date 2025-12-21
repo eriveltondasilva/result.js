@@ -102,6 +102,75 @@ async function registerUser(formData: FormData): AsyncResult<User, AppError> {
 }
 ```
 
+## Filtering Values
+
+### filter() - With Default Error
+
+Filter Ok value based on predicate. Returns Ok if passes, converts to Err if fails with default error:
+
+```typescript
+Result.ok(10).filter((x) => x > 5)
+// Ok(10)
+
+Result.ok(3).filter((x) => x > 5)
+// Err(Error: Filter predicate failed for value: 3)
+```
+
+### filter() - With Custom Error
+
+Filter Ok value with custom error message on rejection:
+
+```typescript
+Result.ok(3).filter(
+  (x) => x > 5,
+  (x) => new Error(`${x} is too small`)
+)
+// Err(Error: 3 is too small)
+
+// With custom error type
+type ValidationError = { field: string; message: string }
+
+Result.ok(-5).filter(
+  (x) => x > 0,
+  (x): ValidationError => ({ 
+    field: 'age', 
+    message: `Age must be positive, got ${x}` 
+  })
+)
+// Err({ field: 'age', message: 'Age must be positive, got -5' })
+```
+
+## Filtering in Chains
+
+Combine multiple filters:
+
+```typescript
+Result.ok(15)
+  .filter((x) => x > 0)        // Ok(15)
+  .filter((x) => x < 100)      // Ok(15)
+  .filter(
+    (x) => x % 2 === 0,
+    (x) => `${x} is not even`
+  )
+// Err(`15 is not even`)
+```
+
+## filter() vs isOkAnd()
+
+- **`filter()`** — Transforms Ok to Err if predicate fails
+- **`isOkAnd()`** — Only checks condition, doesn't transform
+
+```typescript
+// filter() transforms the Result
+const result = Result.ok(5).filter((x) => x > 10)
+// Err(Error: ...)
+
+// isOkAnd() only checks
+if (result.isOkAnd((x) => x > 10)) {
+  // handle
+}
+```
+
 ## Mixing map() and andThen()
 
 Use both for clarity:
@@ -156,8 +225,8 @@ result.map(x => x * 2)
 // ✗ Avoid: nested Results
 Result.ok(Result.ok(42))
 
-// ✓ Better: use map() which auto-flattens
-Result.ok(5).map(x => Result.ok(x * 2))
+// ✓ Better: use andThen() to flatten
+Result.ok(5).andThen(x => Result.ok(x * 2))
 ```
 
 ## Best Practices

@@ -1,6 +1,6 @@
 # Quick Start
 
-Master the essentials with 8 practical examples.
+Master the essentials with 10 practical examples.
 
 ## 1. Creating Results
 
@@ -11,6 +11,7 @@ Result.ok(42)                            // Success
 Result.err('failed')                     // Failure
 Result.fromTry(() => JSON.parse('...'))  // Wrap try-catch
 Result.fromNullable(maybeValue)          // Convert null/undefined to Err
+Result.validate(25, (x) => x >= 18)      // Validate with predicate
 ```
 
 ## 2. Checking State
@@ -86,7 +87,62 @@ const message = result.match({
 })
 ```
 
-## 8. Async Operations
+## 8. Validating Values with validate()
+
+Create Result by validating with predicate:
+
+```typescript
+// Simple validation
+const age = Result.validate(25, (x) => x >= 18)
+// Ok(25)
+
+const invalid = Result.validate(15, (x) => x >= 18)
+// Err(Error: Validation failed for value: 15)
+
+// With custom error type
+type ValidationError = { field: string; message: string }
+
+const result = Result.validate(
+  -5,
+  (x) => x > 0,
+  (x): ValidationError => ({ 
+    field: 'age', 
+    message: `${x} is not positive` 
+  })
+)
+// Err({ field: 'age', message: '-5 is not positive' })
+```
+
+## 9. Combining Multiple Results with all()
+
+Collect multiple Results and fail fast on first error:
+
+```typescript
+// All succeed - returns tuple of values
+const result = Result.all([
+  Result.ok(1),
+  Result.ok('two'),
+  Result.ok(true)
+])
+result.unwrap() // [1, "two", true]
+
+// First error stops execution
+const validated = Result.all([
+  validateEmail(form.email),
+  validatePassword(form.password),
+  validateAge(form.age)
+])
+
+if (validated.isOk()) {
+  const [email, password, age] = validated.unwrap()
+  // All fields valid, proceed
+} else {
+  const error = validated.unwrapErr()
+  console.error('Validation failed:', error)
+}
+```
+
+## 10. Async Operations
 
 Wrap Promises and transform async values:
 
@@ -115,19 +171,32 @@ if (result.isOk()) {
 type ValidationError = { field: string; message: string }
 
 function validateAge(age: number): Result<number, ValidationError> {
-  if (age < 18) {
-    return Result.err({ field: 'age', message: 'Must be 18+' })
-  }
+  return Result.validate(
+    age,
+    (x) => x >= 18,
+    (x) => ({ field: 'age', message: `Must be 18+, got ${x}` })
+  )
+}
 
-  return Result.ok(age)
+function validateEmail(email: string): Result<string, ValidationError> {
+  return Result.validate(
+    email,
+    (e) => e.includes('@'),
+    (e) => ({ field: 'email', message: `Invalid format: ${e}` })
+  )
 }
 
 async function registerUser(email: string, age: number): Promise<void> {
-  const result = validateAge(age)
+  const result = Result.all([
+    validateEmail(email),
+    validateAge(age)
+  ])
 
   result.match({
-    ok: (validAge) => console.log(`User is ${validAge} years old`),
-    err: (error) => console.error(`${error.field}: ${error.message}`)
+    ok: ([validEmail, validAge]) => 
+      console.log(`Registered: ${validEmail}, age ${validAge}`),
+    err: (error) => 
+      console.error(`${error.field}: ${error.message}`)
   })
 }
 
