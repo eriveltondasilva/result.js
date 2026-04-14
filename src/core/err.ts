@@ -1,8 +1,7 @@
 import { isResult } from './factories.js'
 import { valueToDisplayString } from './utils.js'
 
-import type { Ok } from './ok.js'
-import type { AsyncResult, Result, ResultMethods } from './types.d.ts'
+import type { AsyncResult, Result, Ok as IOk, Err as IErr } from './types.d.ts'
 
 /**
  * Represents an error Result containing a failure.
@@ -16,18 +15,18 @@ import type { AsyncResult, Result, ResultMethods } from './types.d.ts'
  *
  * @internal
  * @template T - Success value type (for compatibility)
- * @template E - Error type
  *
  * @example
  * const result = Result.err(new Error('failed'))
  * console.log(result.unwrapErr()) // Error: failed
  * console.log(result.isErr()) // true
  */
-export class Err<T = never, E = Error> implements ResultMethods<T, E> {
-  readonly #error: E
+export class Err<E, T> implements IErr<E, T> {
+  readonly _tag = 'Err'
+  readonly error: E
 
   constructor(error: E) {
-    this.#error = error
+    this.error = error
   }
 
   private validateResult(value: unknown, method: string): void {
@@ -48,7 +47,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * Result.err('fail').isOk() // false
    */
-  isOk(): this is Ok<T> {
+  isOk(): this is IOk<T> {
     return false
   }
 
@@ -63,7 +62,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Result.err('fail').isErr() // true
    * Result.ok(42).isErr() // false
    */
-  isErr(): this is Err<E> {
+  isErr(): this is IErr<E> {
     return true
   }
 
@@ -78,7 +77,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * @example
    * Result.err('fail').isOkAnd((x) => x > 5) // false
    */
-  isOkAnd(_predicate: (value: T) => boolean): this is Ok<T> {
+  isOkAnd(_predicate: (value: T) => boolean): this is IOk<T> {
     return false
   }
 
@@ -102,8 +101,8 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   console.log('Resource not found')
    * }
    */
-  isErrAnd(predicate: (error: E) => boolean): this is Err<E> {
-    return predicate(this.#error)
+  isErrAnd(predicate: (error: E) => boolean): this is IErr<E> {
+    return predicate(this.error)
   }
 
   // #endregion
@@ -140,7 +139,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * console.log(ok.err) // null
    */
   get err(): E {
-    return this.#error
+    return this.error
   }
 
   /**
@@ -157,7 +156,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // })
    */
   unwrap(): never {
-    throw new Error('Called unwrap on an Err value', { cause: this.#error })
+    throw new Error('Called unwrap on an Err value', { cause: this.error })
   }
 
   /**
@@ -181,7 +180,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * }
    */
   unwrapErr(): E {
-    return this.#error
+    return this.error
   }
 
   /**
@@ -234,7 +233,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * })
    */
   unwrapOrElse(onError: (error: E) => T): T {
-    return onError(this.#error)
+    return onError(this.error)
   }
 
   /**
@@ -252,7 +251,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // })
    */
   expect(message: string): never {
-    throw new Error(message, { cause: this.#error })
+    throw new Error(message, { cause: this.error })
   }
 
   /**
@@ -269,7 +268,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // "fail"
    */
   expectErr(_message: string): E {
-    return this.#error
+    return this.error
   }
 
   // #endregion
@@ -351,7 +350,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * )
    */
   mapOrElse<U>(_okMapper: (value: T) => U, errorMapper: (error: E) => U): U {
-    return errorMapper(this.#error)
+    return errorMapper(this.error)
   }
 
   /**
@@ -380,7 +379,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * }))
    */
   mapErr<E2>(mapper: (error: E) => E2): Result<T, E2> {
-    return new Err(mapper(this.#error))
+    return new Err(mapper(this.error))
   }
 
   /**
@@ -437,7 +436,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * Result.err('fail').flatten()
    * // Err("fail")
    */
-  flatten<U, E2>(this: Err<Result<U, E2>, E>): Result<U, E | E2> {
+  flatten<U, E2>(this: IErr<Result<U, E2>, E>): Result<U, E | E2> {
     return this as unknown as Result<U, E | E2>
   }
 
@@ -537,7 +536,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   .orElse(() => fetchFromAPI())
    */
   orElse(onError: (error: E) => Result<T, E>): Result<T, E> {
-    return onError(this.#error)
+    return onError(this.error)
   }
 
   /**
@@ -608,7 +607,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // true
    */
   containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
-    return comparator ? comparator(this.#error, error) : this.#error === error
+    return comparator ? comparator(this.error, error) : this.error === error
   }
 
   /**
@@ -642,7 +641,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * })
    */
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
-    return handlers.err(this.#error)
+    return handlers.err(this.error)
   }
 
   /**
@@ -687,7 +686,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   })
    */
   inspectErr(visitor: (error: E) => void): Result<T, E> {
-    visitor(this.#error)
+    visitor(this.error)
 
     return this
   }
@@ -717,7 +716,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   .catch((e) => console.error(e))
    */
   toPromise(): Promise<never> {
-    return Promise.reject(this.#error)
+    return Promise.reject(this.error)
   }
 
   /**
@@ -735,7 +734,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // "Err(Error: oops)"
    */
   toString(): string {
-    return `Err(${valueToDisplayString(this.#error)})`
+    return `Err(${valueToDisplayString(this.error)})`
   }
 
   /**
@@ -755,7 +754,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * // '{"type":"err","error":"fail"}'
    */
   toJSON(): { type: 'err'; error: E } {
-    return { type: 'err', error: this.#error }
+    return { type: 'err', error: this.error }
   }
 
   // #endregion
@@ -805,7 +804,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    * }))
    */
   async mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {
-    return new Err(await mapperAsync(this.#error))
+    return new Err(await mapperAsync(this.error))
   }
 
   /**
@@ -845,7 +844,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
     _okAsync: (value: T) => Promise<U>,
     errAsync: (error: E) => Promise<U>,
   ): Promise<U> {
-    return errAsync(this.#error)
+    return errAsync(this.error)
   }
 
   /**
@@ -924,7 +923,7 @@ export class Err<T = never, E = Error> implements ResultMethods<T, E> {
    *   .then(r => r.orElseAsync(async () => fetchFromAPI()))
    */
   orElseAsync(onErrorAsync: (error: E) => AsyncResult<T, E>): AsyncResult<T, E> {
-    return onErrorAsync(this.#error)
+    return onErrorAsync(this.error)
   }
 
   // #endregion

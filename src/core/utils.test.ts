@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { assertArray, unknownToError, valueToDisplayString } from './utils' // Assumindo que './utils' é o caminho correto
+import { describe, it, expect } from 'vitest';
+
+import { assertArray, unknownToError, valueToDisplayString } from './utils'; // Assumindo que './utils' é o caminho correto
 
 describe('utils.ts', () => {
   describe('assertArray', () => {

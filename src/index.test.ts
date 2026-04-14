@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
+
 import { Result } from './index.js'
 
 describe('index.ts', () => {
