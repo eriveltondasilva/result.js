@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Result.fromNullable()` - Create Result from nullable values
   - `Result.isResult()` - Type guard for Result instances
   - `isOkAnd()` / `isErrAnd()` - Validate Result with predicates
-  
 - **Collection methods:**
   - `Result.allSettled()` - Collect all Results without failing
   - `Result.any()` - Return first Ok or all errors

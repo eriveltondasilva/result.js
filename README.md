@@ -41,7 +41,6 @@ import Result from '@eriveltonsilva/result.js'
 
 // CommonJS
 const { Result } = require('@eriveltonsilva/result.js')
-
 ```
 
 ### Basic Usage
@@ -63,16 +62,15 @@ const doubled = Result.ok(21)
   .unwrap() // 52
 
 // Pattern matching
-const result = Result.ok(42)
-  .match({
-    ok: (value) => value * 2,
-    err: (error) => error.message,
-  }) // 84
+const result = Result.ok(42).match({
+  ok: (value) => value * 2,
+  err: (error) => error.message,
+}) // 84
 
 // Handle errors safely
 const result = Result.fromTry(
   () => JSON.parse('invalid'),
-  (error) => new Error(`Invalid JSON: ${error}`)
+  (error) => new Error(`Invalid JSON: ${error}`),
 ) // Error: Invalid JSON: SyntaxError: Unexpected token, "invalid" is not valid JSON
 ```
 

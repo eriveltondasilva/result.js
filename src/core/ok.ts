@@ -402,9 +402,9 @@ export class Ok<T, E = never> implements ResultMethods<T, E> {
   ): Result<T, E | Error> {
     if (!predicate(this.#value)) {
       return new Err(
-        onReject
-          ? onReject(this.#value)
-          : new Error(`Filter predicate failed for value: ${valueToDisplayString(this.#value)}`),
+        onReject ?
+          onReject(this.#value)
+        : new Error(`Filter predicate failed for value: ${valueToDisplayString(this.#value)}`),
       )
     }
 

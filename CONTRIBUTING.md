@@ -44,7 +44,6 @@ git push origin feature/your-feature-name
 - Keep your code **clean, simple, and consistent** with the existing style.
 
 - Follow the **commit message convention**:
-
   - Use verbs like `Add`, `Fix`, `Update`, `Remove`, etc.
 
 - Make sure all tests (if any) **pass successfully** before submitting.

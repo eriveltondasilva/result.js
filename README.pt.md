@@ -62,16 +62,15 @@ const dobrado = Result.ok(21)
   .unwrap() // 52
 
 // Padrão matching
-const resultado = Result.ok(42)
-  .match({
-    ok: (valor) => valor * 2,
-    err: (erro) => erro.message,
-  }) // 84
+const resultado = Result.ok(42).match({
+  ok: (valor) => valor * 2,
+  err: (erro) => erro.message,
+}) // 84
 
 // Tratar erros com segurança
 const resultado = Result.fromTry(
   () => JSON.parse('inválido'),
-  (erro) => new Error(`JSON inválido: ${erro}`)
+  (erro) => new Error(`JSON inválido: ${erro}`),
 ) // Error: JSON inválido: SyntaxError: Unexpected token, "inválido" is not valid JSON
 ```
 

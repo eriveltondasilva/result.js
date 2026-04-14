@@ -381,9 +381,9 @@ export function validate<T, E = Error>(
 ): Result<T, E | Error> {
   if (!predicate(value)) {
     return new Err(
-      onError
-        ? onError(value)
-        : new Error(`Validation failed for value: ${valueToDisplayString(value)}`),
+      onError ?
+        onError(value)
+      : new Error(`Validation failed for value: ${valueToDisplayString(value)}`),
     )
   }
 
@@ -562,8 +562,8 @@ export function allSettled<const T extends readonly Result<unknown, unknown>[]>(
       throw new Error('allSettled() called with non-Result value')
     }
 
-    return result.isOk()
-      ? { status: 'ok', value: result.unwrap() as OkUnion<T> }
+    return result.isOk() ?
+        { status: 'ok', value: result.unwrap() as OkUnion<T> }
       : { status: 'err', reason: result.unwrapErr() as ErrUnion<T> }
   })
 

@@ -62,16 +62,15 @@ const duplicado = Result.ok(21)
   .unwrap() // 52
 
 // Pattern matching
-const resultado = Result.ok(42)
-  .match({
-    ok: (valor) => valor * 2,
-    err: (error) => error.message,
-  }) // 84
+const resultado = Result.ok(42).match({
+  ok: (valor) => valor * 2,
+  err: (error) => error.message,
+}) // 84
 
 // Manejar errores con seguridad
 const resultado = Result.fromTry(
   () => JSON.parse('inválido'),
-  (error) => new Error(`JSON inválido: ${error}`)
+  (error) => new Error(`JSON inválido: ${error}`),
 ) // Error: JSON inválido: SyntaxError: Unexpected token, "inválido" is not valid JSON
 ```
 
