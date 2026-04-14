@@ -1,9 +1,11 @@
 {
   "extends": "@tsconfig/bun/tsconfig.json",
   "compilerOptions": {
-    // File Layout
+    "types": ["bun"],
+
     "rootDir": "./src",
     "outDir": "./dist",
+
     "paths": {
       "@/*": ["./src/*"]
     }
