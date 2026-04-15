@@ -1,38 +1,28 @@
-import { isResult } from './factories.js'
-import { valueToDisplayString } from './utils.js'
+import { valueToDisplayString } from './utils'
 
-import type { AsyncResult, Result, Ok as IOk, Err as IErr } from './types.d.ts'
+import type { Ok as IOk, Err as IErr, Result, AsyncResult } from './types'
 
 /**
  * Represents an error Result containing a failure.
- *
- * Err is a Result variant that encapsulates failed operations.
- * Provides methods for recovery, error transformation, and conversion
- * to other representations, maintaining type-safety.
  *
  * @remarks
  * You normally don't instantiate Err directly. Use `Result.err(error)`.
  *
  * @internal
- * @template T - Success value type (for compatibility)
+ *
+ * @template T - Success value type (for type compatibility)
+ * @template E - Error type
  *
  * @example
- * const result = Result.err(new Error('failed'))
- * console.log(result.unwrapErr()) // Error: failed
- * console.log(result.isErr()) // true
+ * Result.err(new Error('failed')).unwrapErr()  // Error: failed
+ * Result.err(new Error('failed')).isErr()      // true
  */
-export class Err<E, T> implements IErr<E, T> {
+export class Err<T = never, E = Error> implements IErr<T, E> {
   readonly _tag = 'Err'
   readonly error: E
 
   constructor(error: E) {
     this.error = error
-  }
-
-  private validateResult(value: unknown, method: string): void {
-    if (isResult(value)) return
-
-    throw new Error(`${method}() called on Err that does not contain a Result`)
   }
 
   // #region CHECKING: isOk, isErr, isOkAnd, isErrAnd
@@ -47,7 +37,7 @@ export class Err<E, T> implements IErr<E, T> {
    * @example
    * Result.err('fail').isOk() // false
    */
-  isOk(): this is IOk<T> {
+  isOk(): this is IOk<T, E> {
     return false
   }
 
@@ -62,7 +52,7 @@ export class Err<E, T> implements IErr<E, T> {
    * Result.err('fail').isErr() // true
    * Result.ok(42).isErr() // false
    */
-  isErr(): this is IErr<E> {
+  isErr(): this is IErr<T, E> {
     return true
   }
 
@@ -77,7 +67,7 @@ export class Err<E, T> implements IErr<E, T> {
    * @example
    * Result.err('fail').isOkAnd((x) => x > 5) // false
    */
-  isOkAnd(_predicate: (value: T) => boolean): this is IOk<T> {
+  isOkAnd(_predicate: (value: T) => boolean): this is IOk<T, E> {
     return false
   }
 
@@ -101,7 +91,7 @@ export class Err<E, T> implements IErr<E, T> {
    *   console.log('Resource not found')
    * }
    */
-  isErrAnd(predicate: (error: E) => boolean): this is IErr<E> {
+  isErrAnd(predicate: (error: E) => boolean): this is IErr<T, E> {
     return predicate(this.error)
   }
 
@@ -281,10 +271,12 @@ export class Err<E, T> implements IErr<E, T> {
    * For Err, keeps the error and only adjusts value type.
    *
    * @group Transforming
+   *
    * @see {@link mapAsync} for async version
    * @see {@link mapOr} for default value
    * @see {@link mapErr} to transform the error part (not the value)
    * @see {@link andThen} for explicit chaining
+   *
    * @template U - Transformed value type
    * @param {(value: T) => U} _mapper - Transformation (ignored)
    * @returns {Result<U, E>} Err with same error, different value type
@@ -436,7 +428,7 @@ export class Err<E, T> implements IErr<E, T> {
    * Result.err('fail').flatten()
    * // Err("fail")
    */
-  flatten<U, E2>(this: IErr<Result<U, E2>, E>): Result<U, E | E2> {
+  flatten<U, E2>(this: Err<Result<U, E2>, E>): Result<U, E | E2> {
     return this as unknown as Result<U, E | E2>
   }
 
@@ -458,9 +450,7 @@ export class Err<E, T> implements IErr<E, T> {
    * Result.err('fail').and(Result.ok(42))
    * // Err("fail")
    */
-  and<U>(result: Result<U, E>): Result<U, E> {
-    this.validateResult(result, 'and')
-
+  and<U>(_result: Result<U, E>): Result<U, E> {
     return this as unknown as Result<U, E>
   }
 
@@ -505,8 +495,6 @@ export class Err<E, T> implements IErr<E, T> {
    * // Err("backup")
    */
   or(result: Result<T, E>): Result<T, E> {
-    this.validateResult(result, 'or')
-
     return result
   }
 
@@ -554,8 +542,6 @@ export class Err<E, T> implements IErr<E, T> {
    * // Err("fail")
    */
   zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2> {
-    this.validateResult(result, 'zip')
-
     return this as unknown as Result<[T, U], E | E2>
   }
 
