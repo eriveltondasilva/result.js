@@ -5,13 +5,16 @@ import pkg from './package.json'
 const { name, description, version, author, license, homepage } = pkg
 const year = new Date().getFullYear()
 
-export const banner = `/**
- * ${name.toUpperCase()} - v${version}
+const isProduction = process.env.NODE_ENV === 'production'
+
+export const banner = `
+/**
+ * ${name?.toUpperCase()} - v${version}
  *
- * ${description}
+ * ${description || 'no description'}
  *
  * @author ${author.name} <${author.email}>
- * @license ${license.toUpperCase()}
+ * @license ${license?.toUpperCase()}
  * @copyright ${year} ${author.name}
  * @version ${version}
  *
@@ -25,18 +28,15 @@ export const banner = `/**
  */
 `
 
-// @ts-ignore
-const minify = process.env.NODE_ENV === 'production'
-
 export default defineConfig([
   {
     entry: ['./src/index.ts'],
     banner: { js: banner },
+    dts: { banner },
     format: 'esm',
     treeshake: true,
-    sourcemap: true,
     clean: true,
-    dts: true,
-    minify,
+    sourcemap: !isProduction,
+    minify: isProduction,
   },
 ])
