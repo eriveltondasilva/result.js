@@ -1,14 +1,15 @@
 {
   "extends": "@tsconfig/bun/tsconfig.json",
   "compilerOptions": {
-        // Environment setup & latest features
+    // Environment setup & latest features
     "types": ["bun"],
 
-        // Some stricter flags (disabled by default)
+    // Some stricter flags (disabled by default)
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true,
 
+    // Module resolution
     "rootDir": "./src",
     "outDir": "./dist",
 

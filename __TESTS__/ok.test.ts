@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Err } from '../src/err'
 import { Ok } from '../src/ok'
-
 import { expectErr, expectOk } from './test-helpers'
 
 describe('ok.ts', () => {

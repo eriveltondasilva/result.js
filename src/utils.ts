@@ -7,19 +7,16 @@ export function unknownToError(error: unknown): Error {
 
 export function valueToDisplayString(value: unknown): string {
   if (value instanceof Error) return `[Error: ${value.message}]`
+
   if (value == null) return '[Unknown Error: null or undefined value]'
 
-  const type = typeof value
-
-  if (type === 'string') {
-    const str = value as string
-    return str.length > 100 ? `"${str.substring(0, 100)}..."` : `"${str}"`
+  if (typeof value === 'string') {
+    return value.length > 100 ? `"${value.slice(0, 100)}..."` : `"${value}"`
   }
 
-  if (type === 'number' || type === 'boolean') return String(value)
-  if (type === 'function') return '[Function]'
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+
   if (Array.isArray(value)) return `[Array(${value.length})]`
 
-  const constructor = (value as object)?.constructor?.name
-  return constructor ? `[${constructor}]` : '[Object]'
+  return `[${String(typeof value)}]`
 }

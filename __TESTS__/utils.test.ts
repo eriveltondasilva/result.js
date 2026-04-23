@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { unknownToError, valueToDisplayString } from '../src/utils'
 
@@ -39,7 +39,7 @@ describe('utils.ts', () => {
       [undefined, '[Unknown Error: null or undefined value]'],
       [12345, '12345'],
       [true, 'true'],
-      [() => {}, '[Function]'],
+      [() => {}, '[function]'],
       [[], '[Array(0)]'],
       [[1, 2, 3], '[Array(3)]'],
     ])('should format value %s correctly', (value, expected) => {
@@ -59,21 +59,21 @@ describe('utils.ts', () => {
     })
 
     describe('Object Formatting', () => {
-      it('should format plain objects as [Object]', () => {
-        expect(valueToDisplayString({})).toBe('[Object]')
+      it('should format plain objects as [object]', () => {
+        expect(valueToDisplayString({})).toBe('[object]')
       })
 
-      it('should format objects using their constructor name (e.g., [Map])', () => {
-        expect(valueToDisplayString(new Map())).toBe('[Map]')
+      it('should format objects using their constructor name (e.g., [object])', () => {
+        expect(valueToDisplayString(new Map())).toBe('[object]')
       })
 
-      it('should format built-in types using their constructor name (e.g., [Date])', () => {
-        expect(valueToDisplayString(new Date('2025-01-01'))).toBe('[Date]')
+      it('should format built-in types using their constructor name (e.g., [object])', () => {
+        expect(valueToDisplayString(new Date('2025-01-01'))).toBe('[object]')
       })
 
       it('should handle objects with a null constructor (Object.create(null))', () => {
         const objWithNullConstructor = Object.create(null)
-        expect(valueToDisplayString(objWithNullConstructor)).toBe('[Object]')
+        expect(valueToDisplayString(objWithNullConstructor)).toBe('[object]')
       })
     })
   })

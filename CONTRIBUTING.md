@@ -5,7 +5,7 @@ Contributions, issues, and feature requests are always welcome.
 
 ---
 
-## 🚀 How to Contribute
+## How to Contribute
 
 Follow these simple steps to submit your contribution:
 
@@ -39,7 +39,7 @@ git push origin feature/your-feature-name
 
 ---
 
-## 🧱 Guidelines
+## Guidelines
 
 - Keep your code **clean, simple, and consistent** with the existing style.
 
@@ -52,7 +52,7 @@ git push origin feature/your-feature-name
 
 ---
 
-## 💬 Need Help?
+## Need Help?
 
 If you have any questions or need clarification, feel free to open a **discussion** or **issue**.
 

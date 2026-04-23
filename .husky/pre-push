@@ -1,1 +1,2 @@
-# npm run validate
+# .husky/pre-push
+bun run types && bun run check:ci && bun run test

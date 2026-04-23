@@ -1,7 +1,5 @@
 import { Err } from './err'
 import { Ok } from './ok'
-import { unknownToError, valueToDisplayString } from './utils'
-
 import type {
   AsyncResult,
   ErrTuple,
@@ -11,6 +9,7 @@ import type {
   Result,
   SettledResult,
 } from './types'
+import { unknownToError, valueToDisplayString } from './utils'
 
 // #region CREATING: ok, err, fromTry, fromPromise, fromNullable, validate
 
@@ -365,9 +364,9 @@ function validate<T, E = Error>(
 ): Result<T, E | Error> {
   if (!predicate(value)) {
     return new Err(
-      onError ?
-        onError(value)
-      : new Error(`Validation failed for value: ${valueToDisplayString(value)}`),
+      onError
+        ? onError(value)
+        : new Error(`Validation failed for value: ${valueToDisplayString(value)}`),
     )
   }
 
@@ -528,8 +527,8 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
   const settledResults = results.map((result): SettledResult<OkUnion<T>, ErrUnion<T>> => {
     if (!isResult(result)) throw new Error('allSettled() called with non-Result value')
 
-    return result.isOk() ?
-        { status: 'ok', value: result.unwrap() as OkUnion<T> }
+    return result.isOk()
+      ? { status: 'ok', value: result.unwrap() as OkUnion<T> }
       : { status: 'err', reason: result.unwrapErr() as ErrUnion<T> }
   })
 
@@ -698,41 +697,6 @@ function errors<T, E>(results: readonly Result<T, E>[]): E[] {
 
 // #endregion
 
-/**
- * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
- * without using exceptions. Inspired by Rust's Result<T, E>.
- *
- * @remarks
- * Provides a fluent and type-safe API for error handling, allowing you to chain
- * operations, transform values, and handle success/failure cases explicitly.
- *
- * @namespace
- * @readonly
- *
- * @example
- * // Basic creation
- * const success = Result.ok(42)         // => Ok(42)
- * const failure = Result.err('failed')  // => Err('failed')
- *
- * // Transformation and chaining
- * const result = Result.ok(42).map((x) => x * 2).andThen((x) => Result.ok(x + 10))
- * // => Ok(94)
- *
- * // Error handling with try/catch
- * const parsed = Result.fromTry(() => JSON.parse('{"a":1}'))
- * // => Ok({a: 1})
- *
- * // Async/await usage
- * const user = await Result.fromPromise(async () => {
- *   const data = await fetch('https://jsonplaceholder.typicode.com/todos/1')
- *   return data.json()
- * })
- * // => Ok({userId: 1, id: 1, title: 'delectus aut autem', completed: false})
- *
- * // Combining multiple Results
- * const [a, b, c] = Result.all([Result.ok(1), Result.ok(2), Result.ok(3)])
- * // => Ok([1, 2, 3])
- */
 export const result = {
   ok,
   err,

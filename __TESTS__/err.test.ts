@@ -3,9 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Err } from '../src/err'
 import { Ok } from '../src/ok'
-import { expectErr, expectOk } from './test-helpers'
-
 import type { Result } from '../src/types'
+import { expectErr, expectOk } from './test-helpers'
 
 describe('err.ts', () => {
   let errValue: Err<number, Error>

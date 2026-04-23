@@ -1,7 +1,6 @@
 import { Err } from './err'
+import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types'
 import { valueToDisplayString } from './utils'
-
-import type { AsyncResult, Result, Ok as IOk, Err as IErr } from './types'
 
 /**
  * Represents a successful Result containing a value.
@@ -399,9 +398,9 @@ export class Ok<T, E = never> implements IOk<T, E> {
   ): Result<T, E | Error> {
     if (!predicate(this.value)) {
       return new Err(
-        onReject ?
-          onReject(this.value)
-        : new Error(`Filter predicate failed for value: ${valueToDisplayString(this.value)}`),
+        onReject
+          ? onReject(this.value)
+          : new Error(`Filter predicate failed for value: ${valueToDisplayString(this.value)}`),
       ) as unknown as Result<T, E | Error>
     }
 

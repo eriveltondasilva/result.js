@@ -1,6 +1,5 @@
+import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types'
 import { valueToDisplayString } from './utils'
-
-import type { Ok as IOk, Err as IErr, Result, AsyncResult } from './types'
 
 /**
  * Represents an error Result containing a failure.
@@ -541,7 +540,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
    * Result.err('fail').zip(Result.ok(2))
    * // Err("fail")
    */
-  zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2> {
+  zip<U, E2>(_result: Result<U, E2>): Result<[T, U], E | E2> {
     return this as unknown as Result<[T, U], E | E2>
   }
 
