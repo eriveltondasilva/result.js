@@ -21,7 +21,7 @@ const user = await Result.fromPromise(async () => {
 
 log('user:', user.unwrap())
 
-function divide(a: number, b: number): Result<number, string> {
+function divide(a: number, b: number) {
   if (b === 0) {
     return Result.err('Cannot divide by zero')
   }
