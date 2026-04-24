@@ -20,7 +20,7 @@ A lightweight, Rust-inspired Result type for Javascript and Typescript. Handle s
 - 📦 **Zero dependencies** - Lightweight and focused
 - 🔗 **Chainable** - Fluent API with `map`, `andThen`, and more
 - ⚡ **Tree-shakeable** - Optimized bundle size
-- 🛡 **No exceptions** - Safe error handling without try-catch
+- 🛡️ **No exceptions** - Safe error handling without try-catch
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ import Result from '@eriveltondasilva/result.js'
 const success = Result.ok(42)
 // => Ok(42)
 const failure = Result.err(new Error('Something went wrong'))
-// => Err(Error: Something went wrong)
+// => Err(Error: 'Something went wrong')
 
 // Check and unwrap
 if (success.isOk()) {
@@ -121,13 +121,14 @@ Inspired by:
 
 ## Related Projects
 
-- [eriveltondasilva/option.js](https://github.com/eriveltondasilva/option.js) - A lightweight, Rust-inspired Option type for JavaScript and TypeScript
+- [eriveltondasilva/option.js](https://github.com/eriveltondasilva/option.js) - A lightweight, Rust-inspired Option type for JavaScript and TypeScript.
 
 ```typescript
 import { Option } from '@eriveltondasilva/option.js'
 import { Result } from '@eriveltondasilva/result.js'
 
-const user = Option.fromNullable(null) // => None
+const user = Option.fromNullable(null)
+// => None
 
 // Converting an Option to a Result (conceptually)
 const userResult = user.match({

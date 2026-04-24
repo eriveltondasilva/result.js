@@ -1,11 +1,11 @@
-# Result.js — Tipo Result Inspirado em Rust
+# Result.js
 
-[![result.js](https://img.shields.io/npm/v/@eriveltonsilva/result.js.svg)](https://www.npmjs.com/package/@eriveltonsilva/result.js)
-![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-blue)
-[![TypeScript](https://img.shields.io/badge/TypeScript-%3E%3D5.0.0-blue)](https://www.typescriptlang.org/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)](https://www.npmjs.com/package/@eriveltonsilva/result.js)
-![Size](https://img.shields.io/bundlephobia/minzip/@eriveltonsilva/result.js)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![npm size](https://img.shields.io/npm/unpacked-size/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![CI](https://github.com/eriveltondasilva/result.js/workflows/CI/badge.svg)](https://github.com/eriveltondasilva/result.js/actions)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?logo=biome)](https://biomejs.dev)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![Result.js](./src/assets/resultjs-banner.png)
 
@@ -27,20 +27,21 @@ Um tipo Result leve e inspirado em Rust para Javascript e Typescript. Trate os c
 ### Instalação
 
 ```bash
-npm install @eriveltonsilva/result.js
+npm install @eriveltondasilva/result.js
+```
+
+```bash
+bun add @eriveltondasilva/result.js
 ```
 
 ### Importação
 
 ```typescript
 // ES6 - Recomendado
-import { Result } from '@eriveltonsilva/result.js'
+import { Result } from '@eriveltondasilva/result.js'
 
 // ES6 - Importação padrão
-import Result from '@eriveltonsilva/result.js'
-
-// CommonJS
-const { Result } = require('@eriveltonsilva/result.js')
+import Result from '@eriveltondasilva/result.js'
 ```
 
 ### Uso Básico
@@ -48,30 +49,36 @@ const { Result } = require('@eriveltonsilva/result.js')
 ```typescript
 // Criar Results
 const sucesso = Result.ok(42)
+// => Ok(42)
 const erro = Result.err(new Error('Algo deu errado'))
+// => Err(Error: 'Algo deu errado')
 
 // Verificar e extrair
 if (sucesso.isOk()) {
-  console.log(sucesso.unwrap()) // 42
+  console.log(sucesso.unwrap())
+  // => 42
 }
 
 // Encadear operações
 const dobrado = Result.ok(21)
   .map((x) => x * 2)
   .andThen((x) => Result.ok(x + 10))
-  .unwrap() // 52
+  .unwrap()
+// => 52
 
 // Padrão matching
 const resultado = Result.ok(42).match({
   ok: (valor) => valor * 2,
   err: (erro) => erro.message,
-}) // 84
+})
+// => 84
 
 // Tratar erros com segurança
 const resultado = Result.fromTry(
   () => JSON.parse('inválido'),
   (erro) => new Error(`JSON inválido: ${erro}`),
-) // Error: JSON inválido: SyntaxError: Unexpected token, "inválido" is not valid JSON
+)
+// => Err(Error: "JSON inválido: SyntaxError: Unexpected token, 'inválido' is not valid JSON")
 ```
 
 ## Documentação
@@ -104,3 +111,21 @@ Inspirado por:
 - [Tipo Result de Gleam](https://hexdocs.pm/gleam_stdlib/gleam/result.html)
 - [oxide.ts](https://www.npmjs.com/package/oxide.ts)
 - [result.ts](https://www.npmjs.com/package/result.ts)
+
+## Projetos Relacionados
+
+- [eriveltondasilva/option.js](https://github.com/eriveltondasilva/option.js) - Um tipo Option leve e inspirado em Rust para Javascript e Typescript.
+
+```typescript
+import { Option } from '@eriveltondasilva/option.js'
+import { Result } from '@eriveltondasilva/result.js'
+
+const user = Option.fromNullable(null)
+// => None
+
+const userResult = user.match({
+  some: (val) => Result.ok(val),
+  none: () => Result.err('Usuário não encontrado'),
+})
+// => Err('Usuário não encontrado')
+```
