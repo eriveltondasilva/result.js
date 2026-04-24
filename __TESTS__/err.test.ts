@@ -1,9 +1,11 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: test file */
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import type { Result } from '../src/types'
 
 import { Err } from '../src/err'
 import { Ok } from '../src/ok'
-import type { Result } from '../src/types'
 import { expectErr, expectOk } from './test-helpers'
 
 describe('err.ts', () => {
@@ -246,10 +248,6 @@ describe('err.ts', () => {
 
       expect(result.isErr()).toBe(true)
       expect(expectErr(result)).toBe('outer error')
-    })
-
-    it('should convert to rejected Promise', async () => {
-      await expect(errValue.toPromise()).rejects.toThrow('Test error')
     })
 
     it('should convert to string', () => {

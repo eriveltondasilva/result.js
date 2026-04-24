@@ -229,10 +229,6 @@ describe('ok.ts', () => {
       expect(error.message).toBe('Failed')
     })
 
-    it('should convert to resolved Promise', async () => {
-      await expect(okValue.toPromise()).resolves.toBe(42)
-    })
-
     it('should convert to string', () => {
       expect(okValue.toString()).toBe('Ok(42)')
     })

@@ -1,15 +1,12 @@
+import type { AsyncResult as AsyncResultType, Result as ResultType } from './types'
+
 import { Err } from './err'
 import { Ok } from './ok'
-import { result } from './result'
-import type { AsyncResult as AsyncResultType, Result as ResultType } from './types'
+import result from './result'
 
 /**
  * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
  * without using exceptions. Inspired by Rust's Result<T, E>.
- *
- * @remarks
- * Provides a fluent and type-safe API for error handling, allowing you to chain
- * operations, transform values, and handle success/failure cases explicitly.
  *
  * @namespace
  * @readonly
@@ -25,14 +22,14 @@ import type { AsyncResult as AsyncResultType, Result as ResultType } from './typ
  *
  * // Error handling with try/catch
  * const parsed = Result.fromTry(() => JSON.parse('{"a":1}'))
- * // => Ok({a: 1})
+ * // => Ok({ a: 1 })
  *
  * // Async/await usage
  * const user = await Result.fromPromise(async () => {
  *   const data = await fetch('https://jsonplaceholder.typicode.com/todos/1')
  *   return data.json()
  * })
- * // => Ok({userId: 1, id: 1, title: 'delectus aut autem', completed: false})
+ * // => Ok({ userId: 1, id: 1, title: 'delectus aut autem', completed: false })
  *
  * // Combining multiple Results
  * const [a, b, c] = Result.all([Result.ok(1), Result.ok(2), Result.ok(3)])

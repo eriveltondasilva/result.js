@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { unknownToError, valueToDisplayString } from '../src/utils'
+import { ensureError, formatForDisplay } from '../src/utils'
 
 describe('utils.ts', () => {
   describe('unknownToError', () => {
     it('should return the original error if input is an Error object', () => {
       const originalError = new Error('Test Message')
-      expect(unknownToError(originalError)).toBe(originalError)
+      expect(ensureError(originalError)).toBe(originalError)
     })
 
     // Agrupando null e undefined, que resultam na mesma mensagem padrão
@@ -14,7 +14,7 @@ describe('utils.ts', () => {
       ['null', null],
       ['undefined', undefined],
     ])('should create a new Error for %s input with default message', (_, value) => {
-      const error = unknownToError(value)
+      const error = ensureError(value)
       expect(error).toBeInstanceOf(Error)
       expect(error.message).toBe('Unknown error: null or undefined value')
     })
@@ -25,7 +25,7 @@ describe('utils.ts', () => {
       ['number', 404, '404'],
       ['plain object', { code: 500, detail: 'Server fail' }, '[object Object]'],
     ])('should create a new Error, converting %s input to message', (_, input, expectedMessage) => {
-      const error = unknownToError(input)
+      const error = ensureError(input)
       expect(error).toBeInstanceOf(Error)
       expect(error.message).toBe(expectedMessage)
     })
@@ -43,37 +43,37 @@ describe('utils.ts', () => {
       [[], '[Array(0)]'],
       [[1, 2, 3], '[Array(3)]'],
     ])('should format value %s correctly', (value, expected) => {
-      expect(valueToDisplayString(value)).toBe(expected)
+      expect(formatForDisplay(value)).toBe(expected)
     })
 
     describe('String Formatting', () => {
       it('should wrap short strings in quotes', () => {
-        expect(valueToDisplayString('short string')).toBe('"short string"')
+        expect(formatForDisplay('short string')).toBe('"short string"')
       })
 
       it('should truncate and add ellipsis for long strings (> 100 chars)', () => {
         const longString = 'a'.repeat(150)
         const expected = `"${'a'.repeat(100)}..."`
-        expect(valueToDisplayString(longString)).toBe(expected)
+        expect(formatForDisplay(longString)).toBe(expected)
       })
     })
 
     describe('Object Formatting', () => {
       it('should format plain objects as [object]', () => {
-        expect(valueToDisplayString({})).toBe('[object]')
+        expect(formatForDisplay({})).toBe('[object]')
       })
 
       it('should format objects using their constructor name (e.g., [object])', () => {
-        expect(valueToDisplayString(new Map())).toBe('[object]')
+        expect(formatForDisplay(new Map())).toBe('[object]')
       })
 
       it('should format built-in types using their constructor name (e.g., [object])', () => {
-        expect(valueToDisplayString(new Date('2025-01-01'))).toBe('[object]')
+        expect(formatForDisplay(new Date('2025-01-01'))).toBe('[object]')
       })
 
       it('should handle objects with a null constructor (Object.create(null))', () => {
         const objWithNullConstructor = Object.create(null)
-        expect(valueToDisplayString(objWithNullConstructor)).toBe('[object]')
+        expect(formatForDisplay(objWithNullConstructor)).toBe('[object]')
       })
     })
   })

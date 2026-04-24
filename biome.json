@@ -18,6 +18,7 @@
     "rules": {
       "recommended": true,
       "suspicious": {
+        "recommended": true,
         "noConsole": { "level": "on", "options": { "allow": ["error", "warn"] } }
       }
     }
@@ -37,7 +38,15 @@
         "organizeImports": {
           "level": "on",
           "options": {
-            "groups": [[":BUN:", ":NODE:"], ":BLANK_LINE:", ":PACKAGE:", ":BLANK_LINE:", ":PATH:"]
+            "groups": [
+              [":BUN:", ":NODE:"],
+              ":BLANK_LINE:",
+              ":PACKAGE:",
+              ":BLANK_LINE:",
+              { "type": true },
+              ":BLANK_LINE:",
+              ":PATH:"
+            ]
           }
         }
       }
