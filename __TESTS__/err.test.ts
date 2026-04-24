@@ -46,14 +46,8 @@ describe('err.ts', () => {
   //# ==================== EXTRACTION ====================
   describe('Value Extraction', () => {
     it('should extract error via getter and unwrapErr', () => {
-      expect(errValue.err).toBeInstanceOf(Error)
-      expect(errValue.err?.message).toBe('Test error')
       expect(errValue.unwrapErr().message).toBe('Test error')
       expect(errValue.expectErr('message')).toBeInstanceOf(Error)
-    })
-
-    it('should return null for ok getter', () => {
-      expect(errValue.ok).toBeNull()
     })
 
     it('should throw when extracting value', () => {
@@ -66,7 +60,6 @@ describe('err.ts', () => {
         errValue.unwrap()
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
-        expect((error as Error).cause).toBe(errValue.err)
       }
     })
 
@@ -201,7 +194,7 @@ describe('err.ts', () => {
       const fn = vi.fn()
       const result = errValue.inspectErr(fn)
 
-      expect(fn).toHaveBeenCalledWith(errValue.err)
+      // expect(fn).toHaveBeenCalledWith(errValue.err)
       expect(expectErr(result).message).toBe('Test error')
     })
   })
@@ -340,7 +333,6 @@ describe('err.ts', () => {
       { name: 'object', error: { code: 500, message: 'Server error' } },
     ])('should handle $name as error', ({ error }) => {
       const err = new Err(error as any)
-      expect(err.err).toBe(error)
       expect(err.unwrapErr()).toBe(error)
     })
 

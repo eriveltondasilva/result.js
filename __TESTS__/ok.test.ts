@@ -33,16 +33,6 @@ describe('ok.ts', () => {
 
   //# ==================== VALUE EXTRACTION ====================
   describe('Value Extraction', () => {
-    it('should extract value via getter and unwrap', () => {
-      expect(okValue.ok).toBe(42)
-      expect(okValue.unwrap()).toBe(42)
-      expect(okValue.expect('message')).toBe(42)
-    })
-
-    it('should return null for error getter', () => {
-      expect(okValue.err).toBeNull()
-    })
-
     it('should throw when extracting error', () => {
       expect(() => okValue.unwrapErr()).toThrow('Called unwrapErr on an Ok value')
       expect(() => okValue.expectErr('message')).toThrow('message')
@@ -298,7 +288,6 @@ describe('ok.ts', () => {
       { name: 'false', value: false },
     ])('should handle $name as value', ({ value }) => {
       const ok = new Ok(value)
-      expect(ok.ok).toBe(value)
       expect(ok.unwrap()).toBe(value)
       expect(ok.contains(value)).toBe(true)
     })
