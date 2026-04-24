@@ -1,7 +1,5 @@
 import type { AsyncResult as AsyncResultType, Result as ResultType } from './types'
 
-import { Err } from './err'
-import { Ok } from './ok'
 import result from './result'
 
 /**
@@ -40,5 +38,5 @@ export const Result = Object.freeze(result)
 export type Result<T, E> = ResultType<T, E>
 export type AsyncResult<T, E> = AsyncResultType<T, E>
 
-export { Err, Ok }
+export const { ok, err } = result
 export default Result

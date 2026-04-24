@@ -54,3 +54,24 @@ log(
 
 log(JSON.stringify(Result.ok(42)))
 log(JSON.stringify(Result.err('fail')))
+
+// -------------------------------------
+
+// Tipos de erro distintos
+type AuthError = { code: 'UNAUTHORIZED' }
+type DbError = { code: 'DB_FAIL' }
+
+declare function authenticate(token: string): Result<string, AuthError>
+declare function fetchProfile(id: string): Result<number, DbError>
+
+const result2 = authenticate('token')
+
+const result3 = result2.andThen((user) => fetchProfile(user))
+
+log(result3.unwrap())
+
+const aa: Result<number, AuthError> = Result.ok(42)
+const b: Result<string, DbError> = Result.ok('user')
+const c = aa.and(b)
+const d = c
+log(d)

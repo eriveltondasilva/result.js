@@ -26,7 +26,7 @@ export type InferErr<R> = R extends Result<unknown, infer E> ? E : never
  * @internal
  */
 export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
-  [K in keyof T]: InferOk<T[K]>
+  readonly [K in keyof T]: InferOk<T[K]>
 }
 
 /**
@@ -35,7 +35,7 @@ export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
  * @internal
  */
 export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
-  [K in keyof T]: InferErr<T[K]>
+  readonly [K in keyof T]: InferErr<T[K]>
 }
 
 // #endregion
@@ -391,7 +391,8 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').filter((x) => x > 0)
    * // Err("fail")
    */
-  filter(predicate: (value: T) => boolean, onReject?: (value: T) => E | Error): Result<T, E | Error>
+  filter(predicate: (value: T) => boolean): Result<T, Error>
+  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
 
   /**
    * Flattens nested Result.
@@ -438,7 +439,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').and(Result.ok(42))
    * // Err("fail")
    */
-  and<U>(result: Result<U, E>): Result<U, E>
+  and<U, E2 = E>(result: Result<U, E2>): Result<U, E | E2>
 
   /**
    * Chains operation that returns Result.
@@ -463,7 +464,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').andThen((x) => Result.err('backup'))
    * // Err("fail") - keeps original error
    */
-  andThen<U>(flatMapper: (value: T) => Result<U, E>): Result<U, E>
+  andThen<U, E2 = E>(flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2>
 
   /**
    * Returns this Result or alternative.
@@ -487,7 +488,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').or(Result.err('backup'))
    * // Err("backup")
    */
-  or(result: Result<T, E>): Result<T, E>
+  or<E2 = E>(result: Result<T, E2>): Result<T, E2>
 
   /**
    * Returns this Result or executes error recovery.
@@ -510,7 +511,7 @@ export interface ResultMethods<T, E> {
    * // Err("backup")
    *
    */
-  orElse(onError: (error: E) => Result<T, E>): Result<T, E>
+  orElse<E2 = E>(onError: (error: E) => Result<T, E2>): Result<T, E2>
 
   // #endregion
 
@@ -801,7 +802,7 @@ export interface ResultMethods<T, E> {
    * )
    * // Err("fail")
    */
-  andAsync<U>(result: AsyncResult<U, E>): AsyncResult<U, E>
+  andAsync<U, E2 = E>(result: AsyncResult<U, E2>): AsyncResult<U, E | E2>
 
   /**
    * Chains async operation that returns Result.
@@ -826,7 +827,7 @@ export interface ResultMethods<T, E> {
    * // Err("fail")
    *
    */
-  andThenAsync<U>(mapAsync: (value: T) => AsyncResult<U, E>): AsyncResult<U, E>
+  andThenAsync<U, E2 = E>(mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2>
 
   /**
    * Returns this Result or async alternative.
@@ -850,7 +851,7 @@ export interface ResultMethods<T, E> {
    * )
    * // Ok(42)
    */
-  orAsync(result: AsyncResult<T, E>): AsyncResult<T, E>
+  orAsync<E2 = E>(result: AsyncResult<T, E2>): AsyncResult<T, E2>
 
   /**
    * Returns this Result or executes async recovery.
@@ -873,7 +874,7 @@ export interface ResultMethods<T, E> {
    * )
    * // Ok(42)
    */
-  orElseAsync(onErrorAsync: (error: E) => AsyncResult<T, E>): AsyncResult<T, E>
+  orElseAsync<E2 = E>(onErrorAsync: (error: E) => AsyncResult<T, E2>): AsyncResult<T, E2>
 
   // #endregion
 
@@ -958,6 +959,7 @@ export interface ResultMethods<T, E> {
  */
 export interface Ok<T, E = never> extends ResultMethods<T, E> {
   readonly _tag: 'Ok'
+  toJSON(): { type: 'ok'; value: T }
 }
 
 /**
@@ -977,6 +979,7 @@ export interface Ok<T, E = never> extends ResultMethods<T, E> {
  */
 export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
   readonly _tag: 'Err'
+  toJSON(): { type: 'err'; error: E }
 }
 
 /**

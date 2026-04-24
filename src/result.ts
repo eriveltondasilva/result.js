@@ -1,14 +1,4 @@
-import type {
-  AsyncResult,
-  ErrTuple,
-  ErrUnion,
-  Err as IErr,
-  Ok as IOk,
-  Result as IResult,
-  OkTuple,
-  OkUnion,
-  SettledResult,
-} from './types'
+import type { AsyncResult, ErrUnion, OkTuple, OkUnion, Result, SettledResult } from './types'
 
 import { Err } from './err'
 import { Ok } from './ok'
@@ -17,9 +7,9 @@ import { ensureError, formatForDisplay } from './utils'
 // #region TYPE GUARDS: isOk, isErr, isResult
 
 /**
- * Checks if a value is an Ok Result instance.
- *
- * @group Type Guards
+import { Err } from './err'
+import { Ok } from './ok'
+import { ensureError, formatForDisplay } from './utils'
  *
  * @see {@link isErr} for the opposite check
  *
@@ -32,7 +22,7 @@ import { ensureError, formatForDisplay } from './utils'
  * Result.isOk(Result.err('fail'))  // => false
  *
  */
-function isOk<T>(value: unknown): value is IOk<T, never> {
+function isOk<T>(value: unknown): value is Ok<T, never> {
   return value != null && typeof value === 'object' && '_tag' in value && value._tag === 'Ok'
 }
 
@@ -51,7 +41,7 @@ function isOk<T>(value: unknown): value is IOk<T, never> {
  * Result.isErr(Result.err('fail'))  // => true
  * Result.isErr(Result.ok(1))        // => false
  */
-function isErr<E>(value: unknown): value is IErr<never, E> {
+function isErr<E>(value: unknown): value is Err<never, E> {
   return value != null && typeof value === 'object' && '_tag' in value && value._tag === 'Err'
 }
 
@@ -77,7 +67,7 @@ function isErr<E>(value: unknown): value is IErr<never, E> {
  * Result.isResult(null)                // => false
  * Result.isResult(undefined)           // => false
  */
-function isResult<T, E>(value: unknown): value is IResult<T, E> {
+function isResult<T, E>(value: unknown): value is Result<T, E> {
   return (
     value != null &&
     typeof value === 'object' &&
@@ -117,7 +107,7 @@ function isResult<T, E>(value: unknown): value is IResult<T, E> {
  * Result.ok(user)
  * // => Ok({ id: 1, name: 'John' })
  */
-function ok<T, E>(value: T): IOk<T, E> {
+function ok<T, E>(value: T): Ok<T, E> {
   return new Ok<T, E>(value)
 }
 
@@ -209,7 +199,7 @@ function err<E = Error>(error: E): Err<never, E> {
 function fromTry<T, E = Error>(
   executor: () => T,
   onError?: (error: unknown) => E,
-): IResult<T, E | Error> {
+): Result<T, E | Error> {
   try {
     return new Ok(executor())
   } catch (error) {
@@ -324,7 +314,7 @@ async function fromPromise<T, E>(
  * )
  * // => Err(Error: Value is null or undefined)
  */
-function fromNullable<T>(value: T | null | undefined): IResult<NonNullable<T>, Error>
+function fromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Error>
 
 /**
  * Creates a Result from nullable value with custom error.
@@ -352,14 +342,14 @@ function fromNullable<T>(value: T | null | undefined): IResult<NonNullable<T>, E
  * )
  */
 function fromNullable<T, E>(
-  value: T | null | undefined,
+  value: NoInfer<T> | null | undefined,
   onError: () => E,
-): IResult<NonNullable<T>, E>
+): Result<NonNullable<T>, E>
 
 function fromNullable<T, E = Error>(
   value: T | null | undefined,
   onError?: () => E,
-): IResult<NonNullable<T>, E | Error> {
+): Result<NonNullable<T>, E | Error> {
   if (value == null) {
     return new Err(onError ? onError() : new Error('Value is null or undefined'))
   }
@@ -388,7 +378,7 @@ function fromNullable<T, E = Error>(
  * Result.validate(42, (x) => x  < 18)
  * // => Err(Error: 'Validation failed for value: 42')
  */
-function validate<T>(value: T, predicate: (value: T) => boolean): IResult<T, Error>
+function validate<T>(value: T, predicate: (value: T) => boolean): Result<T, Error>
 
 /**
  * Creates a Result by validating a value with predicate and custom error.
@@ -424,13 +414,13 @@ function validate<T, E>(
   value: T,
   predicate: (value: T) => boolean,
   onError: (value: T) => E,
-): IResult<T, E>
+): Result<T, E>
 
 function validate<T, E = Error>(
   value: T,
   predicate: (value: T) => boolean,
   onError?: (value: T) => E | Error,
-): IResult<T, E | Error> {
+): Result<T, E | Error> {
   if (!predicate(value)) {
     return new Err(
       onError
@@ -484,22 +474,22 @@ function validate<T, E = Error>(
  * // Empty array
  * Result.all([])  // => Ok([])
  */
-function all<const T extends readonly IResult<unknown, unknown>[]>(
+function all<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
-): IResult<OkTuple<T>, ErrUnion<T>> {
+): Result<OkTuple<T>, ErrUnion<T>> {
   if (!Array.isArray(results) || results.length === 0)
-    return new Ok([]) as IResult<OkTuple<T>, ErrUnion<T>>
+    return new Ok([]) as Result<OkTuple<T>, ErrUnion<T>>
 
   const okValues: unknown[] = []
 
   for (const result of results) {
     if (!isResult(result)) throw new Error('all() called with non-Result value')
-    if (result.isErr()) return result as IResult<OkTuple<T>, ErrUnion<T>>
+    if (result.isErr()) return result as Result<OkTuple<T>, ErrUnion<T>>
 
     okValues.push(result.unwrap())
   }
 
-  return new Ok(okValues) as IResult<OkTuple<T>, ErrUnion<T>>
+  return new Ok(okValues) as Result<OkTuple<T>, ErrUnion<T>>
 }
 
 /**
@@ -535,7 +525,7 @@ function all<const T extends readonly IResult<unknown, unknown>[]>(
  * // Empty array
  * Result.allSettled([])  // => Ok([])
  */
-function allSettled<const T extends readonly IResult<unknown, unknown>[]>(
+function allSettled<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
   if (!Array.isArray(results) || results.length === 0) return new Ok([])
@@ -581,22 +571,23 @@ function allSettled<const T extends readonly IResult<unknown, unknown>[]>(
  * // Empty array
  * Result.any([])  // => Err([])
  */
-function any<const T extends readonly IResult<unknown, unknown>[]>(
+function any<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
-): IResult<OkUnion<T>, ErrTuple<T>> {
-  if (!Array.isArray(results) || results.length === 0)
-    return new Err([]) as IResult<OkUnion<T>, ErrTuple<T>>
+): Result<OkUnion<T>, ErrUnion<T>[]> {
+  if (!Array.isArray(results) || results.length === 0) {
+    return new Err([]) as Result<OkUnion<T>, ErrUnion<T>[]>
+  }
 
   const errorValues: unknown[] = []
 
   for (const result of results) {
     if (!isResult(result)) throw new Error('any() called with non-Result value')
-    if (result.isOk()) return result as IResult<OkUnion<T>, ErrTuple<T>>
+    if (result.isOk()) return result as Result<OkUnion<T>, ErrUnion<T>[]>
 
     errorValues.push(result.unwrapErr())
   }
 
-  return new Err(errorValues) as IResult<OkUnion<T>, ErrTuple<T>>
+  return new Err(errorValues) as Result<OkUnion<T>, ErrUnion<T>[]>
 }
 
 /**
@@ -627,14 +618,14 @@ function any<const T extends readonly IResult<unknown, unknown>[]>(
  * // Empty array
  * Result.partition([])  // => [[], []]
  */
-function partition<T, E>(results: readonly IResult<T, E>[]): [T[], E[]] {
+function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
   if (!Array.isArray(results) || results.length === 0) return [[], []]
 
   const oks: T[] = []
   const errs: E[] = []
 
   for (const result of results) {
-    if (!isResult(result as IResult<T, E>))
+    if (!isResult(result as Result<T, E>))
       throw new Error('partition() called with non-Result value')
 
     result.isOk() ? oks.push(result.unwrap()) : errs.push(result.unwrapErr())
@@ -664,7 +655,7 @@ function partition<T, E>(results: readonly IResult<T, E>[]): [T[], E[]] {
  * // Empty array
  * Result.values([]) // => []
  */
-function values<T, E>(results: readonly IResult<T, E>[]): T[] {
+function values<T, E>(results: readonly Result<T, E>[]): T[] {
   if (!Array.isArray(results) || results.length === 0) return []
 
   const oks: T[] = []
@@ -698,7 +689,7 @@ function values<T, E>(results: readonly IResult<T, E>[]): T[] {
  * // Empty array
  * Result.errors([])  // => []
  */
-function errors<T, E>(results: readonly IResult<T, E>[]): E[] {
+function errors<T, E>(results: readonly Result<T, E>[]): E[] {
   if (!Array.isArray(results) || results.length === 0) return []
 
   const errs: E[] = []

@@ -1,4 +1,4 @@
-import type { AsyncResult, Err as IErr, Ok as IOk, Result as IResult } from './types'
+import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types'
 
 import { Err } from './err'
 import { formatForDisplay } from './utils'
@@ -61,8 +61,8 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   // #region Transformation
 
-  map<U>(mapper: (value: T) => U): IResult<U, E> {
-    return new Ok(mapper(this.#value)) as IResult<U, E>
+  map<U>(mapper: (value: T) => U): Result<U, E> {
+    return new Ok(mapper(this.#value)) as Result<U, E>
   }
 
   mapOr<U>(mapper: (value: T) => U, _defaultValue: U): U {
@@ -73,56 +73,53 @@ export class Ok<T, E = never> implements IOk<T, E> {
     return okMapper(this.#value)
   }
 
-  mapErr<E2>(_mapper: (error: E) => E2): IResult<T, E2> {
-    return this as unknown as IResult<T, E2>
+  mapErr<E2>(_mapper: (error: E) => E2): Result<T, E2> {
+    return this as unknown as Result<T, E2>
   }
 
-  filter(predicate: (value: T) => boolean): IResult<T, E>
-  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): IResult<T, E>
-  filter(
-    predicate: (value: T) => boolean,
-    onReject?: (value: T) => E | Error,
-  ): IResult<T, E | Error> {
+  filter(predicate: (value: T) => boolean): Result<T, Error>
+  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
+  filter(predicate: (value: T) => boolean, onReject?: (value: T) => E): Result<T, E | Error> {
     if (!predicate(this.#value)) {
       return new Err(
         onReject
           ? onReject(this.#value)
           : new Error(`Filter predicate failed for value: ${formatForDisplay(this.#value)}`),
-      ) as unknown as IResult<T, E | Error>
+      ) as unknown as Result<T, E | Error>
     }
 
-    return this as IResult<T, E | Error>
+    return this as Result<T, E | Error>
   }
 
-  flatten<U, E2>(this: Ok<IResult<U, E2>, E>): IResult<U, E | E2> {
-    return this.#value
+  flatten<U, E2>(this: IOk<Result<U, E2>, E>): Result<U, E | E2> {
+    return this.unwrap()
   }
 
   // #endregion
 
   // #region Alternation
 
-  and<U>(result: IResult<U, E>): IResult<U, E> {
+  and<U, E2 = E>(result: Result<U, E2>): Result<U, E | E2> {
     return result
   }
 
-  andThen<U>(flatMapper: (value: T) => IResult<U, E>): IResult<U, E> {
+  andThen<U, E2 = E>(flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2> {
     return flatMapper(this.#value)
   }
 
-  or(_result: IResult<T, E>): IResult<T, E> {
-    return this
+  or<E2 = E>(_result: Result<T, E2>): Result<T, E2> {
+    return this as unknown as Result<T, E2>
   }
 
-  orElse(_onError: (error: E) => IResult<T, E>): IResult<T, E> {
-    return this
+  orElse<E2 = E>(_onError: (error: E) => Result<T, E2>): Result<T, E2> {
+    return this as unknown as Result<T, E2>
   }
 
   // #endregion
 
   // #region Combination
 
-  zip<U, E2>(result: IResult<U, E2>) {
+  zip<U, E2>(result: Result<U, E2>) {
     if (result.isErr()) {
       return new Err<[T, U], E | E2>(result.unwrapErr())
     }
@@ -146,13 +143,13 @@ export class Ok<T, E = never> implements IOk<T, E> {
     return handlers.ok(this.#value)
   }
 
-  inspect(visitor: (value: T) => void): IResult<T, E> {
+  inspect(visitor: (value: T) => void): IOk<T, E> {
     visitor(this.#value)
 
     return this
   }
 
-  inspectErr(_visitor: (error: E) => void): IResult<T, E> {
+  inspectErr(_visitor: (error: E) => void): Result<T, E> {
     return this
   }
 
@@ -160,12 +157,12 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   // #region Async Transformation
 
-  async mapAsync<U>(mapperAsync: (value: T) => Promise<U>) {
-    return new Ok(await mapperAsync(this.#value))
+  async mapAsync<U>(mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E> {
+    return new Ok(await mapperAsync(this.#value)) as unknown as Result<U, E>
   }
 
   mapErrAsync<E2>(_mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {
-    return Promise.resolve(this as unknown as IResult<T, E2>)
+    return Promise.resolve(this as unknown as Result<T, E2>)
   }
 
   mapOrAsync<U>(mapperAsync: (value: T) => Promise<U>, _defaultValue: U): Promise<U> {
@@ -183,20 +180,20 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   // #region Async Alternation
 
-  andAsync<U>(result: AsyncResult<U, E>): AsyncResult<U, E> {
+  andAsync<U, E2 = E>(result: AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return result
   }
 
-  andThenAsync<U>(mapAsync: (value: T) => AsyncResult<U, E>): AsyncResult<U, E> {
+  andThenAsync<U, E2 = E>(mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return mapAsync(this.#value)
   }
 
-  orAsync(_result: AsyncResult<T, E>): AsyncResult<T, E> {
-    return Promise.resolve(this)
+  orAsync<E2 = E>(_result: AsyncResult<T, E2>): AsyncResult<T, E2> {
+    return Promise.resolve(this as unknown as Result<T, E2>)
   }
 
-  orElseAsync(_onErrorAsync: (error: E) => AsyncResult<T, E>): AsyncResult<T, E> {
-    return Promise.resolve(this)
+  orElseAsync<E2 = E>(_onErrorAsync: (error: E) => AsyncResult<T, E2>): AsyncResult<T, E2> {
+    return Promise.resolve(this as unknown as Result<T, E2>)
   }
 
   // #endregion
