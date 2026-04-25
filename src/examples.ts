@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noConsole: test file */
 import { Result } from './index'
 
-const log = (...args: unknown[]) => console.log(args.join(' '))
+const log = (...args: unknown[]) => console.log(args)
 
 // -------------------------------------
 
@@ -52,8 +52,8 @@ log(
 
 // -------------------------------------
 
-log(JSON.stringify(Result.ok(42)))
-log(JSON.stringify(Result.err('fail')))
+// log(JSON.stringify(Result.ok(42)))
+// log(JSON.stringify(Result.err('fail')))
 
 // -------------------------------------
 
@@ -61,17 +61,43 @@ log(JSON.stringify(Result.err('fail')))
 type AuthError = { code: 'UNAUTHORIZED' }
 type DbError = { code: 'DB_FAIL' }
 
-declare function authenticate(token: string): Result<string, AuthError>
-declare function fetchProfile(id: string): Result<number, DbError>
+// declare function authenticate(token: string): Result<string, AuthError>
+// declare function fetchProfile(id: string): Result<number, DbError>
 
-const result2 = authenticate('token')
+// const result2 = authenticate('token')
 
-const result3 = result2.andThen((user) => fetchProfile(user))
+// const result3 = result2.andThen((user) => fetchProfile(user))
 
-log(result3.unwrap())
+// log('result3:', result3)
 
 const aa: Result<number, AuthError> = Result.ok(42)
 const b: Result<string, DbError> = Result.ok('user')
 const c = aa.and(b)
 const d = c
-log(d)
+log('d', d.unwrap())
+
+// -------------------------------------
+
+// biome-ignore format: reason
+const aaa = Result
+  .ok({ name: 'aaa', value: true })
+  .contains(
+    {username: 'aaa'},
+    (a, b) => a.name === b.username // b.username
+  )
+
+log('aaa', aaa)
+
+// -------------------------------------
+
+const any = Result.any([Result.err(1), Result.err('a'), Result.err(true)])
+
+log('any:', any.unwrapErr())
+
+// -------------------------------------
+
+const all = Result.all([Result.ok(1), Result.ok('a'), Result.ok(true)])
+
+log('all:', all.unwrap())
+
+// -------------------------------------

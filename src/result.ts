@@ -1,8 +1,16 @@
-import type { AsyncResult, ErrUnion, OkTuple, OkUnion, Result, SettledResult } from './types'
+import type {
+  AsyncResult,
+  ErrTuple,
+  ErrUnion,
+  OkTuple,
+  OkUnion,
+  Result,
+  SettledResult,
+} from './types'
 
 import { Err } from './err'
 import { Ok } from './ok'
-import { ensureError, formatForDisplay } from './utils'
+import { ensureError, formatForDisplay, isEmptyArray } from './utils'
 
 // #region TYPE GUARDS: isOk, isErr, isResult
 
@@ -22,7 +30,7 @@ import { ensureError, formatForDisplay } from './utils'
  * Result.isOk(Result.err('fail'))  // => false
  *
  */
-function isOk<T>(value: unknown): value is Ok<T, never> {
+function isOk(value: unknown): value is Ok<unknown, never> {
   return value != null && typeof value === 'object' && '_tag' in value && value._tag === 'Ok'
 }
 
@@ -41,7 +49,7 @@ function isOk<T>(value: unknown): value is Ok<T, never> {
  * Result.isErr(Result.err('fail'))  // => true
  * Result.isErr(Result.ok(1))        // => false
  */
-function isErr<E>(value: unknown): value is Err<never, E> {
+function isErr(value: unknown): value is Err<never, unknown> {
   return value != null && typeof value === 'object' && '_tag' in value && value._tag === 'Err'
 }
 
@@ -67,7 +75,7 @@ function isErr<E>(value: unknown): value is Err<never, E> {
  * Result.isResult(null)                // => false
  * Result.isResult(undefined)           // => false
  */
-function isResult<T, E>(value: unknown): value is Result<T, E> {
+function isResult(value: unknown): value is Result<unknown, unknown> {
   return (
     value != null &&
     typeof value === 'object' &&
@@ -342,7 +350,7 @@ function fromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Er
  * )
  */
 function fromNullable<T, E>(
-  value: NoInfer<T> | null | undefined,
+  value: T | null | undefined,
   onError: () => E,
 ): Result<NonNullable<T>, E>
 
@@ -477,14 +485,20 @@ function validate<T, E = Error>(
 function all<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Result<OkTuple<T>, ErrUnion<T>> {
-  if (!Array.isArray(results) || results.length === 0)
+  if (isEmptyArray(results)) {
     return new Ok([]) as Result<OkTuple<T>, ErrUnion<T>>
+  }
 
   const okValues: unknown[] = []
 
   for (const result of results) {
-    if (!isResult(result)) throw new Error('all() called with non-Result value')
-    if (result.isErr()) return result as Result<OkTuple<T>, ErrUnion<T>>
+    if (!isResult(result)) {
+      throw new Error('all() called with non-Result value')
+    }
+
+    if (result.isErr()) {
+      return result as Result<OkTuple<T>, ErrUnion<T>>
+    }
 
     okValues.push(result.unwrap())
   }
@@ -528,10 +542,14 @@ function all<const T extends readonly Result<unknown, unknown>[]>(
 function allSettled<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
 ): Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]> {
-  if (!Array.isArray(results) || results.length === 0) return new Ok([])
+  if (isEmptyArray(results)) {
+    return new Ok([])
+  }
 
   const settledResults = results.map((result): SettledResult<OkUnion<T>, ErrUnion<T>> => {
-    if (!isResult(result)) throw new Error('allSettled() called with non-Result value')
+    if (!isResult(result)) {
+      throw new Error('allSettled() called with non-Result value')
+    }
 
     return result.isOk()
       ? { status: 'ok', value: result.unwrap() as OkUnion<T> }
@@ -573,21 +591,26 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
  */
 function any<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
-): Result<OkUnion<T>, ErrUnion<T>[]> {
-  if (!Array.isArray(results) || results.length === 0) {
-    return new Err([]) as Result<OkUnion<T>, ErrUnion<T>[]>
+): Result<OkUnion<T>, ErrTuple<T>> {
+  if (isEmptyArray(results)) {
+    return new Err([]) as Result<OkUnion<T>, ErrTuple<T>>
   }
 
   const errorValues: unknown[] = []
 
   for (const result of results) {
-    if (!isResult(result)) throw new Error('any() called with non-Result value')
-    if (result.isOk()) return result as Result<OkUnion<T>, ErrUnion<T>[]>
+    if (!isResult(result)) {
+      throw new Error('any() called with non-Result value')
+    }
+
+    if (result.isOk()) {
+      return result as Result<OkUnion<T>, ErrTuple<T>>
+    }
 
     errorValues.push(result.unwrapErr())
   }
 
-  return new Err(errorValues) as Result<OkUnion<T>, ErrUnion<T>[]>
+  return new Err(errorValues) as Result<OkUnion<T>, ErrTuple<T>>
 }
 
 /**
@@ -619,14 +642,17 @@ function any<const T extends readonly Result<unknown, unknown>[]>(
  * Result.partition([])  // => [[], []]
  */
 function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
-  if (!Array.isArray(results) || results.length === 0) return [[], []]
+  if (isEmptyArray(results)) {
+    return [[], []]
+  }
 
   const oks: T[] = []
   const errs: E[] = []
 
   for (const result of results) {
-    if (!isResult(result as Result<T, E>))
+    if (!isResult(result as Result<T, E>)) {
       throw new Error('partition() called with non-Result value')
+    }
 
     result.isOk() ? oks.push(result.unwrap()) : errs.push(result.unwrapErr())
   }
@@ -656,13 +682,20 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  * Result.values([]) // => []
  */
 function values<T, E>(results: readonly Result<T, E>[]): T[] {
-  if (!Array.isArray(results) || results.length === 0) return []
+  if (isEmptyArray(results)) {
+    return []
+  }
 
   const oks: T[] = []
 
   for (const result of results) {
-    if (!isResult(result)) throw new Error('values() called with non-Result value')
-    if (result.isOk()) oks.push(result.unwrap() as T)
+    if (!isResult(result)) {
+      throw new Error('values() called with non-Result value')
+    }
+
+    if (result.isOk()) {
+      oks.push(result.unwrap() as T)
+    }
   }
 
   return oks
@@ -690,13 +723,20 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
  * Result.errors([])  // => []
  */
 function errors<T, E>(results: readonly Result<T, E>[]): E[] {
-  if (!Array.isArray(results) || results.length === 0) return []
+  if (isEmptyArray(results)) {
+    return []
+  }
 
   const errs: E[] = []
 
   for (const result of results) {
-    if (!isResult(result)) throw new Error('errors() called with non-Result value')
-    if (result.isErr()) errs.push(result.unwrapErr() as E)
+    if (!isResult(result)) {
+      throw new Error('errors() called with non-Result value')
+    }
+
+    if (result.isErr()) {
+      errs.push(result.unwrapErr() as E)
+    }
   }
 
   return errs
@@ -704,20 +744,24 @@ function errors<T, E>(results: readonly Result<T, E>[]): E[] {
 
 // #endregion
 
+// biome-ignore format: reason
 export default {
+  // Type guards
+  isOk,
+  isErr,
+  isResult,
+  // Creation
+  ok,
+  err,
+  fromTry,
+  fromNullable,
+  fromPromise,
+  validate,
+  // Collection
   all,
   allSettled,
   any,
-  err,
-  errors,
-  fromNullable,
-  fromPromise,
-  fromTry,
-  isErr,
-  isOk,
-  isResult,
-  ok,
   partition,
-  validate,
   values,
+  errors,
 }

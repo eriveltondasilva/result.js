@@ -131,11 +131,19 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   // #region Inspection
 
-  contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean {
-    return comparator ? comparator(this.#value, value) : this.#value === value
+  contains<U>(value: U, comparator?: (actual: T, expected: U) => boolean): boolean {
+    if (comparator) {
+      return comparator(this.#value, value)
+    }
+
+    if (this.#value != null && typeof this.#value === 'object') {
+      return JSON.stringify(this.#value) === JSON.stringify(value)
+    }
+
+    return (this.#value as unknown) === value
   }
 
-  containsErr(_error: E, _comparator?: (actual: E, expected: E) => boolean): boolean {
+  containsErr<U>(_error: U, _comparator?: (actual: E, expected: U) => boolean): boolean {
     return false
   }
 

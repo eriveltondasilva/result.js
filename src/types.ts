@@ -564,7 +564,9 @@ export interface ResultMethods<T, E> {
    * Result.ok({ id: 1 }).contains({ id: 1 }, (a, b) => a.id === b.id)
    * // true
    */
-  contains(value: T, comparator?: (actual: T, expected: T) => boolean): boolean
+  // Na interface/classe Ok:
+  contains<U extends T>(value: U): boolean
+  contains<U>(value: U, comparator: (actual: T, expected: U) => boolean): boolean
 
   /**
    * Checks if Err contains specific error.
@@ -591,7 +593,8 @@ export interface ResultMethods<T, E> {
    * )
    * // true
    */
-  containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean
+  containsErr<U extends E>(error: U): boolean
+  containsErr(error: E, comparator: (actual: E, expected: E) => boolean): boolean
 
   /**
    * Pattern matching on Result state.

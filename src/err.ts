@@ -61,7 +61,8 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   // #region Transformation
 
   map<U>(_mapper: (value: T) => U): Result<U, E> {
-    return this as unknown as Result<U, E>
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
+    return this as any
   }
 
   mapOr<U>(_mapper: (value: T) => U, defaultValue: U): U {
@@ -79,11 +80,12 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   filter(predicate: (value: T) => boolean): Result<T, Error>
   filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
   filter(_predicate: (value: T) => boolean, _onReject?: (value: T) => E): Result<T, E | Error> {
-    return this as unknown as Result<T, E | Error>
+    return this
   }
 
   flatten<U, E2>(this: IErr<Result<U, E2>, E>): Result<U, E | E2> {
-    return this as unknown as Result<U, E | E2>
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
+    return this as any
   }
 
   // #endregion
@@ -91,11 +93,13 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   // #region Alternation
 
   and<U, E2 = E>(_result: Result<U, E2>): Result<U, E | E2> {
-    return this as unknown as Result<U, E | E2>
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
+    return this as any
   }
 
   andThen<U, E2 = E>(_flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2> {
-    return this as unknown as Result<U, E | E2>
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
+    return this as any
   }
 
   or<E2 = E>(result: Result<T, E2>): Result<T, E2> {
@@ -118,12 +122,16 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   // #region Inspection
 
-  contains(_value: T, _comparator?: (actual: T, expected: T) => boolean): boolean {
+  contains<U>(_value: U, _comparator?: (actual: T, expected: U) => boolean): boolean {
     return false
   }
 
-  containsErr(error: E, comparator?: (actual: E, expected: E) => boolean): boolean {
-    return comparator ? comparator(this.#error, error) : this.#error === error
+  containsErr<U>(error: U, comparator?: (actual: E, expected: U) => boolean): boolean {
+    if (comparator) {
+      return comparator(this.#error, error)
+    }
+
+    return (this.#error as unknown) === error
   }
 
   match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
@@ -145,7 +153,8 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   // #region Async Transformation
 
   async mapAsync<U>(_mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E> {
-    return this as unknown as Result<U, E>
+    // biome-ignore lint/suspicious/noExplicitAny: false positive
+    return this as any
   }
 
   async mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {

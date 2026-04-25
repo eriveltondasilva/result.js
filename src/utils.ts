@@ -1,3 +1,7 @@
+export function isEmptyArray(value: unknown): value is readonly [] | null | undefined {
+  return !Array.isArray(value) || value.length === 0
+}
+
 export function ensureError(error: unknown): Error {
   if (error instanceof Error) {
     return error
