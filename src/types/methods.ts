@@ -362,7 +362,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').and(Result.ok(42))
    * // Err("fail")
    */
-  and<U, E2 = E>(result: Result<U, E2>): Result<U, E | E2>
+  and<U, E2 = never>(result: Result<U, E2>): Result<U, E | E2>
 
   /**
    * Chains operation that returns Result.
@@ -387,7 +387,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').andThen((x) => Result.err('backup'))
    * // Err("fail") - keeps original error
    */
-  andThen<U, E2 = E>(flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2>
+  andThen<U, E2 = never>(flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2>
 
   /**
    * Returns this Result or alternative.
@@ -728,7 +728,7 @@ export interface ResultMethods<T, E> {
    * )
    * // Err("fail")
    */
-  andAsync<U, E2 = E>(result: AsyncResult<U, E2>): AsyncResult<U, E | E2>
+  andAsync<U, E2 = never>(result: AsyncResult<U, E2>): AsyncResult<U, E | E2>
 
   /**
    * Chains async operation that returns Result.
@@ -753,7 +753,7 @@ export interface ResultMethods<T, E> {
    * // Err("fail")
    *
    */
-  andThenAsync<U, E2 = E>(mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2>
+  andThenAsync<U, E2 = never>(mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2>
 
   /**
    * Returns this Result or async alternative.

@@ -1,9 +1,11 @@
 import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types'
+import type { MatchHandlers } from './types/methods'
 
+import { TAG } from './brand'
 import { formatForDisplay } from './utils'
 
 export class Err<T = never, E = Error> implements IErr<T, E> {
-  readonly _tag = 'Err'
+  readonly _tag = TAG.Err
   readonly #error: E
 
   constructor(error: E) {
@@ -40,11 +42,11 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return this.#error
   }
 
-  unwrapOr(defaultValue: T): T {
+  unwrapOr<U>(defaultValue: U): U {
     return defaultValue
   }
 
-  unwrapOrElse(onError: (error: E) => T): T {
+  unwrapOrElse<U>(onError: (error: E) => U): U {
     return onError(this.#error)
   }
 
@@ -61,8 +63,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   // #region Transformation
 
   map<U>(_mapper: (value: T) => U): Result<U, E> {
-    // biome-ignore lint/suspicious/noExplicitAny: false positive
-    return this as any
+    return this as unknown as Result<U, E>
   }
 
   mapOr<U>(_mapper: (value: T) => U, defaultValue: U): U {
@@ -77,29 +78,31 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return new Err(mapper(this.#error))
   }
 
-  filter(predicate: (value: T) => boolean): Result<T, Error>
-  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
-  filter(_predicate: (value: T) => boolean, _onReject?: (value: T) => E): Result<T, E | Error> {
-    return this
+  filter(_predicate: (value: T) => boolean, _message?: string): Result<T, Error> {
+    return this as unknown as Result<T, Error>
+  }
+
+  filterOrElse<E2>(
+    _predicate: (value: T) => boolean,
+    _onReject: (value: T) => E2,
+  ): Result<T, E | E2> {
+    return this as unknown as Result<T, E | E2>
   }
 
   flatten<U, E2>(this: IErr<Result<U, E2>, E>): Result<U, E | E2> {
-    // biome-ignore lint/suspicious/noExplicitAny: false positive
-    return this as any
+    return this as unknown as Result<U, E | E2>
   }
 
   // #endregion
 
   // #region Alternation
 
-  and<U, E2 = E>(_result: Result<U, E2>): Result<U, E | E2> {
-    // biome-ignore lint/suspicious/noExplicitAny: false positive
-    return this as any
+  and<U, E2 = never>(_result: Result<U, E2>): Result<U, E | E2> {
+    return this as unknown as Result<U, E | E2>
   }
 
-  andThen<U, E2 = E>(_flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2> {
-    // biome-ignore lint/suspicious/noExplicitAny: false positive
-    return this as any
+  andThen<U, E2 = never>(_flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2> {
+    return this as unknown as Result<U, E | E2>
   }
 
   or<E2 = E>(result: Result<T, E2>): Result<T, E2> {
@@ -118,6 +121,9 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return this as unknown as Result<[T, U], E | E2>
   }
 
+  zipWith<U, R, E2>(_result: Result<U, E2>, _mapper: (a: T, b: U) => R): Result<R, E | E2> {
+    return this as unknown as Result<R, E | E2>
+  }
   // #endregion
 
   // #region Inspection
@@ -126,23 +132,15 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return false
   }
 
-  containsErr<U>(error: U, comparator?: (actual: E, expected: U) => boolean): boolean {
-    if (comparator) {
-      return comparator(this.#error, error)
-    }
-
-    return (this.#error as unknown) === error
-  }
-
-  match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R {
+  match<L, R>(handlers: MatchHandlers<T, E, L, R>): L | R {
     return handlers.err(this.#error)
   }
 
-  inspect(_visitor: (value: T) => void): Result<T, E> {
+  inspect(_visitor: (value: T) => void): this {
     return this
   }
 
-  inspectErr(visitor: (error: E) => void): Result<T, E> {
+  inspectErr(visitor: (error: E) => void): this {
     visitor(this.#error)
 
     return this
@@ -153,8 +151,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   // #region Async Transformation
 
   async mapAsync<U>(_mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E> {
-    // biome-ignore lint/suspicious/noExplicitAny: false positive
-    return this as any
+    return this as unknown as AsyncResult<U, E>
   }
 
   async mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {
@@ -176,11 +173,11 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   // #region Async Alternation
 
-  andAsync<U, E2 = E>(_result: AsyncResult<U, E2>): AsyncResult<U, E | E2> {
+  andAsync<U, E2 = never>(_result: AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return Promise.resolve(this as unknown as Result<U, E | E2>)
   }
 
-  andThenAsync<U, E2 = E>(_mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2> {
+  andThenAsync<U, E2 = never>(_mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return Promise.resolve(this as unknown as Result<U, E | E2>)
   }
 
@@ -206,6 +203,10 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   toNullable(): null {
     return null
+  }
+
+  toValue(): T | undefined {
+    return undefined
   }
 
   // #endregion
