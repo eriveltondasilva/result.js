@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { Result } from '../src/index'
+import { Result } from '@/index'
 
 // ---------------------------------------------------------------------------
 // and
