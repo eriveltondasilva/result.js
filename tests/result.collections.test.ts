@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Result } from '../src/index'
+import { Result } from '@/index'
 
 // ---------------------------------------------------------------------------
 // Result.all
