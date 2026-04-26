@@ -490,6 +490,7 @@ function all<const T extends readonly Result<unknown, unknown>[]>(
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.all() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
@@ -547,6 +548,7 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.allSettled() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
@@ -601,6 +603,7 @@ function any<const T extends readonly Result<unknown, unknown>[]>(
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.any() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
@@ -654,6 +657,7 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.partition() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
@@ -695,6 +699,7 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.values() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
@@ -738,6 +743,7 @@ function errors<T, E>(results: readonly Result<T, E>[]): E[] {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.errors() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
+        result,
       )
     }
 
