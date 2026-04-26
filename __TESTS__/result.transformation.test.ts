@@ -156,7 +156,7 @@ describe('Result#flatten', () => {
   })
 
   it('should propagate Err unchanged on Err.flatten', () => {
-    const result = Result.err('outer').flatten()
+    const result = (Result.err('outer') as Result<Result<number, string>, string>).flatten()
     expect(result.unwrapErr()).toBe('outer')
   })
 })
@@ -369,12 +369,12 @@ describe('Result#expectErr', () => {
 
 describe('Result instance type predicates', () => {
   it('should narrow to Ok via isOk', () => {
-    const result = Result.ok(42)
+    const result = Result.ok(42) as Result<number, string>
     if (result.isOk()) expect(result.unwrap()).toBe(42)
   })
 
   it('should narrow to Err via isErr', () => {
-    const result = Result.err('fail')
+    const result = Result.err('fail') as Result<number, string>
     if (result.isErr()) expect(result.unwrapErr()).toBe('fail')
   })
 
@@ -405,7 +405,7 @@ describe('Result instance type predicates', () => {
 
 describe('Transformation chain composition', () => {
   it('should compose map → mapErr → match', () => {
-    const result = Result.err('not found')
+    const result = (Result.err('not found') as Result<number, string>)
       .map((x) => x * 2)
       .mapErr((e) => new Error(e))
       .match({
