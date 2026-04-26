@@ -1,87 +1,9 @@
-// #region INFERENCE
+import type { AsyncResult, Err, Ok, Result } from '.'
 
-/**
- * Extracts the success value type (T) from a Result.
- * Returns never if the input is not a Result.
- *
- * @internal
- */
-export type InferOk<R> = R extends Result<infer T, unknown> ? T : never
-
-/**
- * Extracts the error type (E) from a Result.
- * Returns never if the input is not a Result.
- *
- * @internal
- */
-export type InferErr<R> = R extends Result<unknown, infer E> ? E : never
-
-// #endregion
-
-// #region TUPLES
-
-/**
- * Infers a tuple of success types from an array of Results.
- *
- * @internal
- */
-export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof T]: InferOk<T[K]>
+export type MatchHandlers<T, E, L, R> = {
+  ok: (value: T) => L
+  err: (error: E) => R
 }
-
-/**
- * Infers a tuple of error types from an array of Results.
- *
- * @internal
- */
-export type ErrTuple<T extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof T]: InferErr<T[K]>
-}
-
-// #endregion
-
-// #region UNION
-
-/**
- * Infers a union of all possible success types from an array of Results.
- *
- * @internal
- */
-export type OkUnion<T extends readonly Result<unknown, unknown>[]> = InferOk<T[number]>
-
-/**
- * Infers a union of all possible error types from an array of Results.
- *
- * @internal
- */
-export type ErrUnion<T extends readonly Result<unknown, unknown>[]> = InferErr<T[number]>
-
-// #endregion
-
-// #region SETTLED
-
-/**
- * Represents a successful outcome in a settled result structure (e.g., from Result.allSettled).
- *
- * @internal
- */
-export type SettledOk<T> = { status: 'ok'; value: T }
-
-/**
- * Represents a failed outcome in a settled result structure (e.g., from Result.allSettled).
- *
- * @internal
- */
-export type SettledErr<E> = { status: 'err'; reason: E }
-
-/**
- * Represents a final outcome of a Result operation, whether success or failure.
- *
- * @internal
- */
-export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
-
-// #endregion
 
 /**
  * Interface that both Ok and Err must implement.
@@ -391,8 +313,9 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').filter((x) => x > 0)
    * // Err("fail")
    */
-  filter(predicate: (value: T) => boolean): Result<T, Error>
-  filter(predicate: (value: T) => boolean, onReject: (value: T) => E): Result<T, E>
+  filter(predicate: (value: T) => boolean, message?: string): Result<T, Error>
+
+  filterOrElse<E2>(predicate: (value: T) => boolean, onReject: (value: T) => E2): Result<T, E | E2>
 
   /**
    * Flattens nested Result.
@@ -541,6 +464,35 @@ export interface ResultMethods<T, E> {
    */
   zip<U, E2>(result: Result<U, E2>): Result<[T, U], E | E2>
 
+  /**
+   * Combines two Results by applying a function to their values.
+   *
+   * @group Combination
+   *
+   * @see {@link zip} for tuple version
+   *
+   * @template U - Second Result success type
+   * @template R - Mapped result type
+   * @template E2 - Second Result error type
+   * @param {Result<U, E2>} result - Second Result
+   * @param {(a: T, b: U) => R} mapper - Function applied to both values if Ok
+   * @returns {Result<R, E | E2>} Ok with mapped value, or first Err encountered
+   *
+   * @example
+   * Result.ok(2).zipWith(Result.ok(3), (a, b) => a + b)
+   * // Ok(5)
+   *
+   * Result.ok('hello').zipWith(Result.ok('world'), (a, b) => `${a} ${b}`)
+   * // Ok('hello world')
+   *
+   * Result.err('fail').zipWith(Result.ok(3), (a, b) => a + b)
+   * // Err('fail')
+   *
+   * Result.ok(2).zipWith(Result.err('fail'), (a, b) => a + b)
+   * // Err('fail')
+   */
+  zipWith<U, R, E2>(result: Result<U, E2>, mapper: (a: T, b: U) => R): Result<R, E | E2>
+
   // #endregion
 
   // #region Inspection
@@ -551,7 +503,7 @@ export interface ResultMethods<T, E> {
    * @group Inspection
    *
    * @param {T} value - Value to compare
-   * @param {(actual: T, expected: T) => boolean} [comparator] - Custom comparator
+   * @param {(actual: T, expected: T) => boolean} - Custom comparator
    * @returns {boolean} true if values match
    *
    * @example
@@ -564,37 +516,8 @@ export interface ResultMethods<T, E> {
    * Result.ok({ id: 1 }).contains({ id: 1 }, (a, b) => a.id === b.id)
    * // true
    */
-  // Na interface/classe Ok:
   contains<U extends T>(value: U): boolean
   contains<U>(value: U, comparator: (actual: T, expected: U) => boolean): boolean
-
-  /**
-   * Checks if Err contains specific error.
-   *
-   * @group Inspection
-   *
-   * @param {E} error - Error to compare
-   * @param {(actual: E, expected: E) => boolean} [comparator] - Custom comparator
-   * @returns {boolean}
-   *
-   * @example
-   * Result.ok(42).containsErr('fail') // false
-   * Result.err('fail').containsErr('fail') // true
-   * Result.err('fail').containsErr('other') // false
-   *
-   * // With objects (different references)
-   * Result.err({ code: 500 }).containsErr({ code: 500 })
-   * // false
-   *
-   * // With custom comparator
-   * Result.err({ code: 500 }).containsErr(
-   *   { code: 500 },
-   *   (a, b) => a.code === b.code
-   * )
-   * // true
-   */
-  containsErr<U extends E>(error: U): boolean
-  containsErr(error: E, comparator: (actual: E, expected: E) => boolean): boolean
 
   /**
    * Pattern matching on Result state.
@@ -620,7 +543,7 @@ export interface ResultMethods<T, E> {
    * // "Error: not found"
    *
    */
-  match<L, R>(handlers: { ok: (value: T) => L; err: (error: E) => R }): L | R
+  match<L, R>(handlers: MatchHandlers<T, E, L, R>): L | R
 
   /**
    * Performs side effect on success value.
@@ -642,7 +565,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').inspect((x) => console.log(x))
    * // Err("fail") - nothing is executed
    */
-  inspect(visitor: (value: T) => void): Result<T, E>
+  inspect(visitor: (value: T) => void): this
 
   /**
    * Performs side effect on error.
@@ -668,7 +591,7 @@ export interface ResultMethods<T, E> {
    *     metrics.increment('user.fetch.error')
    *   })
    */
-  inspectErr(visitor: (error: E) => void): Result<T, E>
+  inspectErr(visitor: (error: E) => void): this
 
   // #endregion
 
@@ -906,19 +829,6 @@ export interface ResultMethods<T, E> {
   toString(): string
 
   /**
-   * Converts the Result into a nullable value (`T | null`).
-   *
-   * @group Conversion
-   *
-   * @returns {T | null}
-   *
-   * @example
-   * Result.ok(42).toNullable() // => 42
-   * Result.err('failed').toNullable()   // => null
-   */
-  toNullable(): T | null
-
-  /**
    * Converts Result to JSON object.
    *
    * @group Conversion
@@ -940,87 +850,31 @@ export interface ResultMethods<T, E> {
    */
   toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
 
+  /**
+   * Converts the Result into a nullable value (`T | null`).
+   *
+   * @group Conversion
+   *
+   * @returns {T | null}
+   *
+   * @example
+   * Result.ok(42).toNullable() // => 42
+   * Result.err('failed').toNullable()   // => null
+   */
+  toNullable(): T | null
+
+  /**
+   * Converts the Result into a value (`T | undefined`).
+   *
+   * @group Conversion
+   *
+   * @returns {T | undefined}
+   *
+   * @example
+   * Result.ok(42).toValue() // => 42
+   * Result.err('failed').toValue()   // => undefined
+   */
+  toValue(): T | undefined
+
   // #endregion
 }
-
-/**
- * Represents a successful Result containing a value.
- *
- * @remarks
- * You normally don't instantiate Ok directly. Use `Result.ok(value)`.
- *
- * @internal
- *
- * @see {@link Err}
- *
- * @template T - Success value type
- * @template E - Error type (never used in Ok, but needed for typing)
- *
- * @example
- * Result.ok(42).unwrap()  // 42
- * Result.ok(42).isOk()    // true
- */
-export interface Ok<T, E = never> extends ResultMethods<T, E> {
-  readonly _tag: 'Ok'
-  toJSON(): { type: 'ok'; value: T }
-}
-
-/**
- * Represents an error Result containing a failure.
- *
- * @remarks
- * You normally don't instantiate Err directly. Use `Result.err(error)`.
- *
- * @internal
- *
- * @template T - Success value type (for type compatibility)
- * @template E - Error type
- *
- * @example
- * Result.err(new Error('failed')).unwrapErr()  // Error: failed
- * Result.err(new Error('failed')).isErr()      // true
- */
-export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
-  readonly _tag: 'Err'
-  toJSON(): { type: 'err'; error: E }
-}
-
-/**
- * Represents a result that can be either success (Ok) or failure (Err).
- *
- * @see {@link AsyncResult} for async version
- *
- * @template T - Success value type
- * @template E - Error type
- *
- * @example
- * function divide(a: number, b: number): Result<number, string> {
- *   if (b === 0) return Result.err('Division by zero')
- *
- *   return Result.ok(a / b)
- * }
- *
- * divide(10, 2) // => Ok(5)
- */
-export type Result<T, E> = Ok<T, E> | Err<T, E>
-
-/**
- * Represents a Promise that resolves to a Result.
- *
- * @see {@link Result}
- *
- * @template T - Success value type
- * @template E - Error type
- *
- * @example
- * async function fetchUser(id: number): AsyncResult<User, Error> {
- *   return Result.fromPromise(async () => {
- *     const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
- *     return response.json()
- *   })
- * }
- *
- * await fetchUser(1)
- * // => Ok({ id: 1, name: 'Leanne Graham', ... }) or Err(Error('...'))
- */
-export type AsyncResult<T, E> = Promise<Result<T, E>>
