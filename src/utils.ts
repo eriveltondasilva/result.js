@@ -1,5 +1,12 @@
-export function isEmptyArray(value: unknown): value is readonly [] | null | undefined {
-  return !Array.isArray(value) || value.length === 0
+export function isEmptyArray(value: unknown): boolean {
+  if (!Array.isArray(value)) {
+    throw new TypeError(
+      `Expected an array, but received ${typeof value}. Make sure you are passing an array to the collection function.`,
+      { cause: value },
+    )
+  }
+
+  return value.length === 0
 }
 
 export function ensureError(error: unknown): Error {
@@ -7,29 +14,42 @@ export function ensureError(error: unknown): Error {
     return error
   }
 
-  return new Error(error == null ? 'Unknown error: null or undefined value' : String(error))
+  const message = error == null ? 'Unknown error: null or undefined value' : String(error)
+  return new Error(message, { cause: error })
 }
 
 export function formatForDisplay(value: unknown): string {
-  if (value instanceof Error) {
-    return `[Error: ${value.message}]`
-  }
+  if (value === null) return 'null'
+  if (value === undefined) return 'undefined'
 
-  if (value == null) {
-    return '[Unknown Error: null or undefined value]'
+  if (value instanceof Error) {
+    const base = `${value.name}: ${value.message}`
+    return value.cause !== undefined ? `${base} (cause: ${formatForDisplay(value.cause)})` : base
   }
 
   if (typeof value === 'string') {
-    return value.length > 100 ? `"${value.slice(0, 100)}..."` : `"${value}"`
+    const truncated = value.length > 100 ? `${value.slice(0, 100)}...` : value
+    return `"${truncated}"`
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
 
+  if (typeof value === 'bigint') return `${value}n`
+
+  if (typeof value === 'symbol') return value.toString()
+
   if (Array.isArray(value)) {
-    return `[Array(${value.length})]`
+    return value.length <= 5
+      ? `[${value.map(formatForDisplay).join(', ')}]`
+      : `Array(${value.length})`
   }
 
-  return `[${String(typeof value)}]`
+  try {
+    const json = JSON.stringify(value)
+    return json.length > 100 ? `${json.slice(0, 100)}...` : json
+  } catch {
+    return value?.constructor?.name ?? 'Object'
+  }
 }
