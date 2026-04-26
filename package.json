@@ -63,7 +63,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "4xxx": "",
-    "types": "tsc --noEmit",
+    "types": "tsc --noEmit -p tsconfig.json",
     "dev": "bun run types && bun run check:fix && bun run test",
     "prepare": "husky"
   },
@@ -79,6 +79,7 @@
     "typedoc-plugin-frontmatter": "^1.3.1",
     "typedoc-plugin-markdown": "^4.11.0",
     "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitepress": "^2.0.0-alpha.17",
     "vitest": "^4.1.5"
   },

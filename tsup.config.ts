@@ -31,6 +31,7 @@ export const banner = `
 export default defineConfig([
   {
     entry: ['./src/index.ts'],
+    tsconfig: './tsconfig.build.json',
     banner: { js: banner },
     dts: { banner },
     format: 'esm',
