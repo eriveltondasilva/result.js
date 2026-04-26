@@ -149,7 +149,7 @@ export interface ResultMethods<T, E> {
    * Result.ok(42).unwrapOr(0)         // 42
    * Result.err('failed').unwrapOr(0)  // 0
    */
-  unwrapOr(defaultValue: T): T
+  unwrapOr<U = T>(defaultValue: U): T | U
 
   /**
    * Extracts value or computes default from error.
@@ -165,7 +165,7 @@ export interface ResultMethods<T, E> {
    * Result.ok(42).unwrapOrElse((e) => 0)         // 42
    * Result.err('failed').unwrapOrElse((e) => 0)  // 0
    */
-  unwrapOrElse(onError: (error: E) => T): T
+  unwrapOrElse<U = T>(onError: (error: E) => U): T | U
 
   /**
    * Extracts value with custom error message (for Err).
@@ -411,7 +411,7 @@ export interface ResultMethods<T, E> {
    * Result.err('fail').or(Result.err('backup'))
    * // Err("backup")
    */
-  or<E2 = E>(result: Result<T, E2>): Result<T, E2>
+  or<U = T, E2 = never>(result: Result<U, E2>): Result<T | U, E2>
 
   /**
    * Returns this Result or executes error recovery.
@@ -434,7 +434,7 @@ export interface ResultMethods<T, E> {
    * // Err("backup")
    *
    */
-  orElse<E2 = E>(onError: (error: E) => Result<T, E2>): Result<T, E2>
+  orElse<U = T, E2 = never>(onError: (error: E) => Result<U, E2>): Result<T | U, E2>
 
   // #endregion
 
@@ -777,7 +777,7 @@ export interface ResultMethods<T, E> {
    * )
    * // Ok(42)
    */
-  orAsync<E2 = E>(result: AsyncResult<T, E2>): AsyncResult<T, E2>
+  orAsync<U = T, E2 = never>(result: AsyncResult<U, E2>): AsyncResult<T | U, E2>
 
   /**
    * Returns this Result or executes async recovery.
@@ -800,7 +800,9 @@ export interface ResultMethods<T, E> {
    * )
    * // Ok(42)
    */
-  orElseAsync<E2 = E>(onErrorAsync: (error: E) => AsyncResult<T, E2>): AsyncResult<T, E2>
+  orElseAsync<U = T, E2 = never>(
+    onErrorAsync: (error: E) => AsyncResult<U, E2>,
+  ): AsyncResult<T | U, E2>
 
   // #endregion
 

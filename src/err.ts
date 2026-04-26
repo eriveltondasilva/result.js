@@ -42,11 +42,11 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return this.#error
   }
 
-  unwrapOr<U>(defaultValue: U): U {
+  unwrapOr<U = T>(defaultValue: U): T | U {
     return defaultValue
   }
 
-  unwrapOrElse<U>(onError: (error: E) => U): U {
+  unwrapOrElse<U = T>(onError: (error: E) => U): T | U {
     return onError(this.#error)
   }
 
@@ -105,12 +105,12 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return this as unknown as Result<U, E | E2>
   }
 
-  or<E2 = E>(result: Result<T, E2>): Result<T, E2> {
-    return result
+  or<U = T, E2 = never>(result: Result<U, E2>): Result<T | U, E2> {
+    return result as unknown as Result<T | U, E2>
   }
 
-  orElse<E2 = E>(onError: (error: E) => Result<T, E2>): Result<T, E2> {
-    return onError(this.#error)
+  orElse<U = T, E2 = never>(onError: (error: E) => Result<U, E2>): Result<T | U, E2> {
+    return onError(this.#error) as unknown as Result<T | U, E2>
   }
 
   // #endregion
@@ -181,12 +181,14 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return Promise.resolve(this as unknown as Result<U, E | E2>)
   }
 
-  orAsync<E2 = E>(result: AsyncResult<T, E2>): AsyncResult<T, E2> {
-    return result
+  orAsync<U = T, E2 = never>(result: AsyncResult<U, E2>): AsyncResult<T | U, E2> {
+    return result as unknown as AsyncResult<T | U, E2>
   }
 
-  orElseAsync<E2 = E>(onErrorAsync: (error: E) => AsyncResult<T, E2>): AsyncResult<T, E2> {
-    return onErrorAsync(this.#error)
+  orElseAsync<U = T, E2 = never>(
+    onErrorAsync: (error: E) => AsyncResult<U, E2>,
+  ): AsyncResult<T | U, E2> {
+    return onErrorAsync(this.#error) as unknown as AsyncResult<T | U, E2>
   }
 
   // #endregion

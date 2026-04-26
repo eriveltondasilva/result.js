@@ -43,11 +43,11 @@ export class Ok<T, E = never> implements IOk<T, E> {
     throw new Error('Called unwrapErr on an Ok value', { cause: this.#value })
   }
 
-  unwrapOr(_defaultValue: T): T {
+  unwrapOr<U = T>(_defaultValue: U): T | U {
     return this.#value
   }
 
-  unwrapOrElse(_onError: (error: E) => T): T {
+  unwrapOrElse<U = T>(_onError: (error: E) => U): T | U {
     return this.#value
   }
 
@@ -114,12 +114,12 @@ export class Ok<T, E = never> implements IOk<T, E> {
     return flatMapper(this.#value)
   }
 
-  or<E2 = E>(_result: Result<T, E2>): Result<T, E2> {
-    return this as unknown as Result<T, E2>
+  or<U = T, E2 = never>(_result: Result<U, E2>): Result<T | U, E2> {
+    return this as unknown as Result<T | U, E2>
   }
 
-  orElse<E2 = E>(_onError: (error: E) => Result<T, E2>): Result<T, E2> {
-    return this as unknown as Result<T, E2>
+  orElse<U = T, E2 = never>(_onError: (error: E) => Result<U, E2>): Result<T | U, E2> {
+    return this as unknown as Result<T | U, E2>
   }
 
   // #endregion
@@ -211,12 +211,14 @@ export class Ok<T, E = never> implements IOk<T, E> {
     return mapAsync(this.#value)
   }
 
-  orAsync<E2 = E>(_result: AsyncResult<T, E2>): AsyncResult<T, E2> {
-    return Promise.resolve(this as unknown as Result<T, E2>)
+  orAsync<U = T, E2 = never>(_result: AsyncResult<U, E2>): AsyncResult<T | U, E2> {
+    return Promise.resolve(this as unknown as Result<T | U, E2>)
   }
 
-  orElseAsync<E2 = E>(_onErrorAsync: (error: E) => AsyncResult<T, E2>): AsyncResult<T, E2> {
-    return Promise.resolve(this as unknown as Result<T, E2>)
+  orElseAsync<U = T, E2 = never>(
+    _onErrorAsync: (error: E) => AsyncResult<U, E2>,
+  ): AsyncResult<T | U, E2> {
+    return Promise.resolve(this as unknown as Result<T | U, E2>)
   }
 
   // #endregion
