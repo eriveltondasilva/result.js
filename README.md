@@ -50,8 +50,9 @@ import Result from '@eriveltondasilva/result.js'
 // Create Results
 const success = Result.ok(42)
 // => Ok(42)
+
 const failure = Result.err(new Error('Something went wrong'))
-// => Err(Error: 'Something went wrong')
+// => Err(Error: "Something went wrong")
 
 // Check and unwrap
 if (success.isOk()) {

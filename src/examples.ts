@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/suspicious/noConsole: test file */
-import { Result } from './index'
+// biome-ignore-all lint/suspicious/noConsole: test file
+import { ok, Result } from './index'
 
 const log = (...args: unknown[]) => console.log(args)
 
@@ -52,23 +52,9 @@ log(
 
 // -------------------------------------
 
-// log(JSON.stringify(Result.ok(42)))
-// log(JSON.stringify(Result.err('fail')))
-
-// -------------------------------------
-
 // Tipos de erro distintos
 type AuthError = { code: 'UNAUTHORIZED' }
 type DbError = { code: 'DB_FAIL' }
-
-// declare function authenticate(token: string): Result<string, AuthError>
-// declare function fetchProfile(id: string): Result<number, DbError>
-
-// const result2 = authenticate('token')
-
-// const result3 = result2.andThen((user) => fetchProfile(user))
-
-// log('result3:', result3)
 
 const aa: Result<number, AuthError> = Result.ok(42)
 const b: Result<string, DbError> = Result.ok('user')
@@ -101,3 +87,60 @@ const all = Result.all([Result.ok(1), Result.ok('a'), Result.ok(true)])
 log('all:', all.unwrap())
 
 // -------------------------------------
+
+// const error = new Error('Something went wrong', {
+//   cause: { code: 'INTERNAL_ERROR', details: 'Database connection failed' },
+// })
+// log('error:', error.name)
+// log('error:', error)
+
+// -------------------------------------
+
+// const result2: Result<number, string> = Result.err('not found')
+// const filtered = result2.filter((x) => x > 0)
+
+// log('filtered:', filtered.unwrapErr())
+
+// -------------------------------------
+
+const testFiltered = Result.ok(42).filter((x) => x > 0)
+
+log('filtered:', testFiltered.isOk() ? testFiltered.unwrap() : testFiltered.unwrapErr())
+
+// -------------------------------------
+
+const result5 = Result.ok(42)
+
+console.log(result5._tag)
+
+if (result5.isOk()) {
+  result5 // Ok<number, string> ✅
+  result5.unwrap() // number ✅
+}
+
+const test2 = ok('hello').map((x) => x.toUpperCase())
+
+log('test2:', test2.unwrap())
+
+// -------------------------------------
+
+// const result3 = Result.allSettled([Result.ok(1), Result.err('fail'), Result.ok(true)])
+
+// result3.match({
+//   ok: (x) => log('Ok:', x),
+//   err: (x) => log('Err:', x),
+// })
+
+// -------------------------------------
+
+const r = Result.ok(42)
+r.unwrap() // ✅ number
+// r.unwrapErr() // ✅ never (erro de tipo em compile time)
+
+const e = Result.err(new Error())
+// e.unwrap()    // ✅ never (erro de tipo em compile time)
+e.unwrapErr() // ✅ Error
+
+// -------------------------------------
+
+log(Result.ok(42))

@@ -38,5 +38,5 @@ export const Result = Object.freeze(result)
 export type Result<T, E> = ResultType<T, E>
 export type AsyncResult<T, E> = AsyncResultType<T, E>
 
-export const { ok, err } = result
+export const { ok, err } = Result
 export default Result
