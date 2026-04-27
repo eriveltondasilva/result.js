@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const sourcePath = resolve('CHANGELOG.md')
 const targetPath = resolve('docs/changelog.md')
@@ -13,7 +13,5 @@ if (!existsSync(sourcePath)) {
 const frontMatter = `---\neditLink: false\n---\n\n`
 
 const content = readFileSync(sourcePath, 'utf-8')
-
-mkdirSync(dirname(targetPath))
 
 writeFileSync(targetPath, frontMatter + content)
