@@ -143,4 +143,4 @@ e.unwrapErr() // ✅ Error
 
 // -------------------------------------
 
-log(Result.ok(42))
+log(Result.ok(42).match({ ok: (x) => x, err: (x) => x }))
