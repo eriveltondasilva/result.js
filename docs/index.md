@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Quick Start
-      link: ./guide/quick-start.md
+      link: ./guide/03.quick-start
 
     - theme: alt
       text: View on GitHub

@@ -11,8 +11,8 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: 'Guide', link: '/guide/what-is-result.md' },
-      { text: 'Reference', link: '/reference/index.md' },
+      { text: 'Guide', link: '/guide/01.what-is-result' },
+      { text: 'Reference', link: '/reference' },
     ],
 
     sidebar: {
@@ -20,30 +20,31 @@ export default defineConfig({
         {
           text: 'Getting Started',
           items: [
-            { text: 'What is Result?', link: '/guide/what-is-result.md' },
-            { text: 'Installation', link: '/guide/installation.md' },
-            { text: 'Quick Start', link: '/guide/quick-start.md' },
+            { text: 'What is Result?', link: '/guide/01.what-is-result' },
+            { text: 'Installation', link: '/guide/02.installation' },
+            { text: 'Quick Start', link: '/guide/03.quick-start' },
           ],
         },
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Error Handling', link: '/guide/error-handling.md' },
-            { text: 'Operation Chaining', link: '/guide/chaining.md' },
-            { text: 'Pattern Matching', link: '/guide/matching.md' },
+            { text: 'Error Handling', link: '/guide/04.error-handling' },
+            { text: 'Operation Chaining', link: '/guide/05.collections' },
+            { text: 'Operation Chaining', link: '/guide/06.chaining' },
+            { text: 'Pattern Matching', link: '/guide/07.matching' },
+            { text: 'Type Safety', link: '/guide/08.type-safety' },
           ],
         },
         {
           text: 'Advanced',
           items: [
-            { text: 'Async Operations', link: '/guide/async.md' },
-            { text: 'Type Safety', link: '/guide/type-safety.md' },
-            { text: 'Best Practices', link: '/guide/best-practices.md' },
+            { text: 'Async Operations', link: '/guide/09.async' },
+            { text: 'Best Practices', link: '/guide/10.best-practices' },
           ],
         },
         {
           text: 'Changelog',
-          link: '/changelog.md',
+          link: '/changelog',
         },
       ],
     },
