@@ -1,11 +1,8 @@
-import type { TAG } from '../brand'
+import type { TAG } from '@/brand'
 import type { ResultMethods } from './methods'
 
 /**
  * Represents a successful Result containing a value.
- *
- * @remarks
- * You normally don't instantiate Ok directly. Use `Result.ok(value)`.
  *
  * @internal
  *
@@ -15,12 +12,14 @@ import type { ResultMethods } from './methods'
  * @template E - Error type (never used in Ok, but needed for typing)
  *
  * @example
- * Result.ok(42).unwrap()  // 42
- * Result.ok(42).isOk()    // true
+ * const res = Result.ok(42)
+ * res.unwrap()  // => Ok(42)
+ * res.isOk()    // => true
  */
 export interface Ok<T, E = never> extends ResultMethods<T, E> {
   /** @internal */
   readonly _tag: typeof TAG.Ok
+
   unwrap(): T
   unwrapErr(): never
   toJSON(): { type: 'ok'; value: T }
@@ -29,21 +28,20 @@ export interface Ok<T, E = never> extends ResultMethods<T, E> {
 /**
  * Represents an error Result containing a failure.
  *
- * @remarks
- * You normally don't instantiate Err directly. Use `Result.err(error)`.
- *
  * @internal
  *
  * @template T - Success value type (for type compatibility)
  * @template E - Error type
  *
  * @example
- * Result.err(new Error('failed')).unwrapErr()  // Error: failed
- * Result.err(new Error('failed')).isErr()      // true
+ * const res = Result.err('failed')
+ * res.unwrapErr()  // => Err("failed")
+ * res.isErr()      // => true
  */
 export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
   /** @internal */
   readonly _tag: typeof TAG.Err
+
   unwrap(): never
   unwrapErr(): E
   toJSON(): { type: 'err'; error: E }
@@ -52,7 +50,7 @@ export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
 /**
  * Represents a result that can be either success (Ok) or failure (Err).
  *
- * @see {@link AsyncResult} for async version
+ * @see {@link AsyncResult} - for async version
  *
  * @template T - Success value type
  * @template E - Error type
@@ -65,26 +63,25 @@ export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
  * }
  *
  * divide(10, 2) // => Ok(5)
+ * divide(10, 0) // => Err('Division by zero')
  */
 export type Result<T, E> = Ok<T, E> | Err<T, E>
 
 /**
  * Represents a Promise that resolves to a Result.
+ * Ideal for wrapping asynchronous operations like API calls or database queries.
  *
- * @see {@link Result}
+ * @see {@link Result} - for sync version
  *
  * @template T - Success value type
  * @template E - Error type
  *
  * @example
- * async function fetchUser(id: number): AsyncResult<User, Error> {
- *   return Result.fromPromise(async () => {
- *     const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
- *     return response.json()
- *   })
+ * async function getUser(id: number): AsyncResult<User, Error> {
+ *   return Result.fromPromise(() => fetchUserById(id))
  * }
  *
- * await fetchUser(1)
- * // => Ok({ id: 1, name: 'Leanne Graham', ... }) or Err(Error('...'))
+ * const res = await getUser(1)
+ * // => Ok(User) | Err(Error)
  */
 export type AsyncResult<T, E> = Promise<Result<T, E>>

@@ -12,15 +12,16 @@ import { ensureError, isEmptyArray, ResultTypeError } from './utils'
 /**
  * Checks if a value is an Ok Result instance.
  *
+ * @group Type Guards
+ *
  * @see {@link isErr} for the opposite check
  *
  * @param {unknown} value - Value to check
  * @returns {boolean} true if the value is an Ok Result instance
  *
  * @example
- * // Basic checking
- * Result.isOk(Result.ok(1))        // => true
- * Result.isOk(Result.err('fail'))  // => false
+ * Result.isOk(Result.ok(1))       // => true
+ * Result.isOk(Result.err('fail')) // => false
  *
  */
 function isOk(value: unknown): value is Ok<unknown, never> {
@@ -38,9 +39,8 @@ function isOk(value: unknown): value is Ok<unknown, never> {
  * @returns {boolean} true if the value is an Err Result instance
  *
  * @example
- * // Basic checking
- * Result.isErr(Result.err('fail'))  // => true
- * Result.isErr(Result.ok(1))        // => false
+ * Result.isErr(Result.err('fail')) // => true
+ * Result.isErr(Result.ok(1))       // => false
  */
 function isErr(value: unknown): value is Err<never, unknown> {
   return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Err
@@ -57,10 +57,11 @@ function isErr(value: unknown): value is Err<never, unknown> {
  * @returns {boolean} true if the value is a Result instance
  *
  * @example
- * // Basic checking
+ * // Result values
  * Result.isResult(Result.ok(1))        // => true
  * Result.isResult(Result.err('fail'))  // => true
  *
+ * @example
  * // Non-Result values
  * Result.isResult(42)                  // => false
  * Result.isResult('hello')             // => false
@@ -86,22 +87,26 @@ function isResult(value: unknown): value is Result<unknown, unknown> {
  *
  * @group Creation
  *
+ * @see {@link err} for error creation
+ *
  * @template T - Success value type
- * @template E - Error type (never used in Ok, but needed for typing)
+ *
  * @param {T} value - Success value to encapsulate
- * @returns {Ok<T, E>} An Ok Result containing the value
+ * @returns {Ok<T, never>} An Ok Result containing the value
  *
  * @example
- * // Basic usage
+ * // With primitives
  * Result.ok(42)      // => Ok(42)
  * Result.ok('hello') // => Ok('hello')
  *
+ * @example
  * // In functions
  * function divide(a: number, b: number): Result<number, string> {
  *   if (b === 0) return Result.err('division by zero')
  *   return Result.ok(a / b)
  * }
  *
+ * @example
  * // With complex types
  * interface User { id: number; name: string }
  * const user: User = { id: 1, name: 'John' }
@@ -117,16 +122,19 @@ function ok<T>(value: T): Ok<T, never> {
  *
  * @group Creation
  *
- * @template T - Success value type (never used in Err, but needed for typing)
+ * @see {@link ok} for success creation
+ *
  * @template E - Error type
+ *
  * @param {E} error - Error to encapsulate
- * @returns {Err<T, E>} An Err Result containing the error
+ * @returns {Err<never, E>} An Err Result containing the error
  *
  * @example
  * // With native Error
  * Result.err(new Error('something went wrong'))
  * // => Err(Error: 'something went wrong')
  *
+ * @example
  * // With string
  * function validate(age: number): Result<number, string> {
  *   if (age < 0) return Result.err('age cannot be negative')
@@ -135,6 +143,7 @@ function ok<T>(value: T): Ok<T, never> {
  *   return Result.ok(age)
  * }
  *
+ * @example
  * // With custom types
  * type ValidationError = { field: string; message: string }
  * const result = Result.err<number, ValidationError>({
@@ -153,18 +162,21 @@ function err<E = Error>(error: E): Err<never, E> {
  *
  * @overload
  *
+ * @see {@link fromPromise} - Wraps a Promise in a Result
+ *
  * @template T - Return value type
+ *
  * @param {() => T} executor - Function to execute
- * @returns {IResult<T, Error>} Ok with return value or Err if throws exception
+ * @returns {Result<T, Error>} Ok with return value or Err if throws exception
  *
  * @example
  * // JSON parsing
  * Result.fromTry(() => JSON.parse('{"name":"John"}'))
  * // => Ok({name: "John"})
- *
  * Result.fromTry(() => JSON.parse('invalid json'))
  * // => Err(SyntaxError: ...)
  *
+ * @example
  * // Operations that can fail
  * const result = Result.fromTry(() => {
  *   const file = readFileSync('config.json', 'utf-8')
@@ -176,13 +188,18 @@ function fromTry<T>(executor: () => T): Result<T, Error>
 /**
  * Wraps function execution in Result with custom error transformation.
  *
- * @overload
  * @group Creation
+ *
+ * @overload
+ *
+ * @see {@link fromPromise} - Wraps a Promise in a Result
+ *
  * @template T - Return value type
  * @template E - Error type
+ *
  * @param {() => T} executor - Function to execute
- * @param {(error: unknown) => E} onError - Function that transforms the caught exception
- * @returns {IResult<T, E>} Ok with return or Err with custom error
+ * @param {(error: unknown) => E} catchErr - Function that transforms the caught exception
+ * @returns {Result<T, E>} Ok with return or Err with custom error
  *
  * @example
  * // Custom typed error
@@ -192,13 +209,14 @@ function fromTry<T>(executor: () => T): Result<T, Error>
  *   (): ParseError => ({ type: 'parse_error', input })
  * )
  *
+ * @example
  * // Enriching the error
  * const config = Result.fromTry(
  *   () => loadConfig(),
  *   (err) => new Error(`Failed to load config: ${err}`)
  * )
  */
-function fromTry<T, E>(executor: () => T, onError: (error: unknown) => E): Result<T, E>
+function fromTry<T, E>(executor: () => T, catchErr: (error: unknown) => E): Result<T, E>
 
 function fromTry<T, E = Error>(
   executor: () => T,
@@ -214,12 +232,14 @@ function fromTry<T, E = Error>(
 /**
  * Wraps async function execution in Result, capturing rejections.
  *
- * Converts Promises that may reject into Results, allowing explicit
- * handling without try/catch or .catch().
+ * @group Creation
  *
  * @overload
- * @group Creation
+ *
+ * @see {@link fromTry} - Wraps a function in a Result
+ *
  * @template T - Resolved value type
+ *
  * @param {() => Promise<T>} executor - Async function to execute
  * @returns {AsyncResult<T, Error>} Promise of Ok with value or Err if rejects
  *
@@ -229,44 +249,34 @@ function fromTry<T, E = Error>(
  *   const res = await fetch('https://jsonplaceholder.typicode.com/todos/1')
  *   return res.json()
  * })
+ * // => Ok({ userId: 1, id: 1, title: 'delectus aut autem', ... })
  *
- * // Chained async operations
- * await Result.fromPromise(async () => {
- *   const data = await db.query('SELECT * FROM users WHERE id = ?', [id])
- *   if (!data[0]) throw new Error('User not found')
- *   return data[0].json()
- * })
- *
+ * @example
  * // Async file I/O
  * await Result.fromPromise(
  *   () => fs.promises.readFile('file.txt', 'utf-8')
  * )
+ * // => Ok('Hello world')
  */
 function fromPromise<T>(executor: () => Promise<T>): AsyncResult<T, Error>
 
 /**
  * Wraps Promise in Result with custom error transformation.
  *
- * @overload
  * @group Creation
+ *
+ * @overload
+ *
+ * @see {@link fromTry} - Wraps a function in a Result
  *
  * @template T - Resolved value type
  * @template E - Error type
+ *
  * @param {() => Promise<T>} executor - Async function to execute
- * @param {(error: unknown) => E} onError - Function that transforms the rejection error
+ * @param {(error: unknown) => E} catchErr - Function that transforms the rejection error
  * @returns {AsyncResult<T, E>} Promise of Ok or Err with custom error
  *
  * @example
- * // Typed error
- * type NetworkError = { type: 'network'; status?: number }
- * const data = await Result.fromPromise(
- *   () => fetch('https://jsonplaceholder.typicode.com/todos/1').then(r => r.json()),
- *   (err): NetworkError => ({
- *     type: 'network',
- *     status: err instanceof Response ? err.status : undefined
- *   })
- * )
- *
  * // Contextualizing errors
  * const user = await Result.fromPromise(
  *   () => fetchUser(id),
@@ -275,42 +285,39 @@ function fromPromise<T>(executor: () => Promise<T>): AsyncResult<T, Error>
  */
 function fromPromise<T, E>(
   executor: () => Promise<T>,
-  onError: (error: unknown) => E,
+  catchErr: (error: unknown) => E,
 ): AsyncResult<T, E>
 
 async function fromPromise<T, E>(
   executor: () => Promise<T>,
-  onError?: (error: unknown) => E,
+  catchErr?: (error: unknown) => E,
 ): AsyncResult<T, E | Error> {
   try {
     return new Ok(await executor())
   } catch (error) {
-    return new Err(onError ? onError(error) : ensureError(error))
+    return new Err(catchErr ? catchErr(error) : ensureError(error))
   }
 }
 
 /**
  * Creates a Result from a value that may be null or undefined.
  *
- * Useful for working with APIs that return nullable values and you want to
- * force explicit handling of the null/undefined case.
- *
- * @overload
  * @group Creation
  *
+ * @overload
+ *
  * @template T - Value type
+ *
  * @param {T | null | undefined} value - Possibly null/undefined value
- * @returns {IResult<NonNullable<T>, Error>} Ok if defined, Err with default error if null/undefined
+ * @returns {Result<NonNullable<T>, Error>} Ok if defined, Err with default error (includes value as cause)
  *
  * @example
- * // With present value
  * Result.fromNullable(42)
  * // => Ok(42)
- *
- * // With null
  * Result.fromNullable(null)
  * // => Err(Error: Value is null or undefined)
  *
+ * @example
  * // Practical usage with find
  * const users = [{ id: 1, name: 'Ana' }, { id: 2, name: 'Bob' }]
  * const user = Result.fromNullable(
@@ -323,13 +330,16 @@ function fromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Er
 /**
  * Creates a Result from nullable value with custom error.
  *
- * @overload
  * @group Creation
+ *
+ * @overload
+ *
  * @template T - Value type
  * @template E - Error type
+ *
  * @param {T | null | undefined} value - Possibly null/undefined value
  * @param {() => E} onError - Function that generates custom error
- * @returns {IResult<NonNullable<T>, E>} Ok if defined, Err with custom error if null/undefined
+ * @returns {Result<NonNullable<T>, E>} Ok if defined, Err with custom error if null/undefined
  *
  * @example
  * // With personalized error
@@ -338,6 +348,7 @@ function fromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Er
  *   () => new Error('API_KEY not configured')
  * )
  *
+ * @example
  * // With custom error type
  * type NotFoundError = { code: 'NOT_FOUND'; resource: string }
  * const user = Result.fromNullable(
@@ -345,17 +356,14 @@ function fromNullable<T>(value: T | null | undefined): Result<NonNullable<T>, Er
  *   (): NotFoundError => ({ code: 'NOT_FOUND', resource: 'user' })
  * )
  */
-function fromNullable<T, E>(
-  value: T | null | undefined,
-  onError: () => E,
-): Result<NonNullable<T>, E>
+function fromNullable<T, E>(value: T | null | undefined, onNull: () => E): Result<NonNullable<T>, E>
 
 function fromNullable<T, E = Error>(
   value: T | null | undefined,
-  onError?: () => E,
+  onNull?: () => E,
 ): Result<NonNullable<T>, E | Error> {
   if (value == null) {
-    return new Err(onError ? onError() : new Error('Value is null or undefined', { cause: value }))
+    return new Err(onNull ? onNull() : new Error('Value is null or undefined', { cause: value }))
   }
 
   return new Ok(value as NonNullable<T>)
@@ -364,38 +372,38 @@ function fromNullable<T, E = Error>(
 /**
  * Creates a Result by validating a value with a predicate function.
  *
- * If the predicate returns true, creates Ok with the value.
- * If it returns false, creates Err with default or custom error.
- *
- * @overload
  * @group Creation
  *
+ * @overload
+ *
  * @template T - Value type
+ *
  * @param {T} value - Value to validate
- * @param {(value: T) => boolean} predicate - Function that validates the value
- * @returns {IResult<T, Error>} Ok if valid, Err with default error if invalid
+ * @param {(value: T) => boolean} condition - Function that validates the value
+ * @returns {Result<T, Error>} Ok if valid, Err with default error if invalid
  *
  * @example
  * // Simple validation
  * Result.validate(42, (x) => x > 40)  // => Ok(42)
- *
  * Result.validate(42, (x) => x  < 18)
  * // => Err(Error: 'Validation failed for value: 42')
  */
-function validate<T>(value: T, predicate: (value: T) => boolean): Result<T, Error>
+function validate<T>(value: T, condition: (value: T) => boolean): Result<T, Error>
 
 /**
  * Creates a Result by validating a value with predicate and custom error.
  *
- * @overload
  * @group Creation
+ *
+ * @overload
  *
  * @template T - Value type
  * @template E - Error type
+ *
  * @param {T} value - Value to validate
- * @param {(value: T) => boolean} predicate - Function that validates the value
- * @param {(value: T) => E} onError - Function that generates custom error on rejection
- * @returns {IResult<T, E>} Ok if valid, Err with custom error if invalid
+ * @param {(value: T) => boolean} condition - Function that validates the value
+ * @param {(value: T) => E} onFailure - Function that generates custom error on rejection
+ * @returns {Result<T, E>} Ok if valid, Err with custom error if invalid
  *
  * @example
  * // With personalized error message
@@ -405,29 +413,21 @@ function validate<T>(value: T, predicate: (value: T) => boolean): Result<T, Erro
  *   (e) => new Error(`${e} is too small`)
  * )
  * // Err(Error: '42 is too small')
- *
- * // With custom error type
- * type ValidationError = { field: string; value: unknown; rule: string }
- * const result = Result.validate(
- *   -5,
- *   (x) => x > 0,
- *   (e) => ({ field: 'age', value: e, rule: 'must be positive' })
- * )
  */
 function validate<T, E>(
   value: T,
-  predicate: (value: T) => boolean,
-  onError: (value: T) => E,
+  condition: (value: T) => boolean,
+  onFailure: (value: T) => E,
 ): Result<T, E>
 
 function validate<T, E = Error>(
   value: T,
-  predicate: (value: T) => boolean,
-  onError?: (value: T) => E | Error,
+  condition: (value: T) => boolean,
+  onFailure?: (value: T) => E | Error,
 ): Result<T, E | Error> {
-  if (!predicate(value)) {
+  if (!condition(value)) {
     return new Err(
-      onError ? onError(value) : new Error('Validation failed for value', { cause: value }),
+      onFailure ? onFailure(value) : new Error('Validation failed for value', { cause: value }),
     )
   }
 
@@ -440,39 +440,28 @@ function validate<T, E = Error>(
 
 /**
  * Combines multiple Results into a single Result containing tuple of values.
- *
- * If all are Ok, returns Ok with array of all values.
- * If any is Err, returns the first Err encountered (short-circuit).
- *
- * Similar to Promise.all(), but for Results.
+ * Short-circuits on the first Err encountered.
  *
  * @group Collections
  *
+ * @see {@link allSettled} - Combines multiple Results into a single Result containing tuple of results
+ *
  * @template T - Results tuple type
+ *
  * @param {T} results - Array of Results
- * @returns {IResult<OkTuple<T>, ErrUnion<T>>} Ok with tuple of values or first Err
+ * @returns {Result<OkTuple<T>, ErrUnion<T>>} Ok with tuple of values or first Err
  *
  * @example
  * // All Ok
  * Result.all([Result.ok(1), Result.ok('two'), Result.ok(true)])
  * // => Ok([1, "two", true])
  *
+ * @example
  * // With Err - returns first error
  * Result.all([Result.ok(1), Result.err('error 1'), Result.err('error 2')])
  * // => Err("error 1")
  *
- * // Validating multiple fields
- * const validated = Result.all([
- *   validateEmail(form.email),
- *   validatePassword(form.password),
- *   validateAge(form.age)
- * ])
- *
- * if (validated.isOk()) {
- *   const [email, password, age] = validated.unwrap()
- *   // All valid
- * }
- *
+ * @example
  * // Empty array
  * Result.all([])  // => Ok([])
  */
@@ -505,36 +494,26 @@ function all<const T extends readonly Result<unknown, unknown>[]>(
 
 /**
  * Collects the status of all Results without failing.
- *
- * Always returns Ok with array of objects indicating status (ok/err)
- * and corresponding value/error. Never fails, unlike all().
- *
  * Similar to Promise.allSettled().
  *
  * @group Collections
  *
+ * @see {@link all} - Combines multiple Results into a single Result containing tuple of values
+ *
  * @template T - Results tuple type
+ *
  * @param {T} results - Array of Results
- * @returns {Ok<SettledResult<OkUnion<T>, ErrUnion<T>>[]>} Always Ok with status array
+ * @returns {Ok<SettledTuple<T>>} Always Ok containing an array of status objects
  *
  * @example
  * // Mix of Ok and Err
- * const result = Result.allSettled([Result.ok(1), Result.err('failed'), Result.ok(3)])
- * results.unwrap() // safely unwrap all results
- * // =>
- * // [
- * //   { status: 'ok', value: 1 },
- * //   { status: 'err', reason: 'failed' },
- * //   { status: 'ok', value: 3 }
- * // ]
+ * const res = Result.allSettled([Result.ok(1), Result.err('fail')])
+ * const settled = res.unwrap()
+ * // => [{ status: 'ok', value: 1 }, { status: 'err', reason: 'fail' }]
  *
- * // Processing individual results
- * const settled = Result.allSettled(operations).unwrap()
- * const successes = settled.filter(r => r.status === 'ok')
- * const failures = settled.filter(r => r.status === 'err')
- *
+ * @example
  * // Empty array
- * Result.allSettled([])  // => Ok([])
+ * Result.allSettled([]) // => Ok([])
  */
 function allSettled<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
@@ -543,7 +522,9 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
     return new Ok([]) as Ok<SettledTuple<T>>
   }
 
-  const settledResults = results.map((result, i): SettledResult<OkUnion<T>, ErrUnion<T>> => {
+  const settledResults: SettledResult<OkUnion<T>, ErrUnion<T>>[] = []
+
+  for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.allSettled() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
@@ -551,10 +532,16 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
       )
     }
 
-    return result.isOk()
-      ? { status: 'ok', value: result.unwrap() as OkUnion<T> }
-      : { status: 'err', reason: result.unwrapErr() as ErrUnion<T> }
-  })
+    result.isOk()
+      ? settledResults.push({
+          status: 'ok',
+          value: result.unwrap() as OkUnion<T>,
+        })
+      : settledResults.push({
+          status: 'err',
+          reason: result.unwrapErr() as ErrUnion<T>,
+        })
+  }
 
   return new Ok(settledResults) as Ok<SettledTuple<T>>
 }
@@ -562,32 +549,28 @@ function allSettled<const T extends readonly Result<unknown, unknown>[]>(
 /**
  * Returns the first Ok Result, or all errors if none is Ok.
  *
- * Scans the array until it finds an Ok (short-circuit).
- * If no Ok is found, returns Err with array of all errors.
- *
- * Similar to Promise.any().
- *
  * @group Collections
  *
+ * @see {@link all} - Combines multiple Results into a single Result containing tuple of values
+ *
  * @template T - Results tuple type
+ *
  * @param {T} results - Array of Results
- * @returns {IResult<OkUnion<T>, ErrTuple<T>>} First Ok or Err with all errors
+ * @returns {Result<OkUnion<T>, ErrTuple<T>>} First Ok or Err with array of all errors
+ *
+ * @example
+ * // All Err
+ * Result.any([Result.err('error 1'), Result.err('error 2'), Result.err('error 3')])
+ * // => Err(["error 1", "error 2", "error 3"])
  *
  * @example
  * // First Ok
  * Result.any([Result.err('error 1'), Result.ok(42), Result.ok(99)])
  * // => Ok(42)
  *
- * // All Err
- * Result.any([Result.err('error 1'), Result.err('error 2'), Result.err('error 3')])
- * // => Err(["error 1", "error 2", "error 3"])
- *
- * // Trying multiple data sources (fallback)
- * Result.any([fetchFromCache(key), fetchFromDatabase(key), fetchFromAPI(key)])
- *
  * @example
  * // Empty array
- * Result.any([])  // => Err([])
+ * Result.any([]) // => Err([])
  */
 function any<const T extends readonly Result<unknown, unknown>[]>(
   results: T,
@@ -619,30 +602,27 @@ function any<const T extends readonly Result<unknown, unknown>[]>(
 /**
  * Separates Results into two arrays: successes and failures.
  *
- * Useful when you want to process successes and errors separately,
- * instead of failing on the first error occurrence.
- *
  * @group Collections
+ *
+ * @see {@link all} - Combines multiple Results into a single Result containing tuple of values
+ * @see {@link values} - Collects the values of all Results
+ * @see {@link errors} - Collects the errors of all Results
  *
  * @template T - Success value type
  * @template E - Error type
- * @param {readonly IResult<T, E>[]} results - Array of Results
- * @returns {readonly [T[], E[]]} Tuple [Ok values, errors]
+ *
+ * @param {readonly Result<T, E>[]} results - Array of Results
+ * @returns {readonly [T[], E[]]} Tuple of successes and failures
  *
  * @example
  * // Partitioning results
- * const operations = [
- *   Result.ok(1),
- *   Result.err('failure A'),
- *   Result.ok(2),
- *   Result.err('failure B'),
- * ]
- *
+ * const operations = [Result.ok(1), Result.err('failure A'), Result.ok(2), Result.err('failure B')]
  * const [oks, errors] = Result.partition(operations)
  * // => [[1, 2], ["failure A", "failure B"]]
  *
+ * @example
  * // Empty array
- * Result.partition([])  // => [[], []]
+ * Result.partition([]) // => [[], []]
  */
 function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
   if (isEmptyArray(results)) {
@@ -669,14 +649,14 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
 /**
  * Extracts only the success values from an array of Results.
  *
- * Filters and returns only the values from Results that are Ok, discarding errors.
- * Useful when you want to process only the successes without worrying about failures.
- *
  * @group Collections
+ *
+ * @see {@link errors} - Extracts only the errors from an array of Results
  *
  * @template T - Success value type
  * @template E - Error type
- * @param {readonly IResult<T, E>[]} results - Array of Results
+ *
+ * @param {readonly Result<T, E>[]} results - Array of Results
  * @returns {T[]} Array containing only Ok values
  *
  * @example
@@ -684,6 +664,7 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  * Result.values([Result.ok(1), Result.err('fail'), Result.ok(2)])
  * // => Ok([1, 2])
  *
+ * @example
  * // Empty array
  * Result.values([]) // => []
  */
@@ -713,14 +694,12 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
 /**
  * Extracts only the errors from an array of Results.
  *
- * Filters and returns only the errors from Results that are Err, discarding successes.
- * Useful when you want to analyze or log only the failures that occurred.
- *
  * @group Collections
  *
  * @template T - Success value type
  * @template E - Error type
- * @param {readonly IResult<T, E>[]} results - Array of Results
+ *
+ * @param {readonly Result<T, E>[]} results - Array of Results
  * @returns {E[]} Array containing only errors
  *
  * @example
@@ -728,6 +707,7 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
  * Result.errors([Result.ok(1), Result.err('fail A'), Result.ok(2), Result.err('fail B')])
  * // => Err(["fail A", "fail B"])
  *
+ * @example
  * // Empty array
  * Result.errors([])  // => []
  */

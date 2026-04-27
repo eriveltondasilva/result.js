@@ -1,3 +1,4 @@
+/** @internal */
 export class ResultTypeError extends TypeError {
   constructor(message: string, cause?: unknown) {
     super(`${message}.\nMake sure element is created with Result.ok() or Result.err().`, { cause })
@@ -8,6 +9,7 @@ export class ResultTypeError extends TypeError {
   }
 }
 
+/** @internal */
 export function isEmptyArray(value: unknown): boolean {
   if (!Array.isArray(value)) {
     throw new TypeError(
@@ -19,6 +21,7 @@ export function isEmptyArray(value: unknown): boolean {
   return value.length === 0
 }
 
+/** @internal */
 export function ensureError(error: unknown): Error {
   if (error instanceof Error) {
     return error
@@ -28,6 +31,7 @@ export function ensureError(error: unknown): Error {
   return new Error(message, { cause: error })
 }
 
+/** @internal */
 export function formatForDisplay(value: unknown): string {
   if (value === null) return 'null'
   if (value === undefined) return 'undefined'

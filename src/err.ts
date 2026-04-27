@@ -1,5 +1,5 @@
 import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types'
-import type { MatchHandlers } from './types/methods'
+import type { MatchCases } from './types/methods'
 
 import { TAG } from './brand'
 import { formatForDisplay } from './utils'
@@ -22,12 +22,12 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return true
   }
 
-  isOkAnd(_predicate: (value: T) => boolean): this is IOk<T, E> {
+  isOkAnd(_condition: (value: T) => boolean): this is IOk<T, E> {
     return false
   }
 
-  isErrAnd(predicate: (error: E) => boolean): this is IErr<T, E> {
-    return predicate(this.#error)
+  isErrAnd(condition: (error: E) => boolean): this is IErr<T, E> {
+    return condition(this.#error)
   }
 
   // #endregion
@@ -46,15 +46,15 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return defaultValue
   }
 
-  unwrapOrElse<U = T>(onError: (error: E) => U): T | U {
-    return onError(this.#error)
+  unwrapOrElse<U = T>(fallback: (error: E) => U): T | U {
+    return fallback(this.#error)
   }
 
-  expect(message: string): never {
-    throw new Error(message, { cause: this.#error })
+  expect(reason: string): never {
+    throw new Error(reason, { cause: this.#error })
   }
 
-  expectErr(_message: string): E {
+  expectErr(_reason: string): E {
     return this.#error
   }
 
@@ -70,21 +70,21 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return defaultValue
   }
 
-  mapOrElse<U>(_okMapper: (value: T) => U, errorMapper: (error: E) => U): U {
-    return errorMapper(this.#error)
+  mapOrElse<U>(_okMapper: (value: T) => U, errMapper: (error: E) => U): U {
+    return errMapper(this.#error)
   }
 
   mapErr<E2>(mapper: (error: E) => E2): Result<T, E2> {
     return new Err(mapper(this.#error))
   }
 
-  filter(_predicate: (value: T) => boolean, _message?: string): Result<T, Error> {
+  filter(_condition: (value: T) => boolean, _reason?: string): Result<T, Error> {
     return this as unknown as Result<T, Error>
   }
 
   filterOrElse<E2>(
-    _predicate: (value: T) => boolean,
-    _onReject: (value: T) => E2,
+    _condition: (value: T) => boolean,
+    _onFailure: (value: T) => E2,
   ): Result<T, E | E2> {
     return this as unknown as Result<T, E | E2>
   }
@@ -97,31 +97,34 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   // #region Alternation
 
-  and<U, E2 = never>(_result: Result<U, E2>): Result<U, E | E2> {
+  and<U, E2 = never>(_other: Result<U, E2>): Result<U, E | E2> {
     return this as unknown as Result<U, E | E2>
   }
 
-  andThen<U, E2 = never>(_flatMapper: (value: T) => Result<U, E2>): Result<U, E | E2> {
+  andThen<U, E2 = never>(_next: (value: T) => Result<U, E2>): Result<U, E | E2> {
     return this as unknown as Result<U, E | E2>
   }
 
-  or<U = T, E2 = never>(result: Result<U, E2>): Result<T | U, E2> {
-    return result as unknown as Result<T | U, E2>
+  or<U = T, E2 = never>(other: Result<U, E2>): Result<T | U, E2> {
+    return other as unknown as Result<T | U, E2>
   }
 
-  orElse<U = T, E2 = never>(onError: (error: E) => Result<U, E2>): Result<T | U, E2> {
-    return onError(this.#error) as unknown as Result<T | U, E2>
+  orElse<U = T, E2 = never>(fallback: (error: E) => Result<U, E2>): Result<T | U, E2> {
+    return fallback(this.#error) as unknown as Result<T | U, E2>
   }
 
   // #endregion
 
   // #region Combination
 
-  zip<U, E2>(_result: Result<U, E2>): Result<[T, U], E | E2> {
+  zip<U, E2>(_other: Result<U, E2>): Result<[T, U], E | E2> {
     return this as unknown as Result<[T, U], E | E2>
   }
 
-  zipWith<U, R, E2>(_result: Result<U, E2>, _mapper: (a: T, b: U) => R): Result<R, E | E2> {
+  zipWith<U, R, E2>(
+    _other: Result<U, E2>,
+    _combine: (value: T, otherValue: U) => R,
+  ): Result<R, E | E2> {
     return this as unknown as Result<R, E | E2>
   }
   // #endregion
@@ -132,16 +135,16 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return false
   }
 
-  match<L, R>(handlers: MatchHandlers<T, E, L, R>): L | R {
-    return handlers.err(this.#error)
+  match<L, R>(cases: MatchCases<T, E, L, R>): L | R {
+    return cases.err(this.#error)
   }
 
-  inspect(_visitor: (value: T) => void): this {
+  inspect(_action: (value: T) => void): this {
     return this
   }
 
-  inspectErr(visitor: (error: E) => void): this {
-    visitor(this.#error)
+  inspectErr(action: (error: E) => void): this {
+    action(this.#error)
 
     return this
   }
@@ -150,45 +153,45 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   // #region Async Transformation
 
-  async mapAsync<U>(_mapperAsync: (value: T) => Promise<U>): AsyncResult<U, E> {
+  async mapAsync<U>(_mapper: (value: T) => Promise<U>): AsyncResult<U, E> {
     return this as unknown as AsyncResult<U, E>
   }
 
-  async mapErrAsync<E2>(mapperAsync: (error: E) => Promise<E2>): AsyncResult<T, E2> {
-    return new Err(await mapperAsync(this.#error))
+  async mapErrAsync<E2>(mapper: (error: E) => Promise<E2>): AsyncResult<T, E2> {
+    return new Err(await mapper(this.#error))
   }
 
-  mapOrAsync<U>(_mapperAsync: (value: T) => Promise<U>, defaultValue: U): Promise<U> {
+  mapOrAsync<U>(_mapper: (value: T) => Promise<U>, defaultValue: U): Promise<U> {
     return Promise.resolve(defaultValue)
   }
 
   mapOrElseAsync<U>(
-    _okAsync: (value: T) => Promise<U>,
-    errAsync: (error: E) => Promise<U>,
+    _okMapper: (value: T) => Promise<U>,
+    errMapper: (error: E) => Promise<U>,
   ): Promise<U> {
-    return errAsync(this.#error)
+    return errMapper(this.#error)
   }
 
   // #endregion
 
   // #region Async Alternation
 
-  andAsync<U, E2 = never>(_result: AsyncResult<U, E2>): AsyncResult<U, E | E2> {
+  andAsync<U, E2 = never>(_other: AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return Promise.resolve(this as unknown as Result<U, E | E2>)
   }
 
-  andThenAsync<U, E2 = never>(_mapAsync: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2> {
+  andThenAsync<U, E2 = never>(_next: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2> {
     return Promise.resolve(this as unknown as Result<U, E | E2>)
   }
 
-  orAsync<U = T, E2 = never>(result: AsyncResult<U, E2>): AsyncResult<T | U, E2> {
-    return result as unknown as AsyncResult<T | U, E2>
+  orAsync<U = T, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<T | U, E2> {
+    return other as unknown as AsyncResult<T | U, E2>
   }
 
   orElseAsync<U = T, E2 = never>(
-    onErrorAsync: (error: E) => AsyncResult<U, E2>,
+    fallback: (error: E) => AsyncResult<U, E2>,
   ): AsyncResult<T | U, E2> {
-    return onErrorAsync(this.#error) as unknown as AsyncResult<T | U, E2>
+    return fallback(this.#error) as unknown as AsyncResult<T | U, E2>
   }
 
   // #endregion
