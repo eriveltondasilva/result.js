@@ -144,3 +144,26 @@ e.unwrapErr() // ✅ Error
 // -------------------------------------
 
 log(Result.ok(42).match({ ok: (x) => x, err: (x) => x }))
+
+// -------------------------------------
+
+const result3 = Result.ok(10)
+  .map((x) => x * 2)
+  .andThen((x) => (x > 15 ? Result.ok(x) : Result.err('too small')))
+  .unwrapOr(0)
+
+console.log(result3)
+
+// -------------------------------------
+
+function divide2(a: number, b: number): Result<number, string> {
+  if (b === 0) return Result.err('Division by zero')
+  return Result.ok(a / b)
+}
+
+const result4 = divide2(10, 0)
+
+result4.match({
+  ok: (val) => console.log(val),
+  err: (msg) => console.error(msg),
+})
