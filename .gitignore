@@ -136,6 +136,6 @@ dist
 .pnp.*
 
 #
-./docs/reference/
-./docs/changelog.md
+docs/reference/
+docs/changelog.md
 
