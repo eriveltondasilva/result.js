@@ -4,9 +4,8 @@ import type { SettledResult } from './types/settled'
 
 import { TAG } from './brand'
 import { Err } from './err'
-import { ResultTypeError } from './errors'
 import { Ok } from './ok'
-import { ensureError, isEmptyArray } from './utils'
+import { ensureError, isEmptyArray, ResultTypeError } from './utils'
 
 // #region Type Guards
 
