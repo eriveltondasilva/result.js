@@ -29,7 +29,7 @@ export default defineConfig({
           text: 'Core Concepts',
           items: [
             { text: 'Error Handling', link: '/guide/04.error-handling' },
-            { text: 'Operation Chaining', link: '/guide/05.collections' },
+            { text: 'Collections', link: '/guide/05.collections' },
             { text: 'Operation Chaining', link: '/guide/06.chaining' },
             { text: 'Pattern Matching', link: '/guide/07.matching' },
             { text: 'Type Safety', link: '/guide/08.type-safety' },
