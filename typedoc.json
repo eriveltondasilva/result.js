@@ -2,9 +2,14 @@
   // "$schema": "https://typedoc.org/schema.json",
   "$schema": "https://typedoc-plugin-markdown.org/schema.json",
   "entryPoints": ["src/index.ts"],
+  "tsconfig": "./tsconfig.build.json",
   "out": "docs/reference",
   "entryFileName": "index",
-  "plugin": ["typedoc-plugin-markdown", "typedoc-plugin-frontmatter"],
+  "plugin": [
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "typedoc-plugin-missing-exports"
+  ],
   "frontmatterGlobals": {
     "editLink": false
   },
@@ -12,5 +17,20 @@
   "includeVersion": true,
   "flattenOutputFiles": true,
   "hideBreadcrumbs": true,
-  "hidePageHeader": true
+  "hidePageHeader": true,
+
+  //
+
+  "categorizeByGroup": true,
+  "groupOrder": ["Type Guards", "Creation", "Collections", "*"],
+
+  "parametersFormat": "table",
+  "typeDeclarationFormat": "table",
+
+  "cleanOutputDir": true,
+  "excludeInternal": true,
+
+  "fileExtension": ".md",
+
+  "internalModule": "Internal Types"
 }
