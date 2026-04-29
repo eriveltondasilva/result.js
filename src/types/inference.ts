@@ -2,109 +2,130 @@ import type { Result } from './index'
 import type { SettledResult } from './settled'
 
 /**
- * Extracts the success value type (T) from a Result.
- * Returns never if the input is not a Result.
+ * Extracts the success value type from a {@link Result}.
+ *
+ * Returns the inferred `Ok` value type for the provided result type.
  *
  * @internal
  *
- * @see {@link InferErr} - Extracts the error type
+ * @see {@link InferErr} - Extracts the error type.
  *
- * @template R - The Result type to infer from
+ * @template TResult - Result type to inspect.
  *
  * @example
- * type Value = InferOk<Result<number, string>> // => number
+ * type Value = InferOk<Result<number, string>>
+ * // => number
  */
-export type InferOk<R extends Result<unknown, unknown>> =
-  R extends Result<infer T, unknown> ? T : never
+export type InferOk<TResult extends Result<unknown, unknown>> =
+  TResult extends Result<infer TValue, unknown> ? TValue : never
 
 /**
- * Extracts the error type (E) from a Result.
- * Returns never if the input is not a Result.
+ * Extracts the error type from a {@link Result}.
+ *
+ * Returns the inferred `Err` value type for the provided result type.
  *
  * @internal
  *
- * @template R - The Result type to infer from
+ * @see {@link InferOk} - Extracts the success value type.
  *
- * @see {@link InferOk} - Extracts the success value type
+ * @template TResult - Result type to inspect.
  *
  * @example
- * type ErrorType = InferErr<Result<number, string>> // => string
+ * type ErrorType = InferErr<Result<number, string>>
+ * // => string
  */
-export type InferErr<R extends Result<unknown, unknown>> =
-  R extends Result<unknown, infer E> ? E : never
+export type InferErr<TResult extends Result<unknown, unknown>> =
+  TResult extends Result<unknown, infer TError> ? TError : never
 
 // # TUPLES
 
 /**
- * Infers a tuple of success types from an array of Results.
+ * Maps a tuple of {@link Result} types to a tuple of success value types.
+ *
+ * Preserves tuple order and readonly modifiers.
  *
  * @internal
  *
- * @template T - Array of Result types
+ * @template TResults - Tuple of result types.
  *
  * @example
  * type Values = OkTuple<[Result<number, Error>, Result<string, unknown>]>
  * // => [number, string]
  */
-export type OkTuple<T extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof T]: InferOk<T[K]>
+export type OkTuple<TResults extends readonly Result<unknown, unknown>[]> = {
+  readonly [K in keyof TResults]: InferOk<TResults[K]>
 }
 
 /**
- * Infers a tuple of error types from an array of Results.
+ * Maps a tuple of {@link Result} types to a tuple of error value types.
+ *
+ * Preserves tuple order and readonly modifiers.
  *
  * @internal
  *
- * @template E - Array of Result types
+ * @template TResults - Tuple of result types.
  *
  * @example
- * type Errors = ErrTuple<[Result<any, string>, Result<any, Error>]>
+ * type Errors = ErrTuple<
+ *   [Result<any, string>, Result<any, Error>]
+ * >
  * // => [string, Error]
  */
-export type ErrTuple<E extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof E]: InferErr<E[K]>
+export type ErrTuple<TResults extends readonly Result<unknown, unknown>[]> = {
+  readonly [K in keyof TResults]: InferErr<TResults[K]>
 }
 
 // # UNION
 
 /**
- * Infers a union of all possible success types from an array of Results.
+ * Extracts a union of all success value types from a tuple of {@link Result} types.
  *
  * @internal
  *
- * @template T - Array of Result types
+ * @template TResults - Tuple of result types.
  *
  * @example
- * type Union = OkUnion<[Result<number, Error>, Result<string, Error>]>
+ * type Union = OkUnion<
+ *   [Result<number, Error>, Result<string, Error>]
+ * >
  * // => number | string
  */
-export type OkUnion<T extends readonly Result<unknown, unknown>[]> = InferOk<T[number]>
+export type OkUnion<TResults extends readonly Result<unknown, unknown>[]> = InferOk<
+  TResults[number]
+>
 
 /**
- * Infers a union of all possible error types from an array of Results.
+ * Extracts a union of all error value types from a tuple of {@link Result} types.
  *
  * @internal
  *
- * @template E - Array of Result types
+ * @template TResults - Tuple of result types.
  *
  * @example
- * type Union = ErrUnion<[Result<any, string>, Result<any, TypeError>]>
+ * type Union = ErrUnion<
+ *   [Result<any, string>, Result<any, TypeError>]
+ * >
  * // => string | TypeError
  */
-export type ErrUnion<E extends readonly Result<unknown, unknown>[]> = InferErr<E[number]>
+export type ErrUnion<TResults extends readonly Result<unknown, unknown>[]> = InferErr<
+  TResults[number]
+>
 
 /**
- * Infers a tuple of SettledResult types from an array of Results.
- * Maps each Result in the input to its corresponding SettledOk or SettledErr.
+ * Maps a tuple of {@link Result} types to a tuple of {@link SettledResult} types.
+ *
+ * Each entry preserves its original success and error types.
  *
  * @internal
  *
- * @template T - Array of Result types
+ * @template TResults - Tuple of result types.
  *
  * @example
- * type Settled = SettledTuple<[Result<number, string>]>
+ * type Settled = SettledTuple<
+ *   [Result<number, string>]
+ * >
  * // => [SettledResult<number, string>]
  */
-export type SettledTuple<T extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof T]: SettledResult<InferOk<T[K]>, InferErr<T[K]>>
+export type SettledTuple<TResults extends readonly Result<unknown, unknown>[]> = {
+  readonly [K in keyof TResults]: SettledResult<InferOk<TResults[K]>, InferErr<TResults[K]>>
 }

@@ -1,43 +1,51 @@
 /**
- * Represents a successful outcome in a settled result structure (e.g., from Result.allSettled).
+ * Successful variant of a settled result structure (for example, returned by `Result.allSettled`).
  *
- * @see {@link SettledErr} - A failed outcome
- * @see {@link SettledResult} - A successful or failed outcome
+ * @see {@link SettledErr} - Failure variant.
+ * @see {@link SettledResult} - Union of both outcomes.
  *
- * @template T - Success value type
+ * @template TValue - Success value type
  *
  * @example
- * const success: SettledOk<number> = { status: 'ok', value: 42 }
+ * const success: SettledOk<number> = {
+ *   status: 'ok',
+ *   value: 42
+ * }
  */
-export interface SettledOk<T> {
+export interface SettledOk<TValue> {
   readonly status: 'ok'
-  readonly value: T
+  readonly value: TValue
 }
 
 /**
- * Represents a failed outcome in a settled result structure (e.g., from Result.allSettled).
+ * Failure variant of a settled result structure (for example, returned by `Result.allSettled`).
  *
- * @see {@link SettledOk} - A successful outcome
- * @see {@link SettledResult} - A successful or failed outcome
+ * @see {@link SettledOk} - Success variant.
+ * @see {@link SettledResult} - Union of both outcomes.
  *
- * @template E - Error type
+ * @template TError - Error value type
  *
  * @example
- * const failure: SettledErr<string> = { status: 'err', reason: 'Failed' }
+ * const failure: SettledErr<string> = {
+ *   status: 'err',
+ *   reason: 'Failed'
+ * }
  */
-export interface SettledErr<E> {
+export interface SettledErr<TError> {
   readonly status: 'err'
-  readonly reason: E
+  readonly reason: TError
 }
 
 /**
- * Useful for processing a collection of results where you need to check the status of each.
+ * Discriminated union representing the final outcome of an operation after it has been settled.
  *
- * @see {@link SettledOk} - A successful outcome
- * @see {@link SettledErr} - A failed outcome
+ * Narrow using `status === 'ok'` or `status === 'err'`.
  *
- * @template T - Success value type
- * @template E - Error type
+ * @see {@link SettledOk} - Success variant.
+ * @see {@link SettledErr} - Failure variant.
+ *
+ * @template TValue - Success value type
+ * @template TError - Error value type
  *
  * @example
  * function process(result: SettledResult<number, Error>) {
@@ -48,4 +56,4 @@ export interface SettledErr<E> {
  *   }
  * }
  */
-export type SettledResult<T, E> = SettledOk<T> | SettledErr<E>
+export type SettledResult<TValue, TError> = SettledOk<TValue> | SettledErr<TError>

@@ -3,554 +3,592 @@ import type { AsyncResult, Err, Ok, Result } from '.'
 /**
  * Defines the execution branches for pattern matching.
  *
- * @group Inspection
+ * @see {@link ResultMethods.match} - Pattern match a result.
  *
- * @internal
- *
- * @template T - Success value type
- * @template E - Error type
- * @template L - Return type for the ok branch
- * @template R - Return type for the err branch
+ * @template TValue - Success value type
+ * @template TError - Error value type
+ * @template TOkResult - Return type of the `ok` branch
+ * @template TErrResult - Return type of the `err` branch
  *
  * @example
- * const handlers: MatchCases<number, string, string, string> = {
+ * const cases: MatchCases<number, string, string, string> = {
  *   ok: (val) => `Success: ${val}`,
  *   err: (err) => `Failed with: ${err}`
  * }
  */
-export type MatchCases<T, E, L, R> = {
-  /** Branch executed when the Result is Ok */
-  ok: (value: T) => L
-  /** Branch executed when the Result is Err */
-  err: (error: E) => R
+export type MatchCases<TValue, TError, TOkResult, TErrResult> = {
+  /**
+   * Handles the success case.
+   *
+   * @see {@link ResultMethods.match} - Pattern match a result.
+   *
+   * @param {TValue} value - Success value
+   * @returns {TOkResult} - Value returned by the `ok` branch
+   */
+  ok: (value: TValue) => TOkResult
+
+  /**
+   * Handles the error case.
+   *
+   * @see {@link ResultMethods.match}
+   *
+   * @param {TError} error - Error value
+   * @returns {TErrResult} - Value returned by the `err` branch
+   */
+  err: (error: TError) => TErrResult
 }
 
 /**
- * Interface that both Ok and Err must implement.
+ * Shared contract implemented by both {@link Ok} and {@link Err}.
  *
- * @internal
- *
- * @template T - Success type
- * @template E - Error type
+ * @template TValue - Success value type
+ * @template TError - Error value type
  */
-export interface ResultMethods<T, E> {
+export interface ResultMethods<TValue, TError> {
   // #region Type Guards
 
   /**
-   * Checks if this Result is the Ok variant.
+   * Returns `true` when this result is the {@link Ok} variant.
    *
    * @group Type Guards
    *
-   * @see {@link isErr} - for the opposite check
-   *
-   * @returns {boolean} true if Ok
+   * @see {@link isErr} - Opposite check.
    *
    * @example
    * Result.ok(42).isOk()        // => true
    * Result.err('failed').isOk() // => false
    */
-  isOk(): this is Ok<T, E>
+  isOk(): this is Ok<TValue, TError>
 
   /**
-   * Checks if this Result is the Err variant.
+   * Returns `true` when this result is the {@link Err} variant.
    *
    * @group Type Guards
    *
-   * @see {@link isOk} - for the opposite check
-   *
-   * @returns {boolean} true if Err
+   * @see {@link isOk} - Opposite check.
    *
    * @example
    * Result.err('failed').isErr() // => true
    * Result.ok(42).isErr()        // => false
    */
-  isErr(): this is Err<T, E>
+  isErr(): this is Err<TValue, TError>
 
   /**
-   * Checks if the Result is Ok and the value satisfies a predicate.
-   * Useful for conditional validations in functional chains.
+   * Returns `true` when this result is {@link Ok} and its value satisfies the provided predicate.
    *
    * @group Type Guards
    *
-   * @see {@link isErrAnd} - for the opposite check
+   * @see {@link isErrAnd} - Opposite check for errors.
    *
-   * @param {(value: T) => boolean} condition - Function to test the value
-   * @returns {boolean} true if Ok and predicate returns true
+   * @param condition - Predicate used to validate the success value.
    *
    * @example
-   * Result.ok(42).isOkAnd((x) => x > 40) // => true
-   * Result.ok(10).isOkAnd((x) => x > 40) // => false
-   * Result.err('fail').isOkAnd(...)      // => false
+   * Result.ok(42).isOkAnd((x) => x > 40)   // => true
+   * Result.ok(10).isOkAnd((x) => x > 40)   // => false
+   * Result.err('fail').isOkAnd(() => true) // => false
    */
-  isOkAnd(condition: (value: T) => boolean): this is Ok<T, E>
+  isOkAnd(condition: (value: TValue) => boolean): this is Ok<TValue, TError>
 
   /**
-   * Checks if the Result is Err and the error satisfies a predicate.
+   * Returns `true` when this result is {@link Err} and its error satisfies the provided predicate.
    *
    * @group Type Guards
    *
-   * @see {@link isOkAnd} - for the opposite check
+   * @see {@link isOkAnd} - Opposite check for success values.
    *
-   * @param {(error: E) => boolean} condition - Function to test the error
-   * @returns {boolean} true if Err and predicate returns true
+   * @param condition - Predicate used to validate the error value.
    *
    * @example
-   * Result.err('timeout').isErrAnd(e => e === 'timeout') // => true
-   * Result.ok(42).isErrAnd(...)                          // => false
+   * Result.err('timeout').isErrAnd((e) => e === 'timeout') // => true
+   * Result.ok(42).isErrAnd(() => true)                     // => false
    */
-  isErrAnd(condition: (error: E) => boolean): this is Err<T, E>
+  isErrAnd(condition: (error: TError) => boolean): this is Err<TValue, TError>
 
   // #endregion
 
   // #region Extraction
 
   /**
-   * Extracts the success value.
+   * Returns the contained success value.
+   *
+   * Throws if this result is {@link Err}.
    *
    * @group Extraction
    *
-   * @see {@link unwrapErr} - for Err variant
-   * @see {@link unwrapOr} - for default value
+   * @see {@link unwrapErr} - Extract the error value.
+   * @see {@link unwrapOr} - Return a fallback value instead.
    *
-   * @returns {T} The encapsulated value
-   * @throws {Error} If called on an Err instance
+   * @throws {Error} - If called on an {@link Err} result.
    *
    * @example
    * Result.ok(42).unwrap() // => 42
+   *
+   * @example
    * Result.err('fail').unwrap()
    * // => throws Error("Called unwrap on an Err value", { cause: "fail" })
    *
    * @example
-   * // Usage after checking
    * if (result.isOk()) {
    *   result.unwrap() // safe
    * }
    */
-  unwrap(): T
+  unwrap(): TValue
 
   /**
-   * Extracts the error value.
+   * Returns the contained error value.
+   *
+   * Throws if this result is {@link Ok}.
    *
    * @group Extraction
    *
-   * @see {@link unwrap} - for Ok variant
+   * @see {@link unwrap} - Extract the success value.
    *
-   * @returns {E} The encapsulated error
-   * @throws {Error} If called on an Ok instance
+   * @throws {Error} - If called on an {@link Ok} result.
    *
    * @example
    * Result.err('failed').unwrapErr()
    * // => "failed"
+   *
+   * @example
    * Result.ok(42).unwrapErr()
    * // => throws Error("Called unwrapErr on an Ok value", { cause: 42 })
    *
    * @example
-   * // Usage after checking
    * if (result.isErr()) {
    *   result.unwrapErr() // safe
    * }
    */
-  unwrapErr(): E
+  unwrapErr(): TError
 
   /**
-   * Returns the success value or a default value if it's an Err.
+   * Returns the success value, or the provided fallback when this result is {@link Err}.
    *
    * @group Extraction
    *
-   * @see {@link unwrap} - for Ok variant
-   * @see {@link unwrapOrElse} - for computed default
+   * @see {@link unwrap} - Throw on failure.
+   * @see {@link unwrapOrElse} - Compute a fallback lazily.
    *
-   * @template U - Result type
+   * @template TFallback - Type of the fallback value.
    *
-   * @param {T} defaultValue - Value to return if Result is Err
-   * @returns {T | U}
+   * @param {TValue} defaultValue - Value returned when this result is {@link Err}.
    *
    * @example
-   * Result.ok(42).unwrapOr(...)      // => 42
+   * Result.ok(42).unwrapOr(0)        // => 42
    * Result.err('failed').unwrapOr(0) // => 0
    */
-  unwrapOr<U = T>(defaultValue: U): T | U
+  unwrapOr<TFallback = TValue>(defaultValue: TFallback): TValue | TFallback
 
   /**
-   * Returns the success value or computes a default from the error.
+   * Returns the success value, or computes a fallback from the error when this result is {@link Err}.
    *
    * @group Extraction
    *
-   * @see {@link unwrapOr} - for static default
+   * @see {@link unwrapOr} - Use a static fallback value.
    *
-   * @template U - Result type
+   * @template TFallback - Type returned by the fallback function.
    *
-   * @param {(error: E) => T} fallback - Function to compute default value
-   * @returns {T | U}
+   * @param fallback - Function used to derive a fallback from the error.
    *
    * @example
-   * Result.ok(42).unwrapOrElse(...)                    // => 42
+   * Result.ok(42).unwrapOrElse((e) => e.length)        // => 42
    * Result.err('failed').unwrapOrElse((e) => e.length) // => 6
    */
-  unwrapOrElse<U = T>(fallback: (error: E) => U): T | U
+  unwrapOrElse<TFallback = TValue>(fallback: (error: TError) => TFallback): TValue | TFallback
 
   /**
-   * Extracts the value with a custom error message if it's an Err.
+   * Returns the success value.
    *
    * @group Extraction
    *
-   * @see {@link unwrap} - for Ok variant
-   * @see {@link expectErr} - for Err variant
+   * @see {@link unwrap} - Default error message.
+   * @see {@link expectErr} - Expect an error instead.
    *
-   * @param {string} reason - Custom message for the error
-   * @returns {T} The encapsulated value
-   * @throws {Error} With custom message and original error as cause
+   * @param reason - Custom error message.
+   *
+   * @throws {Error} - With `reason` and the original error as `cause`.
    *
    * @example
-   * Result.ok(42).expect('should exist')  // => 42
+   * Result.ok(42).expect('should exist')
+   * // => 42
+   *
+   * @example
    * Result.err('failed').expect('should exist')
    * // => throws Error("should exist", { cause: "failed" })
    */
-  expect(reason: string): T
+  expect(reason: string): TValue
 
   /**
-   * Extracts the error with a custom message if it's an Ok.
+   * Returns the error value.
+   *
+   * Throws with the provided message if this result is {@link Ok}.
    *
    * @group Extraction
    *
-   * @see {@link expect} - for Ok variant
-   * @see {@link unwrapErr} - for Err variant
+   * @see {@link expect} - Expect a success value instead.
+   * @see {@link unwrapErr} - Default error message.
    *
-   * @param {string} reason - Custom message for the error
-   * @returns {E} The encapsulated error
-   * @throws {Error} With custom message and original value as cause
+   * @param reason - Custom error message.
+   *
+   * @throws {Error} - With `reason` and the original value as `cause`.
+   *
+   * @example
+   * Result.err('fail').expectErr('should be error')
+   * // => 'fail'
    *
    * @example
    * Result.ok(42).expectErr('should be error')
    * // => throws Error("should be error", { cause: 42 })
-   *
-   * Result.err('fail').expectErr(...)
-   * // => "fail"
    */
-  expectErr(reason: string): E
+  expectErr(reason: string): TError
 
   // #endregion
 
   // #region Transformation
 
   /**
-   * Transforms the success value.
+   * Transforms the success value using the provided mapper.
+   *
+   * If this result is {@link Err}, the original error is preserved.
    *
    * @group Transformation
    *
-   * @see {@link mapAsync} - for async version
-   * @see {@link mapOr} - for default value
-   * @see {@link mapErr} - to transform the error part (not the value)
+   * @see {@link mapAsync} - Async version.
+   * @see {@link mapOr} - Return a fallback value on error.
+   * @see {@link mapErr} - Transform the error value instead.
    *
-   * @template U - Transformed value type
+   * @template U - Mapped success value type.
    *
-   * @param {(value: T) => U} mapper - Transformation function
-   * @returns {Result<U, E>} Transformed Ok or the original Err
+   * @param mapper - Function applied to the success value.
    *
    * @example
-   * // Simple transformation
-   * Result.ok(42).map((x) => x * 2) // => Ok(84)
-   * Result.err('fail').map(...)     // => Err("fail")
+   * Result.ok(42).map((x) => x * 2)      // => Ok(84)
+   * Result.err('fail').map((x) => x * 2) // => Err("fail")
    */
-  map<U>(mapper: (value: T) => U): Result<U, E>
+  map<U>(mapper: (value: TValue) => U): Result<U, TError>
 
   /**
-   * Transforms the error value.
+   * Transforms the error value using the provided mapper.
+   *
+   * If this result is {@link Ok}, the original success value is preserved.
    *
    * @group Transformation
    *
-   * @see {@link mapErrAsync} - for async version
+   * @see {@link mapErrAsync} - Async version.
    *
-   * @template E2 - New error type
+   * @template E2 - Mapped error type.
    *
-   * @param {(error: E) => E2} mapper - Error transformer
-   * @returns {Result<T, E2>} Result with same value, different error type
+   * @param mapper - Function applied to the error value.
    *
    * @example
-   * Result.err('not found').mapErr(e => new Error(e))
+   * Result.err('not found').mapErr((e) => new Error(e))
    * // => Err(Error: "not found")
-   * Result.ok(42).mapErr(...)
+   *
+   * Result.ok(42).mapErr((e) => new Error(String(e)))
    * // => Ok(42)
    */
-  mapErr<E2>(mapper: (error: E) => E2): Result<T, E2>
+  mapErr<E2>(mapper: (error: TError) => E2): Result<TValue, E2>
 
   /**
-   * Transforms value or returns a default.
+   * Maps the success value or returns the provided fallback when this result is {@link Err}.
    *
    * @group Transformation
    *
-   * @see {@link mapOrAsync} for async version
-   * @see {@link mapOrElse} for computed default
+   * @see {@link mapOrAsync} - Async version.
+   * @see {@link mapOrElse} - Compute the fallback lazily.
    *
-   * @template U - Transformed value type
+   * @template U - Return type.
    *
-   * @param {(value: T) => U} mapper - Success transformation
-   * @param {U} defaultValue - Default value if Err
-   * @returns {U}
+   * @param mapper - Function applied to the success value.
+   * @param defaultValue - Value returned when this result is {@link Err}.
    *
    * @example
-   * Result.ok(42).mapOr(x => x * 2, 0)      // => 84
-   * Result.err('fail').mapOr(x => x * 2, 0) // => 0
+   * Result.ok(42).mapOr((x) => x * 2, 0)      // 84
+   * Result.err('fail').mapOr((x) => x * 2, 0) // 0
    */
-  mapOr<U>(mapper: (value: T) => U, defaultValue: U): U
+  mapOr<U>(mapper: (value: TValue) => U, defaultValue: U): U
 
   /**
-   * Transforms value using appropriate mappers for both cases.
+   * Maps either branch of the result into a shared output type.
+   *
+   * Uses `okMapper` for {@link Ok} and `errMapper` for {@link Err}.
    *
    * @group Transformation
    *
-   * @see {@link mapOrElseAsync} for async version
+   * @see {@link mapOrElseAsync} - Async version.
    *
-   * @template U - Result type
+   * @template U - Result type.
    *
-   * @param {(value: T) => U} okMapper - Mapper for Ok
-   * @param {(error: E) => U} errMapper - Mapper for Err
-   * @returns {U}
+   * @param okMapper - Function applied to the success value.
+   * @param errMapper - Function applied to the error value.
    *
    * @example
-   * Result.ok(42).mapOrElse((x) => x * 2, (e) => -1)
+   * Result.ok(42).mapOrElse((x) => x * 2, () => -1)
    * // => 84
-   * Result.err('fail').mapOrElse(
-   *   (x) => x * 2,
-   *   (e) => -1
-   * )
+   *
+   * Result.err('fail').mapOrElse((x) => x * 2,() => -1)
    * // => -1
    */
-  mapOrElse<U>(okMapper: (value: T) => U, errMapper: (error: E) => U): U
+  mapOrElse<U>(okMapper: (value: TValue) => U, errMapper: (error: TError) => U): U
 
   /**
-   * Filters an Ok value. If the predicate fails, returns an Err.
+   * Validates the success value with a predicate.
+   *
+   * If this result is {@link Ok} and the predicate returns `false`, converts it to {@link Err}.
+   *
+   * Existing {@link Err} values are preserved.
    *
    * @group Transformation
    *
-   * @see {@link isOkAnd} - for validation without modification
-   * @see {@link isErrAnd} - for validation
+   * @see {@link isOkAnd} - Validate without transforming.
+   * @see {@link filterOrElse} - Provide a custom error value.
    *
-   * @param {(value: T) => boolean} condition - Validation function
-   * @param {string} [reason] - Custom error message if predicate fails
-   * @returns {Result<T, Error>}
+   * @param condition - Predicate used to validate the success value.
+   * @param reason - Optional custom error message.
    *
    * @example
-   * Result.ok(42).filter(x => x > 10)
+   * Result.ok(42).filter((x) => x > 10)
    * // => Ok(42)
-   * Result.ok(42).filter(x => x > 50, 'Too small')
+   *
+   * Result.ok(42).filter((x) => x > 50, 'Too small')
    * // => Err(Error: "Too small", { cause: 42 })
    */
-  filter(condition: (value: T) => boolean, reason?: string): Result<T, Error>
+  filter(condition: (value: TValue) => boolean, reason?: string): Result<TValue, Error>
 
   /**
-   * Filters an Ok value with a custom error on failure.
+   * Validates the success value with a predicate.
+   *
+   * If validation fails, converts the result to {@link Err} using the provided error factory.
+   *
+   * Existing {@link Err} values are preserved.
    *
    * @group Transformation
    *
-   * @see {@link filter} for default error message
+   * @see {@link filter} - Use a default error message.
    *
-   * @template E2 - New error type
+   * @template E2 - Additional error type.
    *
-   * @param {(value: T) => boolean} condition - Validation function
-   * @param {(value: T) => E2} onFailure - Error transformer
-   * @returns {Result<T, E | E2>}
+   * @param condition - Predicate used to validate the success value.
+   * @param onFailure - Function used to create the failure value.
    *
    * @example
-   * Result.ok(42).filterOrElse(x => x > 10, x => new Error('Too small'))
-   * // => Ok(42)
-   * Result.ok(42).filterOrElse(x => x > 50, x => new Error('Too small'))
-   * // => Err(Error: "Too small", { cause: 42 })
+   * Result.ok(42).filterOrElse(
+   *   (x) => x > 10,
+   *   (x) => new Error('Too small')
+   * ) // => Ok(42)
+   *
+   * Result.ok(42).filterOrElse(
+   *   (x) => x > 50,
+   *   (x) => new Error('Too small')
+   * ) // => Err(Error: "Too small", { cause: 42 })
    */
-  filterOrElse<E2>(condition: (value: T) => boolean, onFailure: (value: T) => E2): Result<T, E | E2>
+  filterOrElse<E2>(
+    condition: (value: TValue) => boolean,
+    onFailure: (value: TValue) => E2,
+  ): Result<TValue, TError | E2>
 
   /**
-   * Flattens a nested Result.
+   * Flattens a nested {@link Result}.
+   *
+   * Converts `Result<Result<U, E2>, TError>` into `Result<U, TError | E2>`.
    *
    * @group Transformation
    *
-   * @template U - Inner success type
-   * @template E2 - Inner error type
-   *
-   * @returns {Result<U, E | E2>} Flattened Result
+   * @template U - Inner success value type.
+   * @template E2 - Inner error type.
    *
    * @example
-   * Result.ok(Result.ok(42)).flatten()
-   * // => Ok(42)
-   * Result.ok(Result.err('fail')).flatten()
-   * // => Err("fail")
+   * Result.ok(Result.ok(42)).flatten()      // => Ok(42)
+   * Result.ok(Result.err('fail')).flatten() // => Err("fail")
+   * Result.err('outer').flatten()           // Err("outer")
    */
-  flatten<U, E2>(this: Result<Result<U, E2>, E>): Result<U, E | E2>
+  flatten<U, E2>(this: Result<Result<U, E2>, TError>): Result<U, TError | E2>
 
   // #endregion
 
   // #region Alternation
 
   /**
-   * Returns the provided Result if the current one is Ok.
+   * Returns `other` when this result is {@link Ok}.
+   *
+   * If this result is {@link Err}, the current error is preserved.
+   *
+   * Commonly used to sequence results while discarding the current success value.
    *
    * @group Alternation
    *
-   * @see {@link andAsync} for async version
-   * @see {@link andThen} for function-based chaining
+   * @see {@link andAsync} - Async version.
+   * @see {@link andThen} - Chain using a callback.
    *
-   * @template U - Second Result success type
-   * @template E2 - Second Result error type
+   * @template U - Next success value type.
+   * @template E2 - Next error type.
    *
-   * @param {Result<U, E>} other - Result to return
-   * @returns {Result<U, E | E2>}
+   * @param other - Result returned when this result is {@link Ok}.
    *
    * @example
-   * Result.ok(1).and(Result.ok(2))
-   * // => Ok(2)
-   *
-   * Result.ok(1).and(Result.err('fail'))
-   * // => Err("fail")
-   *
-   * Result.err('fail').and(Result.ok(42))
-   * // => Err("fail")
+   * Result.ok(1).and(Result.ok(2))        // => Ok(2)
+   * Result.ok(1).and(Result.err('fail'))  // => Err("fail")
+   * Result.err('fail').and(Result.ok(42)) // => Err("fail")
    */
-  and<U, E2 = never>(other: Result<U, E2>): Result<U, E | E2>
+  and<U, E2 = never>(other: Result<U, E2>): Result<U, TError | E2>
 
   /**
-   * Chains an operation that returns another Result.
+   * Chains a function that returns another {@link Result}.
+   *
+   * If this result is {@link Ok}, `next` receives the success value.
+   * If this result is {@link Err}, the current error is preserved.
+   *
    * Also known as `flatMap` or `bind`.
    *
    * @group Alternation
    *
-   * @see {@link andThenAsync} - for async version
-   * @see {@link map} - for transformation
+   * @see {@link andThenAsync} - Async version.
+   * @see {@link map} - Transform without flattening.
    *
-   * @template U - New success type
-   * @template E2 - New error type
+   * @template U - Next success value type.
+   * @template E2 - Next error type.
    *
-   * @param {(value: T) => Result<U, E2>} next - Function that receives the success value and returns a new Result
-   * @returns {Result<U, E | E2>} Result from flatMapper or original Err
+   * @param next - Function that returns the next result.
    *
    * @example
    * Result.ok(5).andThen((x) => Result.ok(x * 2))
    * // => Ok(10)
+   *
    * Result.ok(5).andThen(() => Result.err('failure'))
    * // => Err("failure")
    *
    * Result.err('fail').andThen((x) => Result.ok(x * 2))
    * // => Err("fail")
-   * Result.err('fail').andThen((x) => Result.err('backup'))
-   * // => Err("fail")
    */
-  andThen<U, E2 = never>(next: (value: T) => Result<U, E2>): Result<U, E | E2>
+  andThen<U, E2 = never>(next: (value: TValue) => Result<U, E2>): Result<U, TError | E2>
 
   /**
-   * Returns this Result or an alternative if it's an Err.
+   * Returns this result when it is {@link Ok}, otherwise returns `other`.
+   *
+   * Commonly used to provide a fallback result.
    *
    * @group Alternation
    *
-   * @see {@link orAsync} - for async version
-   * @see {@link orElse} - for function-based chaining
+   * @see {@link orAsync} - Async version.
+   * @see {@link orElse} - Compute a fallback lazily.
    *
    * @template U - Alternative success type
    * @template E2 - Alternative error type
    *
-   * @param {Result<U, E2>} other - Alternative Result
-   * @returns {Result<T | U, E2>} Original Ok or the alternative
+   * @param other - Result used when this result is {@link Err}.
    *
    * @example
    * Result.ok(1).or(Result.ok(2))        // => Ok(1)
    * Result.err('fail').or(Result.ok(42)) // => Ok(42)
    */
-  or<U = T, E2 = never>(other: Result<U, E2>): Result<T | U, E2>
+  or<U = TValue, E2 = never>(other: Result<U, E2>): Result<TValue | U, E2>
 
   /**
-   * Returns this Result or executes error recovery.
+   * Returns this result when it is {@link Ok}, otherwise invokes `fallback` with the current error.
+   *
+   * Useful for recovery flows that depend on the failure reason.
    *
    * @group Alternation
    *
-   * @see {@link orElseAsync} for async version
-   * @see {@link or} for static alternative
+   * @see {@link orElseAsync} - Async version.
+   * @see {@link or} - Use a static fallback result.
    *
    * @template U - Recovery success type
    * @template E2 - Recovery error type
    *
-   * @param {(error: E) => Result<U, E2>} fallback - Recovery
-   * @returns {Result<T | U, E2>}
+   * @param fallback - Function used to recover from an error.
    *
    * @example
-   * Result.ok(42).orElse((e) => Result.ok(0))
+   * Result.ok(42).orElse(() => Result.ok(0))
    * // => Ok(42)
-   * Result.err('not found').orElse((e) => Result.ok(null))
+   *
+   * Result.err('not found').orElse(() => Result.ok(null))
    * // => Ok(null)
-   * Result.err('fail').orElse((e) => Result.err('backup'))
+   *
+   * Result.err('fail').orElse(() => Result.err('backup'))
    * // => Err("backup")
    *
    */
-  orElse<U = T, E2 = never>(fallback: (error: E) => Result<U, E2>): Result<T | U, E2>
+  orElse<U = TValue, E2 = never>(fallback: (error: TError) => Result<U, E2>): Result<TValue | U, E2>
 
   // #endregion
 
   // #region Combination
 
   /**
-   * Combines two Results into a single Result containing a tuple of their values.
+   * Combines this result with another result into a tuple.
+   *
+   * Returns {@link Ok} only when both results are successful.
+   * If either result is {@link Err}, the first encountered error is returned.
    *
    * @group Combination
    *
-   * @see {@link zipWith} for function-based version
+   * @see {@link zipWith} - Combine and map in one step.
    *
    * @template U - Second success type
    * @template E2 - Second error type
    *
-   * @param {Result<U, E2>} other - Result to combine
-   * @returns {Result<[T, U], E | E2>}
+   * @param other - Result to combine with this one.
    *
    * @example
    * Result.ok(1).zip(Result.ok('a'))  // => Ok([1, 'a'])
    * Result.ok(1).zip(Result.err('b')) // => Err('b')
    */
-  zip<U, E2>(other: Result<U, E2>): Result<[T, U], E | E2>
+  zip<U, E2>(other: Result<U, E2>): Result<[TValue, U], TError | E2>
 
   /**
-   * Combines two Results applying a function to their values.
+   * Combines two successful results and maps their values.
+   *
+   * Returns {@link Ok} only when both results are successful.
+   * If either result is {@link Err}, the first encountered error is returned.
    *
    * @group Combination
    *
-   * @see {@link zip} for tuple version
+   * @see {@link zip} - Return a tuple instead of mapping.
    *
-   * @template U - Second Result success type
-   * @template R - Mapped result type
-   * @template E2 - Second Result error type
+   * @template U - Second success value type.
+   * @template R - Combined return type.
+   * @template E2 - Second error type.
    *
-   * @param {Result<U, E2>} other - Second Result
-   * @param {(value: T, otherValue: U) => R} combine - Function applied to both values if Ok
-   * @returns {Result<R, E | E2>} Ok with mapped value, or first Err encountered
+   * @param other - Second result.
+   * @param combine - Function applied to both success values.
    *
    * @example
-   * Result.ok(2).zipWith(Result.ok(3), (a, b) => a + b)
-   * // Ok(5)
+   * Result.ok(2).zipWith(
+   *   Result.ok(3),
+   *   (a, b) => a + b
+   * ) // => Ok(5)
    *
-   * Result.ok('hello').zipWith(Result.ok('world'), (a, b) => `${a} ${b}`)
-   * // Ok('hello world')
+   * Result.ok('hello').zipWith(
+   *   Result.ok('world'),
+   *   (a, b) => `${a} ${b}`,
+   * ) // => Ok("hello world")
    *
-   * Result.err('fail').zipWith(Result.ok(3), (a, b) => a + b)
-   * // Err('fail')
-   *
-   * Result.ok(2).zipWith(Result.err('fail'), (a, b) => a + b)
-   * // Err('fail')
+   * Result.ok(2).zipWith(
+   *   Result.err('fail'),
+   *   (a, b) => a + b,
+   * ) // => Err("fail")
    */
   zipWith<U, R, E2>(
     other: Result<U, E2>,
-    combine: (value: T, otherValue: U) => R,
-  ): Result<R, E | E2>
+    combine: (value: TValue, otherValue: U) => R,
+  ): Result<R, TError | E2>
 
   // #endregion
 
   // #region Inspection
 
   /**
-   * Checks if an Ok Result contains a specific value using strict equality.
+   * Returns `true` when this result is {@link Ok} and its value is strictly equal to `value`.
+   *
+   * Uses `===` comparison.
    *
    * @group Inspection
    *
    * @overload
    *
-   * @template U - Value type to check (must extend T)
+   * @template U - Comparable value type.
    *
-   * @param {U} value - Value to search for
-   * @returns {boolean} true if Result is Ok and value matches strictly
+   * @param value - Expected value.
    *
    * @example
    * Result.ok(42).contains(42)                 // => true
@@ -558,42 +596,46 @@ export interface ResultMethods<T, E> {
    * Result.ok({ id: 42 }).contains({ id: 42 }) // => true
    * Result.err('fail').contains(42)            // => false
    */
-  contains<U extends T>(value: U): boolean
+  contains<U extends TValue>(value: U): boolean
 
   /**
-   * Checks if an Ok Result contains a value using a custom comparator.
-   * Useful for comparing objects or complex types.
+   * Returns `true` when this result is {@link Ok} and the comparator determines both values are equivalent.
+   *
+   * Useful for objects or custom equality rules.
    *
    * @group Inspection
    *
    * @overload
    *
-   * @template U - Type of the expected value
+   * @template U - Expected value type.
    *
-   * @param {U} value - Value to compare against
-   * @param {(actual: T, expected: U) => boolean} comparator - Custom comparison logic
-   * @returns {boolean} true if Result is Ok and comparator returns true
+   * @param value - Expected value.
+   * @param comparator - Custom comparison function.
    *
    * @example
    * const user = { id: 1, name: 'John' }
-   * Result.ok(user).contains({ id: 1 }, (a, b) => a.id === b.id)
-   * // => true
+   *
+   * Result.ok(user).contains(
+   *   { id: 1 },
+   *   (actual, expected) => actual.id === expected.id
+   * ) // => true
    */
-  contains<U>(value: U, comparator: (actual: T, expected: U) => boolean): boolean
+  contains<U>(value: U, comparator: (actual: TValue, expected: U) => boolean): boolean
 
   /**
-   * Pattern matching based on the Result state.
+   * Pattern matches the current result.
+   *
+   * Executes `cases.ok` for {@link Ok} or `cases.err` for {@link Err}, returning the selected branch result.
    *
    * @group Inspection
    *
-   * @see {@link inspect} for success inspection
-   * @see {@link inspectErr} for error inspection
+   * @see {@link inspect} - Run side effects for success values.
+   * @see {@link inspectErr} - Run side effects for errors.
    *
-   * @template L - Ok branch return type
-   * @template R - Err branch return type
+   * @template L - Return type for the success branch.
+   * @template R - Return type for the error branch.
    *
-   * @param {MatchCases<T, E, L, R>} cases - Object defining the ok and err branches
-   * @returns {L | R} Value returned by the executed branch
+   * @param cases Branch handlers.
    *
    * @example
    * Result.ok(5).match({
@@ -610,140 +652,146 @@ export interface ResultMethods<T, E> {
    * // => "Error: not found"
    *
    */
-  match<L, R>(cases: MatchCases<T, E, L, R>): L | R
+  match<L, R>(cases: MatchCases<TValue, TError, L, R>): L | R
 
   /**
-   * Executes a callback if the Result is Ok.
-   * Useful for side effects like logging or analytics without changing the value.
+   * Runs a callback when this result is {@link Ok}.
+   *
+   * Intended for side effects such as logging, metrics, or debugging.
+   * Returns the original result for chaining.
    *
    * @group Inspection
    *
-   * @see {@link inspectErr} for error inspection
-   * @see {@link match} for pattern matching
+   * @see {@link inspectErr} - Side effects for errors.
+   * @see {@link match} - Branch on both states.
    *
-   * @param {(value: T) => void} action - Callback function
-   * @returns {this} The original Result instance for chaining
+   * @param action Callback invoked with the success value.
    *
    * @example
-   * Result.ok(42).inspect(v => console.log(v))
-   * // => Prints 42, returns Ok(42)
+   * Result.ok(42).inspect((value) => console.log(value))
+   * // => logs 42, returns Ok(42)
    */
-  inspect(action: (value: T) => void): this
+  inspect(action: (value: TValue) => void): this
 
   /**
-   * Executes a callback if the Result is Err.
+   * Runs a callback when this result is {@link Err}.
+   *
+   * Intended for side effects such as logging, metrics, or debugging.
+   * Returns the original result for chaining.
    *
    * @group Inspection
    *
-   * @see {@link inspect} for value inspection
+   * @see {@link inspect} - Side effects for success values.
    *
-   * @param {(error: E) => void} action - Callback function
-   * @returns {this} The original Result instance for chaining
+   * @param action - Callback invoked with the error value.
    *
    * @example
    * Result.err('fail').inspectErr(e => console.log(e))
-   * // => Prints "fail", returns Err("fail")
+   * // => logs "fail", returns Err("fail")
    */
-  inspectErr(action: (error: E) => void): this
+  inspectErr(action: (error: TError) => void): this
 
   // #endregion
 
   // #region Async Transformation
 
   /**
-   * Transforms the value asynchronously.
+   * Asynchronously transforms the success value.
+   *
+   * If this result is {@link Err}, the original error is preserved.
    *
    * @group Async Transformation
    *
-   * @see {@link map} for sync version
+   * @see {@link map} - sync version
    *
-   * @template U - Transformed value type
+   * @template U - Mapped success value type.
    *
-   * @param {(value: T) => Promise<U>} mapper - Async transformation function
-   * @returns {AsyncResult<U, E>}
+   * @param mapper - Async function applied to the success value.
    *
    * @example
-   * await Result.ok(1).mapAsync(async x => x + 1)
+   * await Result.ok(1).mapAsync(async (x) => x + 1)
    * // => Ok(2)
-   * await Result.err('fail').mapAsync(async x => x + 1)
+   *
+   * await Result.err('fail').mapAsync(async (x) => x + 1)
    * // => Err('fail')
    */
-  mapAsync<U>(mapper: (value: T) => Promise<U>): AsyncResult<U, E>
+  mapAsync<U>(mapper: (value: TValue) => Promise<U>): AsyncResult<U, TError>
 
   /**
-   * Transforms error asynchronously.
+   * Asynchronously transforms the error value.
+   *
+   * If this result is {@link Ok}, the original success value is preserved.
    *
    * @group Async Transformation
    *
-   * @see {@link mapErr} for sync version
+   * @see {@link mapErr} - Sync version
    *
-   * @template E2 - New error type
+   * @template E2 - Mapped error type.
    *
-   * @param {(error: E) => Promise<E2>} mapper - Async transformation
-   * @returns {AsyncResult<T, E2>} Promise of Err with transformed error
+   * @param mapper - Async function applied to the error value.
    *
    * @example
    * await Result.ok(5).mapErrAsync(async (e) => e + 1)
-   * // Ok(5)
+   * // => Ok(5)
    *
    * await Result.err('fail').mapErrAsync(
    *   async (e) => new Error(e)
    * )
-   * // Err(Error: "fail")
+   * // => Err(Error: "fail")
    */
-  mapErrAsync<E2>(mapper: (error: E) => Promise<E2>): AsyncResult<T, E2>
+  mapErrAsync<E2>(mapper: (error: TError) => Promise<E2>): AsyncResult<TValue, E2>
 
   /**
-   * Transforms value asynchronously or returns default.
+   * Asynchronously maps the success value or returns the provided fallback when this result is {@link Err}.
    *
    * @group Async Transformation
    *
-   * @see {@link mapOr} for sync version
+   * @see {@link mapOr} - Sync version
    *
-   * @template U - Transformed value type
+   * @template U - Return type.
    *
-   * @param {(value: T) => Promise<U>} mapper - Async transformation
-   * @param {U} defaultValue - Default value
-   * @returns {Promise<U>} Promise of transformed value
+   * @param mapper - Async function applied to the success value.
+   * @param defaultValue - Value returned when this result is {@link Err}.
    *
    * @example
    * await Result.ok(5).mapOrAsync(async (x) => x * 2, 0)
-   * // 10
+   * // => 10
    *
    * await Result.err('fail').mapOrAsync(async (x) => x * 2, 0)
-   * // 0
+   * // => 0
    */
-  mapOrAsync<U>(mapper: (value: T) => Promise<U>, defaultValue: U): Promise<U>
+  mapOrAsync<U>(mapper: (value: TValue) => Promise<U>, defaultValue: U): Promise<U>
 
   /**
-   * Transforms using appropriate async mapper.
+   * Asynchronously maps either branch of the result into a shared output type.
+   *
+   * Uses `okMapper` for {@link Ok} and `errMapper` for {@link Err}.
    *
    * @group Async Transformation
    *
-   * @see {@link mapOrElse} for sync version
+   * @see {@link mapOrElse} - Sync version
    *
    * @template U - Result type
    *
-   * @param {(value: T) => Promise<U>} ok - Async success mapper
-   * @param {(error: E) => Promise<U>} err - Error mapper
-   * @returns {Promise<U>} Promise of transformed value
+   * @param okMapper - Async function applied to the success value.
+   * @param errMapper - Async function applied to the error value.
    *
    * @example
    * await Result.ok(5).mapOrElseAsync(
    *   async (x) => x * 2,
-   *   async (e) => -1
+   *   async () => -1
    * )
-   * // 10
+   * // => 10
    *
    * await Result.err('fail').mapOrElseAsync(
    *   async (x) => x * 2,
-   *   async (e) => -1
+   *   async () => -1
    * )
-   * // -1
+   * // => -1
    */
   mapOrElseAsync<U>(
-    okMapper: (value: T) => Promise<U>,
-    errMapper: (error: E) => Promise<U>,
+    okMapper: (value: TValue) => Promise<U>,
+    errMapper: (error: TError) => Promise<U>,
   ): Promise<U>
 
   // #endregion
@@ -751,43 +799,46 @@ export interface ResultMethods<T, E> {
   // #region Async Alternation
 
   /**
-   * Returns async Result if this is Ok.
+   * Returns `other` when this result is {@link Ok}.
+   *
+   * If this result is {@link Err}, the current error is preserved.
    *
    * @group Async Alternation
    *
-   * @see {@link and} for sync version
+   * @see {@link and} - Sync version
    *
-   * @template U - Second Result success type
-   * @template E2 - Second Result error type
+   * @template U - Next success value type.
+   * @template E2 - Next error type.
    *
-   * @param {AsyncResult<U, E2>} other - Async Result
-   * @returns {AsyncResult<U, E | E2>} Promise of Err with same error
+   * @param other - Async result returned when this result is {@link Ok}.
    *
    * @example
    * await Result.ok(5).andAsync(
    *   Promise.resolve(Result.ok(10))
    * )
-   * // Ok(10)
+   * // => Ok(10)
    *
    * await Result.err('fail').andAsync(
    *   Promise.resolve(Result.ok(42))
    * )
-   * // Err("fail")
+   * // => Err("fail")
    */
-  andAsync<U, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<U, E | E2>
+  andAsync<U, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<U, TError | E2>
 
   /**
-   * Chains async operation that returns Result.
+   * Chains an asynchronous function that returns another {@link Result}.
+   *
+   * If this result is {@link Ok}, `next` receives the success value.
+   * If this result is {@link Err}, the current error is preserved.
    *
    * @group Async Alternation
    *
-   * @see {@link andThen} for sync version
+   * @see {@link andThen} - Sync version
    *
-   * @template U - New success type
-   * @template E2 - New error type
+   * @template U - Next success value type.
+   * @template E2 - Next error type.
    *
-   * @param {(value: T) => AsyncResult<U, E2>} next - Async chaining
-   * @returns {AsyncResult<U, E | E2>} Promise of returned Result
+   * @param next - Async function that returns the next result.
    *
    * @example
    * await Result.ok(userId).andThenAsync(async (id) => {
@@ -798,73 +849,77 @@ export interface ResultMethods<T, E> {
    * await Result.err('fail').andThenAsync(
    *   async (x) => Result.ok(x * 2)
    * )
-   * // Err("fail")
+   * // => Err("fail")
    *
    */
-  andThenAsync<U, E2 = never>(next: (value: T) => AsyncResult<U, E2>): AsyncResult<U, E | E2>
+  andThenAsync<U, E2 = never>(
+    next: (value: TValue) => AsyncResult<U, E2>,
+  ): AsyncResult<U, TError | E2>
 
   /**
-   * Returns this Result or async alternative.
+   * Returns this result when it is {@link Ok}, otherwise returns `other`.
    *
    * @group Async Alternation
    *
-   * @see {@link or} for sync version
+   * @see {@link or} - Sync version
    *
-   * @template U - New success type
-   * @template E2 - New error type
+   * @template U - Alternative success value type.
+   * @template E2 - Alternative error type.
    *
-   * @param {AsyncResult<U, E2>} other - Async alternative
-   * @returns {AsyncResult<T | U, E2>} Promise of this instance
+   * @param other - Async fallback result.
    *
    * @example
    * await Result.ok(5).orAsync(
    *   Promise.resolve(Result.ok(10))
    * )
-   * // Ok(5)
+   * // => Ok(5)
    *
    * await Result.err('fail').orAsync(
    *   Promise.resolve(Result.ok(42))
    * )
-   * // Ok(42)
+   * // => Ok(42)
    */
-  orAsync<U = T, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<T | U, E2>
+  orAsync<U = TValue, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<TValue | U, E2>
 
   /**
-   * Returns this Result or executes async recovery.
+   * Returns this result when it is {@link Ok}, otherwise invokes `fallback` asynchronously with the current error.
+   *
+   * Useful for async recovery flows that depend on the failure reason.
    *
    * @group Async Alternation
    *
-   * @see {@link orElse} for sync version
+   * @see {@link orElse} - sync version
    *
-   * @template U - New success type
-   * @template E2 - New error type
+   * @template U - Recovery success value type.
+   * @template E2 - Recovery error type.
    *
-   * @param {(error: E) => AsyncResult<U, E2>} fallback - Async recovery
-   * @returns {AsyncResult<T | U, E2>} Promise of this instance
+   * @param fallback - Async function used to recover from an error.
    *
    * @example
    * await Result.ok(5).orElseAsync(
-   *   async (e) => Result.ok(0)
+   *   async () => Result.ok(0)
    * )
-   * // Ok(5)
+   * // => Ok(5)
    *
    * await Result.err('not found').orElseAsync(
-   *   async (e) => Result.ok(42)
+   *   async () => Result.ok(42)
    * )
-   * // Ok(42)
+   * // => Ok(42)
    */
-  orElseAsync<U = T, E2 = never>(fallback: (error: E) => AsyncResult<U, E2>): AsyncResult<T | U, E2>
+  orElseAsync<U = TValue, E2 = never>(
+    fallback: (error: TError) => AsyncResult<U, E2>,
+  ): AsyncResult<TValue | U, E2>
 
   // #endregion
 
   // #region Conversion
 
   /**
-   * Returns a string representation of the Result.
+   * Returns a string representation of this result.
+   *
+   * Formats the current value as `Ok(value)` or `Err(error)`.
    *
    * @group Conversion
-   *
-   * @returns {string} Format "Ok(value)" or "Err(error)"
    *
    * @example
    * Result.ok(42).toString()      // => "Ok(42)"
@@ -873,47 +928,48 @@ export interface ResultMethods<T, E> {
   toString(): string
 
   /**
-   * Converts the Result to a plain JSON-serializable object.
-   * Useful for sending results over network or storing in state.
+   * Converts this result into a plain JSON-serializable object.
    *
    * @group Conversion
-   *
-   * @returns {Object} JSON representation { type: 'ok' | 'err', ... }
    *
    * @example
-   * Result.ok(42).toJSON() // => { type: 'ok', value: 42 }
+   * Result.ok(42).toJSON()
+   * // { type: 'ok', value: 42 }
+   *
+   * Result.err('fail').toJSON()
+   * // { type: 'err', error: 'fail' }
    */
-  toJSON(): { type: 'ok'; value: T } | { type: 'err'; error: E }
+  toJSON(): { type: 'ok'; value: TValue } | { type: 'err'; error: TError }
 
   /**
-   * Converts the Result into a nullable value.
+   * Converts this result into a nullable value.
+   *
+   * Returns the success value when this result is {@link Ok}, otherwise returns `null`.
    *
    * @group Conversion
    *
-   * @see {@link toValue} - converts to `T | undefined`
-   *
-   * @returns {T | null} Value if Ok, null if Err
+   * @see {@link toValue} - Return `undefined` on error instead.
    *
    * @example
    * Result.ok(42).toNullable()        // => 42
    * Result.err('failed').toNullable() // => null
    */
-  toNullable(): T | null
+  toNullable(): TValue | null
 
   /**
-   * Converts the Result into an optional value.
+   * Converts this result into an optional value.
+   *
+   * Returns the success value when this result is {@link Ok}, otherwise returns `undefined`.
    *
    * @group Conversion
    *
-   * @see {@link toNullable} - converts to `T | null`
-   *
-   * @returns {T | undefined} Value if Ok, undefined if Err
+   * @see {@link toNullable} - Return `null` on error instead.
    *
    * @example
    * Result.ok(42).toValue()        // => 42
    * Result.err('failed').toValue() // => undefined
    */
-  toValue(): T | undefined
+  toValue(): TValue | undefined
 
   // #endregion
 }

@@ -2,58 +2,60 @@ import type { TAG } from '@/brand'
 import type { ResultMethods } from './methods'
 
 /**
- * Represents a successful Result containing a value.
+ * Successful variant of {@link Result}.
  *
- * @internal
+ * @see {@link Err} - for the error variant
  *
- * @see {@link Err}
- *
- * @template T - Success value type
- * @template E - Error type (never used in Ok, but needed for typing)
+ * @template TValue - Type of the success value
+ * @template TError - Error type carried by {@link Result}. Present only for union compatibility
  *
  * @example
- * const res = Result.ok(42)
- * res.unwrap()  // => Ok(42)
- * res.isOk()    // => true
+ * const result = Result.ok(42)
+ *
+ * result.isOk()   // => true
+ * result.unwrap() // => Ok(42)
  */
-export interface Ok<T, E = never> extends ResultMethods<T, E> {
+export interface Ok<TValue, TError = never> extends ResultMethods<TValue, TError> {
   /** @internal */
   readonly _tag: typeof TAG.Ok
 
-  unwrap(): T
+  unwrap(): TValue
   unwrapErr(): never
-  toJSON(): { type: 'ok'; value: T }
+
+  toJSON(): { type: 'ok'; value: TValue }
 }
 
 /**
- * Represents an error Result containing a failure.
+ * Failure variant of {@link Result}.
  *
- * @internal
+ * @see {@link Ok} - for the success variant
  *
- * @template T - Success value type (for type compatibility)
- * @template E - Error type
+ * @template TValue - Success type carried by {@link Result}. Present only for union compatibility.
+ * @template TError - Type of the stored error.
  *
  * @example
- * const res = Result.err('failed')
- * res.unwrapErr()  // => Err("failed")
- * res.isErr()      // => true
+ * const result = Result.err('failed')
+ *
+ * result.isErr()     // => true
+ * result.unwrapErr() // => Err("failed")
  */
-export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
+export interface Err<TValue = never, TError = Error> extends ResultMethods<TValue, TError> {
   /** @internal */
   readonly _tag: typeof TAG.Err
 
   unwrap(): never
-  unwrapErr(): E
-  toJSON(): { type: 'err'; error: E }
+  unwrapErr(): TError
+
+  toJSON(): { type: 'err'; error: TError }
 }
 
 /**
- * Represents a result that can be either success (Ok) or failure (Err).
+ * Represents a result that can be either success ({@link Ok}) or failure ({@link Err}).
  *
  * @see {@link AsyncResult} - for async version
  *
- * @template T - Success value type
- * @template E - Error type
+ * @template TValue - Success value type
+ * @template TError - Error value type
  *
  * @example
  * function divide(a: number, b: number): Result<number, string> {
@@ -63,25 +65,24 @@ export interface Err<T = never, E = Error> extends ResultMethods<T, E> {
  * }
  *
  * divide(10, 2) // => Ok(5)
- * divide(10, 0) // => Err('Division by zero')
+ * divide(10, 0) // => Err("Division by zero")
  */
-export type Result<T, E> = Ok<T, E> | Err<T, E>
+export type Result<TValue, TError> = Ok<TValue, TError> | Err<TValue, TError>
 
 /**
- * Represents a Promise that resolves to a Result.
- * Ideal for wrapping asynchronous operations like API calls or database queries.
+ * Promise that resolves to a {@link Result}.
  *
  * @see {@link Result} - for sync version
  *
- * @template T - Success value type
- * @template E - Error type
+ * @template TValue - Success value type
+ * @template TError - Error value type
  *
  * @example
  * async function getUser(id: number): AsyncResult<User, Error> {
  *   return Result.fromPromise(() => fetchUserById(id))
  * }
  *
- * const res = await getUser(1)
- * // => Ok(User) | Err(Error)
+ * const result = await getUser(1)
+ * // => Ok(User) | Err(Error("..."))
  */
-export type AsyncResult<T, E> = Promise<Result<T, E>>
+export type AsyncResult<TValue, TError> = Promise<Result<TValue, TError>>

@@ -1,46 +1,58 @@
-import type { AsyncResult as AsyncResultType, Result as ResultType } from './types'
+import type { AsyncResult, Err, Ok, Result } from './types'
 
-import result from './result'
+import results from './result'
 
 /**
- * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
- * without using exceptions. Inspired by Rust's Result<T, E>.
+ * Utility namespace for creating and working with {@link Result} values.
+ *
+ * This enables explicit error handling without relying on thrown exceptions. Inspired by Rust's `Result<T, E>`.
  *
  * @namespace
  * @readonly
  *
  * @example
  * // Basic creation
- * const success = Result.ok(42)         // => Ok(42)
- * const failure = Result.err('failed')  // => Err('failed')
+ * const success = Result.ok(42)
+ * // => Ok(42)
+ *
+ * const failure = Result.err('failed')
+ * // => Err('failed')
  *
  * @example
  * // Transformation and chaining
- * const result = Result.ok(42).map((x) => x * 2).andThen((x) => Result.ok(x + 10))
+ * const result = Result
+ *   .ok(42)
+ *   .map((x) => x * 2)
+ *   .andThen((x) => Result.ok(x + 10))
  * // => Ok(94)
  *
  * @example
- * // Error handling with try/catch
- * const parsed = Result.fromTry(() => JSON.parse('{"a":1}'))
+ * // Exception-safe execution
+ * const parsed = Result.fromTry(
+ *   () => JSON.parse('{"a":1}')
+ * )
  * // => Ok({ a: 1 })
  *
  * @example
- * // Async/await usage
+ * // Async usage
  * const user = await Result.fromPromise(async () => {
  *   const data = await fetch('https://jsonplaceholder.typicode.com/todos/1')
  *   return data.json()
  * })
- * // => Ok({ userId: 1, id: 1, title: 'delectus aut autem', completed: false })
+ * // => Ok(...)
  *
  * @example
  * // Combining multiple Results
- * const [a, b, c] = Result.all([Result.ok(1), Result.ok(2), Result.ok(3)])
+ * const [a, b, c] = Result.all([
+ *   Result.ok(1),
+ *   Result.ok(2),
+ *   Result.ok(3)
+ * ])
  * // => Ok([1, 2, 3])
  */
-export const Result = Object.freeze(result)
+export const result = Object.freeze(results)
 
-export type Result<T, E> = ResultType<T, E>
-export type AsyncResult<T, E> = AsyncResultType<T, E>
+export type { AsyncResult, Err, Ok, Result }
 
-export const { ok, err } = Result
-export default Result
+export const { ok, err } = result
+export default result
