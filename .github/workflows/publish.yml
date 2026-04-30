@@ -10,10 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: deploy-docs
-  cancel-in-progress: false
-
 jobs:
   quality:
     uses: ./.github/workflows/quality.yml
