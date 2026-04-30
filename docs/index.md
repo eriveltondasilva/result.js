@@ -6,12 +6,12 @@ hero:
   text: Explicit Error Handling
   tagline: Type-safe Result<T, E> pattern inspired by Rust, for Javascript & Typescript
   image:
-    src: /resultjs-icon.png
+    src: /result-js-icon.png
     alt: Result.js
   actions:
     - theme: brand
       text: Quick Start
-      link: ./guide/getting-started/quick-start.md
+      link: ./guide/03.quick-start
 
     - theme: alt
       text: View on GitHub
@@ -46,17 +46,18 @@ features:
 ## Quick Install
 
 ```bash
-npm install @eriveltonsilva/result.js
+npm install @eriveltondasilva/result.js
 ```
 
 ::: warning
-Requires node.js 22.0.0+
+Requires node.js 20.0.0+
 :::
 
 ## Basic Example
 
 ```typescript
-import { Result } from '@eriveltonsilva/result.js'
+import { Result } from '@eriveltondasilva/result.js'
+// import Result from '@eriveltondasilva/result.js'
 
 // Create Results
 const success = Result.ok(42)
@@ -68,7 +69,8 @@ const result = Result.ok(10)
   .andThen((x) => x > 15 ? Result.ok(x) : Result.err('too small'))
   .unwrapOr(0)
 
-console.log(result) // 20
+console.log(result)
+// => 20
 ```
 
 ## Why Result.js?
@@ -89,33 +91,5 @@ result.match({
   ok: (val) => console.log(val),
   err: (msg) => console.error(msg)
 })
+// => "Division by zero"
 ```
-
-### ✓ Clean Composition
-
-Chain operations without nested try-catch blocks:
-
-```typescript
-async function loadUserData(userId: string): AsyncResult<User, ApiError> {
-  return (await fetchUser(userId))
-    .andThenAsync((user) => validateUser(user))
-    .andThenAsync((user) => saveToCache(user))
-    .orElseAsync(() => fetchFromBackup(userId))
-}
-
-const result = await loadUserData('123')
-
-result.match({
-  ok: (user) => console.log('User:', user),
-  err: (error) => console.error('Failed:', error)
-})
-```
-
-## Core Benefits
-
-- **Explicit errors** — No hidden exceptions in types; Typescript enforces handling
-- **Type safety** — Compiler prevents accessing values from error states
-- **Clean composition** — Chain operations without nesting or try-catch blocks
-- **Pattern matching** — Elegant `match()` for handling both success and failure
-- **Async support** — Full Promise and async/await integration
-- **Universal compatibility** — Works with ESM and CommonJS

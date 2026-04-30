@@ -1,19 +1,18 @@
 // https://vitepress.dev/reference/site-config
 // https://vitepress.dev/reference/default-theme-config
-import { defineConfig } from 'vitepress'
+import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   lang: 'en',
   title: 'Result.js',
   description: 'Explicit, type-safe error handling for JavaScript & TypeScript',
-  head: [['link', { rel: 'icon', href: '/result.js/resultjs-icon.ico', type: 'image/x-icon' }]],
+  head: [['link', { rel: 'icon', href: '/result.js/result-js-icon.ico', type: 'image/x-icon' }]],
   base: '/result.js/',
 
   themeConfig: {
     nav: [
-      { text: 'Guide', link: '/guide/getting-started/what-is-result.md' },
-      { text: 'Examples', link: '/examples/patterns.md' },
-      { text: 'Reference', link: '/reference/index.md' },
+      { text: 'Guide', link: '/guide/01.what-is-result' },
+      { text: 'Reference', link: '/reference' },
     ],
 
     sidebar: {
@@ -21,44 +20,31 @@ export default defineConfig({
         {
           text: 'Getting Started',
           items: [
-            { text: 'What is Result?', link: '/guide/getting-started/what-is-result.md' },
-            { text: 'Installation', link: '/guide/getting-started/installation.md' },
-            { text: 'Quick Start', link: '/guide/getting-started/quick-start.md' },
+            { text: 'What is Result?', link: '/guide/01.what-is-result' },
+            { text: 'Installation', link: '/guide/02.installation' },
+            { text: 'Quick Start', link: '/guide/03.quick-start' },
           ],
         },
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Type Safety', link: '/guide/core-concepts/type-safety.md' },
-            { text: 'Error Handling', link: '/guide/core-concepts/error-handling.md' },
-            { text: 'Operation Chaining', link: '/guide/core-concepts/chaining.md' },
-            { text: 'Pattern Matching', link: '/guide/core-concepts/matching.md' },
-            { text: 'Async Operations', link: '/guide/core-concepts/async.md' },
+            { text: 'Error Handling', link: '/guide/04.error-handling' },
+            { text: 'Collections', link: '/guide/05.collections' },
+            { text: 'Operation Chaining', link: '/guide/06.chaining' },
+            { text: 'Pattern Matching', link: '/guide/07.matching' },
+            { text: 'Type Safety', link: '/guide/08.type-safety' },
           ],
         },
         {
           text: 'Advanced',
           items: [
-            { text: 'Best Practices', link: '/guide/advanced/best-practices.md' },
-            { text: 'Migration Guide', link: '/guide/advanced/migration.md' },
-            { text: 'Troubleshooting', link: '/guide/advanced/troubleshooting.md' },
+            { text: 'Async Operations', link: '/guide/09.async' },
+            { text: 'Best Practices', link: '/guide/10.best-practices' },
           ],
         },
         {
           text: 'Changelog',
-          link: '/changelog.md',
-        },
-      ],
-
-      '/examples/': [
-        {
-          text: 'Examples',
-          items: [
-            { text: 'Patterns', link: '/examples/patterns.md' },
-            { text: 'Express.js', link: '/examples/express.md' },
-            { text: 'React.js', link: '/examples/react.md' },
-            { text: 'Database', link: '/examples/database.md' },
-          ],
+          link: '/changelog',
         },
       ],
     },
@@ -69,12 +55,13 @@ export default defineConfig({
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/eriveltondasilva/result.js' },
-      { icon: 'npm', link: 'https://www.npmjs.com/package/@eriveltonsilva/result.js' },
+      { icon: 'npm', link: 'https://www.npmjs.com/package/@eriveltondasilva/result.js' },
     ],
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025-present <a href="https://github.com/eriveltondasilva">Erivelton Silva</a>',
+      copyright:
+        'Copyright © 2026-present <a href="https://github.com/eriveltondasilva">Erivelton Silva</a>',
     },
   },
-})
+});

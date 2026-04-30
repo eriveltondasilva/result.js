@@ -1,95 +1,96 @@
 {
-  "name": "@eriveltonsilva/result.js",
+  "name": "@eriveltondasilva/result.js",
+  "version": "0.0.0",
   "description": "A lightweight, Rust-inspired Result type for JavaScript and TypeScript — handle success and error cases without exceptions.",
-  "version": "1.2.4",
   "keywords": [
-    "javascript",
-    "typescript",
-    "result-type",
-    "rust",
+    "result.js",
+    "result",
     "monad",
+    "rust",
+    "rusty",
+    "rust-like",
     "functional programming",
     "error handling"
   ],
-  "license": "MIT",
-  "author": {
-    "name": "Erivelton Silva",
-    "email": "eriveltondasilva13@gmail.com"
-  },
   "homepage": "https://eriveltondasilva.github.io/result.js/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eriveltondasilva/result.js.git"
   },
-  "bugs": {
-    "url": "https://github.com/eriveltondasilva/result.js/issues"
-  },
-  "type": "module",
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
+  "license": "MIT",
+  "author": {
+    "name": "Erivelton Silva",
+    "email": "eriveltondasilva13@gmail.com"
   },
   "sideEffects": false,
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "npm run clean && tsup --minify",
-    "build:dev": "npm run clean && tsup",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/examples.ts",
-    "fmt": "biome format --write --verbose",
-    "lint": "biome lint --write --verbose",
-    "check": "biome check --write --verbose",
-    "ci": "biome ci --verbose",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:dev": "vitest watch",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --coverage --ui",
-    "test:report": "vitest run --reporter=html --outputFile=vitest/report/index.html",
-    "test:preview": "npm run test:report && npx vite preview --outDir vitest/report",
-    "validate": "npm run typecheck && npm run ci && npm run test",
-    "prepublishOnly": "npm run build",
+    "build": "bun run clean && tsup",
+    "clean": "bun run --bun rm -rf dist",
+    "prepublishOnly": "NODE_ENV=production bun run build",
     "postversion": "git push origin main --follow-tags",
-    "docs:dev": "vitepress dev docs --open",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "predocs:build": "node scripts/copy-changelog.js && typedoc",
+    "1xxx": "",
+    "predocs:build": "bun run scripts/copy-changelog.ts && bunx typedoc",
+    "docs:build": "bunx vitepress build docs",
+    "docs:dev": "bunx vitepress dev docs --open",
+    "docs:preview": "bunx vitepress preview docs",
+    "2xxx": "",
+    "fmt": "bunx --bun @biomejs/biome format .",
+    "fmt:fix": "bunx --bun @biomejs/biome format --write .",
+    "lint": "bunx --bun @biomejs/biome lint .",
+    "lint:fix": "bunx --bun @biomejs/biome lint --write .",
+    "check": "bunx --bun @biomejs/biome check .",
+    "check:fix": "bunx --bun @biomejs/biome check --write .",
+    "check:ci": "bunx --bun @biomejs/biome ci .",
+    "3xxx": "",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "4xxx": "",
+    "types": "tsc --noEmit -p tsconfig.json",
+    "dev": "bun run types && bun run check:fix && bun run test",
     "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.10",
-    "@tsconfig/node22": "^22.0.5",
-    "@tsconfig/strictest": "^2.0.8",
-    "@types/node": "^22.19.3",
-    "@vitest/coverage-v8": "^4.0.16",
-    "@vitest/ui": "^4.0.16",
+    "@biomejs/biome": "^2.4.13",
+    "@tsconfig/bun": "^1.0.10",
+    "@types/bun": "^1.3.13",
     "husky": "^9.1.7",
-    "rimraf": "^6.1.2",
+    "lint-staged": "^16.4.0",
+    "publint": "^0.3.18",
     "tsup": "^8.5.1",
-    "tsx": "^4.21.0",
-    "typedoc": "^0.28.15",
+    "typedoc": "^0.28.19",
     "typedoc-plugin-frontmatter": "^1.3.1",
-    "typedoc-plugin-markdown": "^4.9.0",
+    "typedoc-plugin-markdown": "^4.11.0",
+    "typedoc-plugin-missing-exports": "^4.1.3",
     "typescript": "^5.9.3",
-    "vitepress": "^2.0.0-alpha.15",
-    "vitest": "^4.0.16"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitepress": "^2.0.0-alpha.17",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "lint-staged": {
+    "*.{js,ts,json,md}": "bunx --bun @biomejs/biome check --write --no-errors-on-unmatched"
   }
 }

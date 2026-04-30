@@ -1,0 +1,121 @@
+name: Publish to NPM
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
+
+  tests:
+    uses: ./.github/workflows/tests.yml
+
+  publish:
+    needs: [ quality, tests ]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract package metadata
+        id: pkg
+        run: |
+          PKG_NAME=$(jq -r .name package.json)
+          PKG_VERSION=$(jq -r .version package.json)
+
+          echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+          echo "📦 Package: $PKG_NAME@$PKG_VERSION"
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+
+          if [ "${{ steps.pkg.outputs.version }}" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch: package.json=${{ steps.pkg.outputs.version }}, tag=v$TAG_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Version verified: v${{ steps.pkg.outputs.version }}"
+
+      - name: Check if version already published
+        run: |
+          if npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version &>/dev/null; then
+            echo "❌ Version ${{ steps.pkg.outputs.version }} is already published on NPM"
+            exit 1
+          fi
+
+          echo "✅ Version ${{ steps.pkg.outputs.version }} is ready to publish"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+        # O bun não tem suporte oficial a provenance, então usar o npm para publicar
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build package
+        run: NODE_ENV=production bun run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -f "dist/index.js" ] || [ ! -f "dist/index.d.ts" ]; then
+            echo "❌ Build output missing"
+            exit 1
+          fi
+
+          echo "✅ Build output verified"
+
+      - name: Pack
+        run: bun pm pack
+
+      - name: Validate package
+        run: bunx publint
+
+      - name: Test package installation
+        run: |
+          mkdir -p test-install && cd test-install
+
+          echo '{"name":"test-install","type":"module"}' > package.json
+
+          bun add ../*.tgz
+
+          bun -e "
+            import('${{ steps.pkg.outputs.name }}')
+              .then((m) => { console.log('✅ Package import successful'); console.log('📦 Exports:', Object.keys(m)); process.exit(0); })
+              .catch((e) => { console.error('❌ Package import failed:', e); process.exit(1); })
+          "
+
+      - name: Publish to NPM (no scripts)
+        run: npm publish --provenance --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # O bun não tem suporte oficial a provenance, então usar o npm para publicar
+        # Quando provenance estiver disponível, migrar para bun publish
+
+  deploy-docs:
+    needs: [ publish ]
+    uses: ./.github/workflows/deploy-docs.yml
+    secrets: inherit

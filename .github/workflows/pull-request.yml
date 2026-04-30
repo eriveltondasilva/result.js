@@ -1,0 +1,16 @@
+name: Pull Request
+
+on:
+    pull_request:
+        branches: [ main ]
+
+concurrency:
+    group: pull-request-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    quality:
+        uses: ./.github/workflows/quality.yml
+
+    tests:
+        uses: ./.github/workflows/tests.yml

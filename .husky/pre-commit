@@ -1,1 +1,2 @@
-npm run check
+# .husky/pre-commit
+bunx lint-staged
