@@ -1,11 +1,11 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsup';
 
-import pkg from './package.json'
+import pkg from './package.json';
 
-const { name, description, version, author, license, homepage } = pkg
-const year = new Date().getFullYear()
+const { name, description, version, author, license, homepage } = pkg;
+const year = new Date().getFullYear();
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const banner = `
 /**
@@ -26,7 +26,7 @@ export const banner = `
  * @see https://www.npmjs.com/package/oxide.ts - oxide.ts Package
  * @see https://www.npmjs.com/package/result.ts - result.ts Package
  */
-`
+`;
 
 export default defineConfig([
   {
@@ -40,4 +40,4 @@ export default defineConfig([
     sourcemap: !isProduction,
     minify: isProduction,
   },
-])
+]);

@@ -13,8 +13,8 @@
  * }
  */
 export interface SettledOk<TValue> {
-  readonly status: 'ok'
-  readonly value: TValue
+  readonly status: 'ok';
+  readonly value: TValue;
 }
 
 /**
@@ -32,8 +32,8 @@ export interface SettledOk<TValue> {
  * }
  */
 export interface SettledErr<TError> {
-  readonly status: 'err'
-  readonly reason: TError
+  readonly status: 'err';
+  readonly reason: TError;
 }
 
 /**
@@ -56,4 +56,4 @@ export interface SettledErr<TError> {
  *   }
  * }
  */
-export type SettledResult<TValue, TError> = SettledOk<TValue> | SettledErr<TError>
+export type SettledResult<TValue, TError> = SettledOk<TValue> | SettledErr<TError>;

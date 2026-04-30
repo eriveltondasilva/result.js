@@ -1,4 +1,4 @@
-import type { AsyncResult, Err, Ok, Result } from '.'
+import type { AsyncResult, Err, Ok, Result } from '.';
 
 /**
  * Defines the execution branches for pattern matching.
@@ -25,7 +25,7 @@ export type MatchCases<TValue, TError, TOkResult, TErrResult> = {
    * @param {TValue} value - Success value
    * @returns {TOkResult} - Value returned by the `ok` branch
    */
-  ok: (value: TValue) => TOkResult
+  ok: (value: TValue) => TOkResult;
 
   /**
    * Handles the error case.
@@ -35,8 +35,8 @@ export type MatchCases<TValue, TError, TOkResult, TErrResult> = {
    * @param {TError} error - Error value
    * @returns {TErrResult} - Value returned by the `err` branch
    */
-  err: (error: TError) => TErrResult
-}
+  err: (error: TError) => TErrResult;
+};
 
 /**
  * Shared contract implemented by both {@link Ok} and {@link Err}.
@@ -58,7 +58,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).isOk()        // => true
    * Result.err('failed').isOk() // => false
    */
-  isOk(): this is Ok<TValue, TError>
+  isOk(): this is Ok<TValue, TError>;
 
   /**
    * Returns `true` when this result is the {@link Err} variant.
@@ -71,7 +71,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('failed').isErr() // => true
    * Result.ok(42).isErr()        // => false
    */
-  isErr(): this is Err<TValue, TError>
+  isErr(): this is Err<TValue, TError>;
 
   /**
    * Returns `true` when this result is {@link Ok} and its value satisfies the provided predicate.
@@ -87,7 +87,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(10).isOkAnd((x) => x > 40)   // => false
    * Result.err('fail').isOkAnd(() => true) // => false
    */
-  isOkAnd(condition: (value: TValue) => boolean): this is Ok<TValue, TError>
+  isOkAnd(condition: (value: TValue) => boolean): this is Ok<TValue, TError>;
 
   /**
    * Returns `true` when this result is {@link Err} and its error satisfies the provided predicate.
@@ -102,7 +102,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('timeout').isErrAnd((e) => e === 'timeout') // => true
    * Result.ok(42).isErrAnd(() => true)                     // => false
    */
-  isErrAnd(condition: (error: TError) => boolean): this is Err<TValue, TError>
+  isErrAnd(condition: (error: TError) => boolean): this is Err<TValue, TError>;
 
   // #endregion
 
@@ -132,7 +132,7 @@ export interface ResultMethods<TValue, TError> {
    *   result.unwrap() // safe
    * }
    */
-  unwrap(): TValue
+  unwrap(): TValue;
 
   /**
    * Returns the contained error value.
@@ -158,7 +158,7 @@ export interface ResultMethods<TValue, TError> {
    *   result.unwrapErr() // safe
    * }
    */
-  unwrapErr(): TError
+  unwrapErr(): TError;
 
   /**
    * Returns the success value, or the provided fallback when this result is {@link Err}.
@@ -176,7 +176,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).unwrapOr(0)        // => 42
    * Result.err('failed').unwrapOr(0) // => 0
    */
-  unwrapOr<TFallback = TValue>(defaultValue: TFallback): TValue | TFallback
+  unwrapOr<TFallback = TValue>(defaultValue: TFallback): TValue | TFallback;
 
   /**
    * Returns the success value, or computes a fallback from the error when this result is {@link Err}.
@@ -193,7 +193,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).unwrapOrElse((e) => e.length)        // => 42
    * Result.err('failed').unwrapOrElse((e) => e.length) // => 6
    */
-  unwrapOrElse<TFallback = TValue>(fallback: (error: TError) => TFallback): TValue | TFallback
+  unwrapOrElse<TFallback = TValue>(fallback: (error: TError) => TFallback): TValue | TFallback;
 
   /**
    * Returns the success value.
@@ -215,7 +215,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('failed').expect('should exist')
    * // => throws Error("should exist", { cause: "failed" })
    */
-  expect(reason: string): TValue
+  expect(reason: string): TValue;
 
   /**
    * Returns the error value.
@@ -239,7 +239,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).expectErr('should be error')
    * // => throws Error("should be error", { cause: 42 })
    */
-  expectErr(reason: string): TError
+  expectErr(reason: string): TError;
 
   // #endregion
 
@@ -264,7 +264,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).map((x) => x * 2)      // => Ok(84)
    * Result.err('fail').map((x) => x * 2) // => Err("fail")
    */
-  map<U>(mapper: (value: TValue) => U): Result<U, TError>
+  map<U>(mapper: (value: TValue) => U): Result<U, TError>;
 
   /**
    * Transforms the error value using the provided mapper.
@@ -286,7 +286,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).mapErr((e) => new Error(String(e)))
    * // => Ok(42)
    */
-  mapErr<E2>(mapper: (error: TError) => E2): Result<TValue, E2>
+  mapErr<E2>(mapper: (error: TError) => E2): Result<TValue, E2>;
 
   /**
    * Maps the success value or returns the provided fallback when this result is {@link Err}.
@@ -305,7 +305,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).mapOr((x) => x * 2, 0)      // 84
    * Result.err('fail').mapOr((x) => x * 2, 0) // 0
    */
-  mapOr<U>(mapper: (value: TValue) => U, defaultValue: U): U
+  mapOr<U>(mapper: (value: TValue) => U, defaultValue: U): U;
 
   /**
    * Maps either branch of the result into a shared output type.
@@ -328,7 +328,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('fail').mapOrElse((x) => x * 2,() => -1)
    * // => -1
    */
-  mapOrElse<U>(okMapper: (value: TValue) => U, errMapper: (error: TError) => U): U
+  mapOrElse<U>(okMapper: (value: TValue) => U, errMapper: (error: TError) => U): U;
 
   /**
    * Validates the success value with a predicate.
@@ -352,7 +352,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).filter((x) => x > 50, 'Too small')
    * // => Err(Error: "Too small", { cause: 42 })
    */
-  filter(condition: (value: TValue) => boolean, reason?: string): Result<TValue, Error>
+  filter(condition: (value: TValue) => boolean, reason?: string): Result<TValue, Error>;
 
   /**
    * Validates the success value with a predicate.
@@ -384,7 +384,7 @@ export interface ResultMethods<TValue, TError> {
   filterOrElse<E2>(
     condition: (value: TValue) => boolean,
     onFailure: (value: TValue) => E2,
-  ): Result<TValue, TError | E2>
+  ): Result<TValue, TError | E2>;
 
   /**
    * Flattens a nested {@link Result}.
@@ -401,7 +401,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(Result.err('fail')).flatten() // => Err("fail")
    * Result.err('outer').flatten()           // Err("outer")
    */
-  flatten<U, E2>(this: Result<Result<U, E2>, TError>): Result<U, TError | E2>
+  flatten<U, E2>(this: Result<Result<U, E2>, TError>): Result<U, TError | E2>;
 
   // #endregion
 
@@ -429,7 +429,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(1).and(Result.err('fail'))  // => Err("fail")
    * Result.err('fail').and(Result.ok(42)) // => Err("fail")
    */
-  and<U, E2 = never>(other: Result<U, E2>): Result<U, TError | E2>
+  and<U, E2 = never>(other: Result<U, E2>): Result<U, TError | E2>;
 
   /**
    * Chains a function that returns another {@link Result}.
@@ -459,7 +459,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('fail').andThen((x) => Result.ok(x * 2))
    * // => Err("fail")
    */
-  andThen<U, E2 = never>(next: (value: TValue) => Result<U, E2>): Result<U, TError | E2>
+  andThen<U, E2 = never>(next: (value: TValue) => Result<U, E2>): Result<U, TError | E2>;
 
   /**
    * Returns this result when it is {@link Ok}, otherwise returns `other`.
@@ -480,7 +480,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(1).or(Result.ok(2))        // => Ok(1)
    * Result.err('fail').or(Result.ok(42)) // => Ok(42)
    */
-  or<U = TValue, E2 = never>(other: Result<U, E2>): Result<TValue | U, E2>
+  or<U = TValue, E2 = never>(other: Result<U, E2>): Result<TValue | U, E2>;
 
   /**
    * Returns this result when it is {@link Ok}, otherwise invokes `fallback` with the current error.
@@ -508,7 +508,9 @@ export interface ResultMethods<TValue, TError> {
    * // => Err("backup")
    *
    */
-  orElse<U = TValue, E2 = never>(fallback: (error: TError) => Result<U, E2>): Result<TValue | U, E2>
+  orElse<U = TValue, E2 = never>(
+    fallback: (error: TError) => Result<U, E2>,
+  ): Result<TValue | U, E2>;
 
   // #endregion
 
@@ -533,7 +535,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(1).zip(Result.ok('a'))  // => Ok([1, 'a'])
    * Result.ok(1).zip(Result.err('b')) // => Err('b')
    */
-  zip<U, E2>(other: Result<U, E2>): Result<[TValue, U], TError | E2>
+  zip<U, E2>(other: Result<U, E2>): Result<[TValue, U], TError | E2>;
 
   /**
    * Combines two successful results and maps their values.
@@ -571,7 +573,7 @@ export interface ResultMethods<TValue, TError> {
   zipWith<U, R, E2>(
     other: Result<U, E2>,
     combine: (value: TValue, otherValue: U) => R,
-  ): Result<R, TError | E2>
+  ): Result<R, TError | E2>;
 
   // #endregion
 
@@ -596,7 +598,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok({ id: 42 }).contains({ id: 42 }) // => true
    * Result.err('fail').contains(42)            // => false
    */
-  contains<U extends TValue>(value: U): boolean
+  contains<U extends TValue>(value: U): boolean;
 
   /**
    * Returns `true` when this result is {@link Ok} and the comparator determines both values are equivalent.
@@ -620,7 +622,7 @@ export interface ResultMethods<TValue, TError> {
    *   (actual, expected) => actual.id === expected.id
    * ) // => true
    */
-  contains<U>(value: U, comparator: (actual: TValue, expected: U) => boolean): boolean
+  contains<U>(value: U, comparator: (actual: TValue, expected: U) => boolean): boolean;
 
   /**
    * Pattern matches the current result.
@@ -652,7 +654,7 @@ export interface ResultMethods<TValue, TError> {
    * // => "Error: not found"
    *
    */
-  match<L, R>(cases: MatchCases<TValue, TError, L, R>): L | R
+  match<L, R>(cases: MatchCases<TValue, TError, L, R>): L | R;
 
   /**
    * Runs a callback when this result is {@link Ok}.
@@ -671,7 +673,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).inspect((value) => console.log(value))
    * // => logs 42, returns Ok(42)
    */
-  inspect(action: (value: TValue) => void): this
+  inspect(action: (value: TValue) => void): this;
 
   /**
    * Runs a callback when this result is {@link Err}.
@@ -689,7 +691,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('fail').inspectErr(e => console.log(e))
    * // => logs "fail", returns Err("fail")
    */
-  inspectErr(action: (error: TError) => void): this
+  inspectErr(action: (error: TError) => void): this;
 
   // #endregion
 
@@ -715,7 +717,7 @@ export interface ResultMethods<TValue, TError> {
    * await Result.err('fail').mapAsync(async (x) => x + 1)
    * // => Err('fail')
    */
-  mapAsync<U>(mapper: (value: TValue) => Promise<U>): AsyncResult<U, TError>
+  mapAsync<U>(mapper: (value: TValue) => Promise<U>): AsyncResult<U, TError>;
 
   /**
    * Asynchronously transforms the error value.
@@ -739,7 +741,7 @@ export interface ResultMethods<TValue, TError> {
    * )
    * // => Err(Error: "fail")
    */
-  mapErrAsync<E2>(mapper: (error: TError) => Promise<E2>): AsyncResult<TValue, E2>
+  mapErrAsync<E2>(mapper: (error: TError) => Promise<E2>): AsyncResult<TValue, E2>;
 
   /**
    * Asynchronously maps the success value or returns the provided fallback when this result is {@link Err}.
@@ -760,7 +762,7 @@ export interface ResultMethods<TValue, TError> {
    * await Result.err('fail').mapOrAsync(async (x) => x * 2, 0)
    * // => 0
    */
-  mapOrAsync<U>(mapper: (value: TValue) => Promise<U>, defaultValue: U): Promise<U>
+  mapOrAsync<U>(mapper: (value: TValue) => Promise<U>, defaultValue: U): Promise<U>;
 
   /**
    * Asynchronously maps either branch of the result into a shared output type.
@@ -792,7 +794,7 @@ export interface ResultMethods<TValue, TError> {
   mapOrElseAsync<U>(
     okMapper: (value: TValue) => Promise<U>,
     errMapper: (error: TError) => Promise<U>,
-  ): Promise<U>
+  ): Promise<U>;
 
   // #endregion
 
@@ -823,7 +825,7 @@ export interface ResultMethods<TValue, TError> {
    * )
    * // => Err("fail")
    */
-  andAsync<U, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<U, TError | E2>
+  andAsync<U, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<U, TError | E2>;
 
   /**
    * Chains an asynchronous function that returns another {@link Result}.
@@ -854,7 +856,7 @@ export interface ResultMethods<TValue, TError> {
    */
   andThenAsync<U, E2 = never>(
     next: (value: TValue) => AsyncResult<U, E2>,
-  ): AsyncResult<U, TError | E2>
+  ): AsyncResult<U, TError | E2>;
 
   /**
    * Returns this result when it is {@link Ok}, otherwise returns `other`.
@@ -879,7 +881,7 @@ export interface ResultMethods<TValue, TError> {
    * )
    * // => Ok(42)
    */
-  orAsync<U = TValue, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<TValue | U, E2>
+  orAsync<U = TValue, E2 = never>(other: AsyncResult<U, E2>): AsyncResult<TValue | U, E2>;
 
   /**
    * Returns this result when it is {@link Ok}, otherwise invokes `fallback` asynchronously with the current error.
@@ -908,7 +910,7 @@ export interface ResultMethods<TValue, TError> {
    */
   orElseAsync<U = TValue, E2 = never>(
     fallback: (error: TError) => AsyncResult<U, E2>,
-  ): AsyncResult<TValue | U, E2>
+  ): AsyncResult<TValue | U, E2>;
 
   // #endregion
 
@@ -925,7 +927,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).toString()      // => "Ok(42)"
    * Result.err('fail').toString() // => "Err("fail")"
    */
-  toString(): string
+  toString(): string;
 
   /**
    * Converts this result into a plain JSON-serializable object.
@@ -939,7 +941,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.err('fail').toJSON()
    * // { type: 'err', error: 'fail' }
    */
-  toJSON(): { type: 'ok'; value: TValue } | { type: 'err'; error: TError }
+  toJSON(): { type: 'ok'; value: TValue } | { type: 'err'; error: TError };
 
   /**
    * Converts this result into a nullable value.
@@ -954,7 +956,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).toNullable()        // => 42
    * Result.err('failed').toNullable() // => null
    */
-  toNullable(): TValue | null
+  toNullable(): TValue | null;
 
   /**
    * Converts this result into an optional value.
@@ -969,7 +971,7 @@ export interface ResultMethods<TValue, TError> {
    * Result.ok(42).toValue()        // => 42
    * Result.err('failed').toValue() // => undefined
    */
-  toValue(): TValue | undefined
+  toValue(): TValue | undefined;
 
   // #endregion
 }

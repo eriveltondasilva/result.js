@@ -1,6 +1,6 @@
 // https://vitepress.dev/reference/site-config
 // https://vitepress.dev/reference/default-theme-config
-import { defineConfig } from 'vitepress'
+import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   lang: 'en',
@@ -64,4 +64,4 @@ export default defineConfig({
         'Copyright © 2026-present <a href="https://github.com/eriveltondasilva">Erivelton Silva</a>',
     },
   },
-})
+});

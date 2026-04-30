@@ -1,11 +1,11 @@
-import type { AsyncResult, Result } from './types'
-import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from './types/inference'
-import type { SettledResult } from './types/settled'
+import type { AsyncResult, Result } from './types';
+import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from './types/inference';
+import type { SettledResult } from './types/settled';
 
-import { TAG } from './brand'
-import { Err } from './err'
-import { Ok } from './ok'
-import { ensureError, isEmptyArray, ResultTypeError } from './utils'
+import { TAG } from './brand';
+import { Err } from './err';
+import { Ok } from './ok';
+import { ensureError, isEmptyArray, ResultTypeError } from './utils';
 
 // #region Type Guards
 
@@ -30,7 +30,7 @@ import { ensureError, isEmptyArray, ResultTypeError } from './utils'
  * // false
  */
 function isOk(value: unknown): value is Ok<unknown, never> {
-  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Ok
+  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Ok;
 }
 
 /**
@@ -54,7 +54,7 @@ function isOk(value: unknown): value is Ok<unknown, never> {
  * // false
  */
 function isErr(value: unknown): value is Err<never, unknown> {
-  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Err
+  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Err;
 }
 
 /**
@@ -89,7 +89,7 @@ function isResult(value: unknown): value is Result<unknown, unknown> {
     typeof value === 'object' &&
     '_tag' in value &&
     (value._tag === TAG.Ok || value._tag === TAG.Err)
-  )
+  );
 }
 
 // #endregion
@@ -127,7 +127,7 @@ function isResult(value: unknown): value is Result<unknown, unknown> {
  * // => Ok({ id: 1, name: 'John' })
  */
 function ok<TValue>(value: TValue): Ok<TValue, never> {
-  return new Ok(value)
+  return new Ok(value);
 }
 
 /**
@@ -163,7 +163,7 @@ function ok<TValue>(value: TValue): Ok<TValue, never> {
  * })
  */
 function err<TError = Error>(error: TError): Err<never, TError> {
-  return new Err(error)
+  return new Err(error);
 }
 
 /**
@@ -188,7 +188,7 @@ function err<TError = Error>(error: TError): Err<never, TError> {
  * Result.fromTry(() => JSON.parse('invalid json'))
  * // => Err(SyntaxError: "...")
  */
-function fromTry<TValue>(executor: () => TValue): Result<TValue, Error>
+function fromTry<TValue>(executor: () => TValue): Result<TValue, Error>;
 
 /**
  * Executes a function and converts thrown errors using a custom mapper.
@@ -216,16 +216,16 @@ function fromTry<TValue>(executor: () => TValue): Result<TValue, Error>
 function fromTry<TValue, TError>(
   executor: () => TValue,
   catchErr: (error: unknown) => TError,
-): Result<TValue, TError>
+): Result<TValue, TError>;
 
 function fromTry<TValue, TError = Error>(
   executor: () => TValue,
   catchErr?: (error: unknown) => TError,
 ): Result<TValue, TError | Error> {
   try {
-    return new Ok(executor())
+    return new Ok(executor());
   } catch (error) {
-    return new Err(catchErr ? catchErr(error) : ensureError(error))
+    return new Err(catchErr ? catchErr(error) : ensureError(error));
   }
 }
 
@@ -248,7 +248,7 @@ function fromTry<TValue, TError = Error>(
  * await Result.fromPromise(() => fetchUser(id))
  * // Ok(user) | Err(Error)
  */
-function fromPromise<TValue>(executor: () => Promise<TValue>): AsyncResult<TValue, Error>
+function fromPromise<TValue>(executor: () => Promise<TValue>): AsyncResult<TValue, Error>;
 
 /**
  * Executes an async function and maps rejections using a custom mapper.
@@ -276,16 +276,16 @@ function fromPromise<TValue>(executor: () => Promise<TValue>): AsyncResult<TValu
 function fromPromise<TValue, TError>(
   executor: () => Promise<TValue>,
   catchErr: (error: unknown) => TError,
-): AsyncResult<TValue, TError>
+): AsyncResult<TValue, TError>;
 
 async function fromPromise<T, E>(
   executor: () => Promise<T>,
   catchErr?: (error: unknown) => E,
 ): AsyncResult<T, E | Error> {
   try {
-    return new Ok(await executor())
+    return new Ok(await executor());
   } catch (error) {
-    return new Err(catchErr ? catchErr(error) : ensureError(error))
+    return new Err(catchErr ? catchErr(error) : ensureError(error));
   }
 }
 
@@ -316,7 +316,7 @@ async function fromPromise<T, E>(
  * )
  * // => Err(Error: "Value is null or undefined")
  */
-function fromNullable<TValue>(value: TValue | null | undefined): Result<NonNullable<TValue>, Error>
+function fromNullable<TValue>(value: TValue | null | undefined): Result<NonNullable<TValue>, Error>;
 
 /**
  * Creates a {@link Result} from a nullable value using a custom error.
@@ -344,17 +344,17 @@ function fromNullable<TValue>(value: TValue | null | undefined): Result<NonNulla
 function fromNullable<TValue, TError>(
   value: TValue | null | undefined,
   onNull: () => TError,
-): Result<NonNullable<TValue>, TError>
+): Result<NonNullable<TValue>, TError>;
 
 function fromNullable<TValue, TError = Error>(
   value: TValue | null | undefined,
   onNull?: () => TError,
 ): Result<NonNullable<TValue>, TError | Error> {
   if (value == null) {
-    return new Err(onNull ? onNull() : new Error('Value is null or undefined', { cause: value }))
+    return new Err(onNull ? onNull() : new Error('Value is null or undefined', { cause: value }));
   }
 
-  return new Ok(value as NonNullable<TValue>)
+  return new Ok(value as NonNullable<TValue>);
 }
 
 /**
@@ -381,7 +381,7 @@ function fromNullable<TValue, TError = Error>(
 function validate<TValue>(
   value: TValue,
   condition: (value: TValue) => boolean,
-): Result<TValue, Error>
+): Result<TValue, Error>;
 
 /**
  * Validates a value using a predicate and custom error factory.
@@ -411,7 +411,7 @@ function validate<TValue, TError>(
   value: TValue,
   condition: (value: TValue) => boolean,
   onFailure: (value: TValue) => TError,
-): Result<TValue, TError>
+): Result<TValue, TError>;
 
 function validate<TValue, TError = Error>(
   value: TValue,
@@ -421,10 +421,10 @@ function validate<TValue, TError = Error>(
   if (!condition(value)) {
     return new Err(
       onFailure ? onFailure(value) : new Error('Validation failed for value', { cause: value }),
-    )
+    );
   }
 
-  return new Ok(value)
+  return new Ok(value);
 }
 
 // #endregion
@@ -468,27 +468,27 @@ function all<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Result<OkTuple<TResults>, ErrUnion<TResults>> {
   if (isEmptyArray(results)) {
-    return new Ok([]) as Result<OkTuple<TResults>, ErrUnion<TResults>>
+    return new Ok([]) as Result<OkTuple<TResults>, ErrUnion<TResults>>;
   }
 
-  const okValues: unknown[] = []
+  const okValues: unknown[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.all() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
     if (result.isErr()) {
-      return result as Result<OkTuple<TResults>, ErrUnion<TResults>>
+      return result as Result<OkTuple<TResults>, ErrUnion<TResults>>;
     }
 
-    okValues.push(result.unwrap())
+    okValues.push(result.unwrap());
   }
 
-  return new Ok(okValues) as Result<OkTuple<TResults>, ErrUnion<TResults>>
+  return new Ok(okValues) as Result<OkTuple<TResults>, ErrUnion<TResults>>;
 }
 
 /**
@@ -524,17 +524,17 @@ function allSettled<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Ok<SettledTuple<TResults>> {
   if (isEmptyArray(results)) {
-    return new Ok([]) as Ok<SettledTuple<TResults>>
+    return new Ok([]) as Ok<SettledTuple<TResults>>;
   }
 
-  const settledResults: SettledResult<OkUnion<TResults>, ErrUnion<TResults>>[] = []
+  const settledResults: SettledResult<OkUnion<TResults>, ErrUnion<TResults>>[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.allSettled() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
     result.isOk()
@@ -545,10 +545,10 @@ function allSettled<const TResults extends readonly Result<unknown, unknown>[]>(
       : settledResults.push({
           status: 'err',
           reason: result.unwrapErr() as ErrUnion<TResults>,
-        })
+        });
   }
 
-  return new Ok(settledResults) as Ok<SettledTuple<TResults>>
+  return new Ok(settledResults) as Ok<SettledTuple<TResults>>;
 }
 
 /**
@@ -589,27 +589,27 @@ function any<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Result<OkUnion<TResults>, ErrTuple<TResults>> {
   if (isEmptyArray(results)) {
-    return new Err([]) as Result<OkUnion<TResults>, ErrTuple<TResults>>
+    return new Err([]) as Result<OkUnion<TResults>, ErrTuple<TResults>>;
   }
 
-  const errorValues: unknown[] = []
+  const errorValues: unknown[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.any() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
     if (result.isOk()) {
-      return result as Result<OkUnion<TResults>, ErrTuple<TResults>>
+      return result as Result<OkUnion<TResults>, ErrTuple<TResults>>;
     }
 
-    errorValues.push(result.unwrapErr())
+    errorValues.push(result.unwrapErr());
   }
 
-  return new Err(errorValues) as Result<OkUnion<TResults>, ErrTuple<TResults>>
+  return new Err(errorValues) as Result<OkUnion<TResults>, ErrTuple<TResults>>;
 }
 
 /**
@@ -645,24 +645,24 @@ function any<const TResults extends readonly Result<unknown, unknown>[]>(
  */
 function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
   if (isEmptyArray(results)) {
-    return [[], []]
+    return [[], []];
   }
 
-  const oks: T[] = []
-  const errs: E[] = []
+  const oks: T[] = [];
+  const errs: E[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.partition() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
-    result.isOk() ? oks.push(result.unwrap()) : errs.push(result.unwrapErr())
+    result.isOk() ? oks.push(result.unwrap()) : errs.push(result.unwrapErr());
   }
 
-  return [oks, errs]
+  return [oks, errs];
 }
 
 /**
@@ -693,25 +693,25 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  */
 function values<T, E>(results: readonly Result<T, E>[]): T[] {
   if (isEmptyArray(results)) {
-    return []
+    return [];
   }
 
-  const oks: T[] = []
+  const oks: T[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.values() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
     if (result.isOk()) {
-      oks.push(result.unwrap())
+      oks.push(result.unwrap());
     }
   }
 
-  return oks
+  return oks;
 }
 
 /**
@@ -743,25 +743,25 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
  */
 function errors<T, E>(results: readonly Result<T, E>[]): E[] {
   if (isEmptyArray(results)) {
-    return []
+    return [];
   }
 
-  const errs: E[] = []
+  const errs: E[] = [];
 
   for (const [i, result] of results.entries()) {
     if (!isResult(result)) {
       throw new ResultTypeError(
         `Result.errors() received an invalid value at index [${i}]: expected a Result, got "${typeof result}"`,
         result,
-      )
+      );
     }
 
     if (result.isErr()) {
-      errs.push(result.unwrapErr())
+      errs.push(result.unwrapErr());
     }
   }
 
-  return errs
+  return errs;
 }
 
 // #endregion

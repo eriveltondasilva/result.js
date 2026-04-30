@@ -1,5 +1,5 @@
-import type { Result } from './index'
-import type { SettledResult } from './settled'
+import type { Result } from './index';
+import type { SettledResult } from './settled';
 
 /**
  * Extracts the success value type from a {@link Result}.
@@ -17,7 +17,7 @@ import type { SettledResult } from './settled'
  * // => number
  */
 export type InferOk<TResult extends Result<unknown, unknown>> =
-  TResult extends Result<infer TValue, unknown> ? TValue : never
+  TResult extends Result<infer TValue, unknown> ? TValue : never;
 
 /**
  * Extracts the error type from a {@link Result}.
@@ -35,7 +35,7 @@ export type InferOk<TResult extends Result<unknown, unknown>> =
  * // => string
  */
 export type InferErr<TResult extends Result<unknown, unknown>> =
-  TResult extends Result<unknown, infer TError> ? TError : never
+  TResult extends Result<unknown, infer TError> ? TError : never;
 
 // # TUPLES
 
@@ -53,8 +53,8 @@ export type InferErr<TResult extends Result<unknown, unknown>> =
  * // => [number, string]
  */
 export type OkTuple<TResults extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof TResults]: InferOk<TResults[K]>
-}
+  readonly [K in keyof TResults]: InferOk<TResults[K]>;
+};
 
 /**
  * Maps a tuple of {@link Result} types to a tuple of error value types.
@@ -72,8 +72,8 @@ export type OkTuple<TResults extends readonly Result<unknown, unknown>[]> = {
  * // => [string, Error]
  */
 export type ErrTuple<TResults extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof TResults]: InferErr<TResults[K]>
-}
+  readonly [K in keyof TResults]: InferErr<TResults[K]>;
+};
 
 // # UNION
 
@@ -92,7 +92,7 @@ export type ErrTuple<TResults extends readonly Result<unknown, unknown>[]> = {
  */
 export type OkUnion<TResults extends readonly Result<unknown, unknown>[]> = InferOk<
   TResults[number]
->
+>;
 
 /**
  * Extracts a union of all error value types from a tuple of {@link Result} types.
@@ -109,7 +109,7 @@ export type OkUnion<TResults extends readonly Result<unknown, unknown>[]> = Infe
  */
 export type ErrUnion<TResults extends readonly Result<unknown, unknown>[]> = InferErr<
   TResults[number]
->
+>;
 
 /**
  * Maps a tuple of {@link Result} types to a tuple of {@link SettledResult} types.
@@ -127,5 +127,5 @@ export type ErrUnion<TResults extends readonly Result<unknown, unknown>[]> = Inf
  * // => [SettledResult<number, string>]
  */
 export type SettledTuple<TResults extends readonly Result<unknown, unknown>[]> = {
-  readonly [K in keyof TResults]: SettledResult<InferOk<TResults[K]>, InferErr<TResults[K]>>
-}
+  readonly [K in keyof TResults]: SettledResult<InferOk<TResults[K]>, InferErr<TResults[K]>>;
+};

@@ -1,5 +1,5 @@
-import type { TAG } from '@/brand'
-import type { ResultMethods } from './methods'
+import type { TAG } from '@/brand';
+import type { ResultMethods } from './methods';
 
 /**
  * Successful variant of {@link Result}.
@@ -17,12 +17,12 @@ import type { ResultMethods } from './methods'
  */
 export interface Ok<TValue, TError = never> extends ResultMethods<TValue, TError> {
   /** @internal */
-  readonly _tag: typeof TAG.Ok
+  readonly _tag: typeof TAG.Ok;
 
-  unwrap(): TValue
-  unwrapErr(): never
+  unwrap(): TValue;
+  unwrapErr(): never;
 
-  toJSON(): { type: 'ok'; value: TValue }
+  toJSON(): { type: 'ok'; value: TValue };
 }
 
 /**
@@ -41,12 +41,12 @@ export interface Ok<TValue, TError = never> extends ResultMethods<TValue, TError
  */
 export interface Err<TValue = never, TError = Error> extends ResultMethods<TValue, TError> {
   /** @internal */
-  readonly _tag: typeof TAG.Err
+  readonly _tag: typeof TAG.Err;
 
-  unwrap(): never
-  unwrapErr(): TError
+  unwrap(): never;
+  unwrapErr(): TError;
 
-  toJSON(): { type: 'err'; error: TError }
+  toJSON(): { type: 'err'; error: TError };
 }
 
 /**
@@ -67,7 +67,7 @@ export interface Err<TValue = never, TError = Error> extends ResultMethods<TValu
  * divide(10, 2) // => Ok(5)
  * divide(10, 0) // => Err("Division by zero")
  */
-export type Result<TValue, TError> = Ok<TValue, TError> | Err<TValue, TError>
+export type Result<TValue, TError> = Ok<TValue, TError> | Err<TValue, TError>;
 
 /**
  * Promise that resolves to a {@link Result}.
@@ -85,4 +85,4 @@ export type Result<TValue, TError> = Ok<TValue, TError> | Err<TValue, TError>
  * const result = await getUser(1)
  * // => Ok(User) | Err(Error("..."))
  */
-export type AsyncResult<TValue, TError> = Promise<Result<TValue, TError>>
+export type AsyncResult<TValue, TError> = Promise<Result<TValue, TError>>;
