@@ -1,11 +1,11 @@
-# Result.js — Tipo Result Inspirado en Rust
+# Result.js
 
-[![result.js](https://img.shields.io/npm/v/@eriveltonsilva/result.js.svg)](https://www.npmjs.com/package/@eriveltonsilva/result.js)
-![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-blue)
-[![TypeScript](https://img.shields.io/badge/TypeScript-%3E%3D5.0.0-blue)](https://www.typescriptlang.org/)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)](https://www.npmjs.com/package/@eriveltonsilva/result.js)
-![Size](https://img.shields.io/bundlephobia/minzip/@eriveltonsilva/result.js)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![npm size](https://img.shields.io/npm/unpacked-size/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![CI](https://github.com/eriveltondasilva/result.js/workflows/CI/badge.svg)](https://github.com/eriveltondasilva/result.js/actions)
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?logo=biome)](https://biomejs.dev)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ![Result.js](./src/assets/resultjs-banner.png)
 
@@ -27,20 +27,21 @@ Un tipo Result ligero e inspirado en Rust para Javascript y Typescript. Maneja l
 ### Instalación
 
 ```bash
-npm install @eriveltonsilva/result.js
+npm install @eriveltondasilva/result.js
+```
+
+```bash
+bun add @eriveltondasilva/result.js
 ```
 
 ### Importación
 
 ```typescript
 // ES6 - Recomendado
-import { Result } from '@eriveltonsilva/result.js'
+import { Result } from '@eriveltondasilva/result.js'
 
 // ES6 - Importación por defecto
-import Result from '@eriveltonsilva/result.js'
-
-// CommonJS
-const { Result } = require('@eriveltonsilva/result.js')
+import Result from '@eriveltondasilva/result.js'
 ```
 
 ### Uso Básico
@@ -48,31 +49,44 @@ const { Result } = require('@eriveltonsilva/result.js')
 ```typescript
 // Crear Results
 const exito = Result.ok(42)
+// => Ok(42)
 const error = Result.err(new Error('Algo salió mal'))
+// => Err(Error: 'Algo salió mal')
 
 // Verificar y extraer
 if (exito.isOk()) {
-  console.log(exito.unwrap()) // 42
+  console.log(exito.unwrap())
+  // => 42
 }
 
 // Encadenar operaciones
 const duplicado = Result.ok(21)
   .map((x) => x * 2)
   .andThen((x) => Result.ok(x + 10))
-  .unwrap() // 52
+  .unwrap()
+// => 52
 
 // Pattern matching
-const resultado = Result.ok(42)
-  .match({
-    ok: (valor) => valor * 2,
-    err: (error) => error.message,
-  }) // 84
+const resultado = Result.ok(42).match({
+  ok: (valor) => valor * 2,
+  err: (error) => error.message,
+})
+// => 84
 
 // Manejar errores con seguridad
 const resultado = Result.fromTry(
   () => JSON.parse('inválido'),
-  (error) => new Error(`JSON inválido: ${error}`)
-) // Error: JSON inválido: SyntaxError: Unexpected token, "inválido" is not valid JSON
+  (error) => new Error(`JSON inválido: ${error}`),
+)
+// => Err(Error: "JSON inválido: SyntaxError: Unexpected token, 'inválido' is not valid JSON")
+
+// Async/await usage
+const user = await Result.fromPromise(async () => {
+  const data = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+  return data.json()
+})
+// => Ok({userId: 1, id: 1, title: 'delectus aut autem', completed: false})
+
 ```
 
 ## Documentación
@@ -81,9 +95,9 @@ Para guías completas, referencia de API y patrones de uso avanzados, consulta l
 
 Aprende más:
 
-- [Inicio Rápido](https://eriveltondasilva.github.io/result.js/guide/getting-started/quick-start.md)
-- [Ejemplos](https://eriveltondasilva.github.io/result.js/examples/patterns.md)
-- [Referencia de API](https://eriveltondasilva.github.io/result.js/reference/index.md)
+- [Inicio Rápido](https://eriveltondasilva.github.io/result.js/guide/getting-started/quick-start)
+- [Ejemplos](https://eriveltondasilva.github.io/result.js/examples/patterns)
+- [Referencia de API](https://eriveltondasilva.github.io/result.js/reference)
 
 ## Changelog
 
@@ -105,3 +119,22 @@ Inspirado por:
 - [Tipo Result de Gleam](https://hexdocs.pm/gleam_stdlib/gleam/result.html)
 - [oxide.ts](https://www.npmjs.com/package/oxide.ts)
 - [result.ts](https://www.npmjs.com/package/result.ts)
+
+## Proyectos Relacionados
+
+- [eriveltondasilva/option.js](https://github.com/eriveltondasilva/option.js) - Un tipo Option ligero y inspirado en Rust para Javascript y Typescript.
+
+```typescript
+import { Option } from '@eriveltondasilva/option.js'
+import { Result } from '@eriveltondasilva/result.js'
+
+const user = Option.fromNullable(null)
+// => None
+
+// Conversión de Option a Result con pattern matching
+const userResult = user.match({
+  some: (val) => Result.ok(val),
+  none: () => Result.err('Usuario no encontrado'),
+})
+// => Err('Usuario no encontrado')
+```

@@ -1,104 +1,65 @@
-import * as factories from './core/factories.js'
+import type { Result as _Result } from './types';
 
-import { Err } from './core/err.js'
-import { Ok } from './core/ok.js'
+import result from './result';
 
-// #region TYPE
+export type { AsyncResult, Err, Ok } from './types';
 
 /**
- * Represents a result that can be either success (Ok) or failure (Err).
+ * Utilities for creating and composing {@link Result} values.
  *
- * @see {@link AsyncResult} for async version
- * @template T - Success value type
- * @template E - Error type
+ * @see {@link Ok} - success
+ * @see {@link Err} - failure
+ * @see {@link Result} - sync version
+ * @see {@link AsyncResult} - async version
+ *
+ * `Result<T, E>` represents either:
+ *
+ * - {@link Ok} — success containing `T`
+ * - {@link Err} — failure containing `E`
+ *
+ * Inspired by Rust's `Result<T, E>`, enabling explicit error handling without exceptions.
+ *
+ * @remarks
+ * Runtime namespace with helpers such as:
+ *
+ * - `Result.ok(value)`
+ * - `Result.err(error)`
+ * - `Result.fromTry(fn)`
+ * - `Result.fromPromise(fn)`
+ * - `Result.fromNullable(value)`
+ * - `Result.all(results)`
+ *
+ * Also exported as a type alias:
  *
  * @example
- * ```ts
  * function divide(a: number, b: number): Result<number, string> {
- *   if (b === 0) {
- *     return Result.err('Division by zero')
- *   }
- *
+ *   if (b === 0) return Result.err('division by zero')
  *   return Result.ok(a / b)
  * }
  *
- * const result = divide(10, 2)
- *
- * if (result.isOk()) {
- *   console.log(result.unwrap()) // 5
- * }
- * ```
- */
-export type Result<T, E> = Ok<T, E> | Err<T, E>
-
-/**
- * Represents a Promise that resolves to a Result.
- *
- * @template T - Success value type
- * @template E - Error type
+ * @example
+ * const value = Result
+ *   .ok(10)
+ *   .map((x) => x * 2)
+ *   .andThen((x) => Result.ok(x + 5))
+ * // => Ok(25)
  *
  * @example
- * ```ts
- * async function fetchUser(id: string): AsyncResult<User, Error> {
- *   return Result.fromPromise(
- *     async () => {
- *       const response = await fetch(`/api/users/${id}`)
- *       return response.json()
- *     }
- *   )
- * }
- * ```
- */
-export type AsyncResult<T, E> = Promise<Result<T, E>>
-
-// #endregion
-
-/**
- * Result is a type that represents an operation that can succeed (Ok) or fail (Err),
- * without using exceptions. Inspired by Rust's Result<T, E>.
- *
- * @remarks
- * Provides a fluent and type-safe API for error handling, allowing you to chain
- * operations, transform values, and handle success/failure cases explicitly.
- *
- * @namespace
- * @readonly
- *
- * @example
- * // Basic creation
- * const success = Result.ok(42)
- * const failure = Result.err(new Error('failed'))
- *
- * @example
- * // Transformation and chaining
- * const result = Result.ok(21)
- *   .map(x => x * 2)
- *   .andThen(x => Result.ok(x + 10))
- *   .unwrap() // 52
- *
- * @example
- * // Error handling with try/catch
- * const parsed = Result.fromTry(() => JSON.parse('{"a":1}'))
- *
- * if (parsed.isOk()) {
- *   console.log(parsed.unwrap()) // {a: 1}
- * }
- *
- * @example
- * // Async/await
- * const user = await Result.fromPromise(
- *   async () => fetch('/api/user').then(r => r.json())
+ * const parsed = Result.fromTry(
+ *   () => JSON.parse(input)
  * )
+ * // => Ok(parsed) | Err(Error)
  *
  * @example
- * // Combining multiple Results
- * const [a, b, c] = Result.all([
- *   Result.ok(1),
- *   Result.ok(2),
- *   Result.ok(3)
- * ]).unwrap() // [1, 2, 3]
+ * const user = await Result.fromPromise(
+ *   () => fetchUser(id)
+ * )
+ * // => Ok(user) | Err(Error)
  */
-export const Result = Object.freeze({ ...factories } as const)
+export const Result = Object.freeze(result);
 
-export { Ok, Err }
-export default Result
+export const { err, ok } = result;
+
+export type Result<T, E> = _Result<T, E>;
+
+export default Result;
