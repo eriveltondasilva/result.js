@@ -3,6 +3,8 @@ name: Deploy VitePress site to Pages
 on:
   workflow_call:
 
+  workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
