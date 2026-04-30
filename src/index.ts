@@ -9,6 +9,7 @@ export type { AsyncResult, Err, Ok } from './types';
  *
  * @see {@link Ok} - success
  * @see {@link Err} - failure
+ * @see {@link Result} - sync version
  * @see {@link AsyncResult} - async version
  *
  * `Result<T, E>` represents either:
@@ -44,10 +45,16 @@ export type { AsyncResult, Err, Ok } from './types';
  * // => Ok(25)
  *
  * @example
- * const parsed = Result.fromTry(() => JSON.parse(input))
+ * const parsed = Result.fromTry(
+ *   () => JSON.parse(input)
+ * )
+ * // => Ok(parsed) | Err(Error)
  *
  * @example
- * const user = await Result.fromPromise(() => fetchUser(id))
+ * const user = await Result.fromPromise(
+ *   () => fetchUser(id)
+ * )
+ * // => Ok(user) | Err(Error)
  */
 export const Result = Object.freeze(result);
 

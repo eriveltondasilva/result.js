@@ -594,8 +594,8 @@ export interface ResultMethods<TValue, TError> {
    *
    * @example
    * Result.ok(42).contains(42)                 // => true
-   * Result.ok(42).contains(99)                 // => false
    * Result.ok({ id: 42 }).contains({ id: 42 }) // => true
+   * Result.ok(42).contains(99)                 // => false
    * Result.err('fail').contains(42)            // => false
    */
   contains<U extends TValue>(value: U): boolean;
