@@ -89,7 +89,7 @@ jobs:
           echo "✅ Build output verified"
 
       - name: Pack
-        run: bun pm pack
+        run: bun pm pack --ignore-scripts
 
       - name: Validate package
         run: bunx publint

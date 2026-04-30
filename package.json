@@ -65,7 +65,7 @@
     "4xxx": "",
     "types": "tsc --noEmit -p tsconfig.json",
     "dev": "bun run types && bun run check:fix && bun run test",
-    "prepare": "husky"
+    "init:husky": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.13",
