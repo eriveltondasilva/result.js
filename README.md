@@ -95,8 +95,7 @@ For comprehensive guides, API reference, and advanced usage patterns, see the **
 
 Learn more:
 
-- [Quick Start](https://eriveltondasilva.github.io/result.js/guide/getting-started/quick-start)
-- [Examples](https://eriveltondasilva.github.io/result.js/examples/patterns)
+- [Quick Start](https://eriveltondasilva.github.io/result.js/guide/getting-started/03.quick-start)
 - [API Reference](https://eriveltondasilva.github.io/result.js/reference)
 
 ## Changelog
