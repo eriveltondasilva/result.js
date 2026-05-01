@@ -14,7 +14,7 @@ git pull origin main
 
 npm version "$BUMP" --no-git-tag-version
 
-VERSION=$(jq -r .version package.json)
+VERSION=$(bun -e "console.log(require('./package.json').version)")
 BRANCH="release/v$VERSION"
 
 git checkout -b "$BRANCH"
