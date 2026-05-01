@@ -5,7 +5,7 @@ set -e
 git checkout main
 git pull origin main
 
-VERSION=$(jq -r .version package.json)
+VERSION=$(bun -e "console.log(require('./package.json').version)")
 TAG="v$VERSION"
 
 if git tag | grep -q "^$TAG$"; then
