@@ -53,12 +53,25 @@ npm install @eriveltondasilva/result.js
 Requires node.js 20.0.0+
 :::
 
+## Import
+
+```typescript
+// Recommended
+import { Result } from '@eriveltondasilva/result.js'
+
+// Default Import
+import Result from '@eriveltondasilva/result.js'
+
+// Named Import - shortcuts for Result.ok() and Result.err()
+import { ok, err } from '@eriveltondasilva/result.js'
+
+// Types
+import type { Result, AsyncResult, Ok, Err } from '@eriveltondasilva/result.js'
+```
+
 ## Basic Example
 
 ```typescript
-import { Result } from '@eriveltondasilva/result.js'
-// import Result from '@eriveltondasilva/result.js'
-
 // Create Results
 const success = Result.ok(42)
 const failure = Result.err(new Error('Something went wrong'))
