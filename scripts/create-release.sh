@@ -22,5 +22,7 @@ git add package.json
 git commit -m "chore: bump version to v$VERSION"
 git push origin "$BRANCH"
 
+echo ""
+
 echo "✅ Branch $BRANCH created and pushed"
 echo "👉 Open a PR: $BRANCH → main"
