@@ -37,11 +37,17 @@ bun add @eriveltondasilva/result.js
 ### Importação
 
 ```typescript
-// ES6 - Recomendado
+// Recomendado
 import { Result } from '@eriveltondasilva/result.js'
 
-// ES6 - Importação padrão
+// Importação padrão
 import Result from '@eriveltondasilva/result.js'
+
+// Importação de helpers - atalhos para Result.ok() e Result.err()
+import { ok, err } from '@eriveltondasilva/result.js'
+
+// Tipos de Result
+import { Result, AsyncResult, Ok, Err } from '@eriveltondasilva/result.js'
 ```
 
 ### Uso Básico
