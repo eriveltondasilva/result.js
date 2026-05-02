@@ -1,8 +1,8 @@
 # Result.js
 
 [![npm version](https://img.shields.io/npm/v/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
-[![npm size](https://img.shields.io/npm/unpacked-size/@eriveltondasilva/result.js)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
-[![CI](https://github.com/eriveltondasilva/result.js/workflows/CI/badge.svg)](https://github.com/eriveltondasilva/result.js/actions)
+[![npm package minimized gzipped size (scoped)](https://img.shields.io/bundlejs/size/%40eriveltondasilva/result.js?format=both)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
+[![Pull Request](https://github.com/eriveltondasilva/result.js/actions/workflows/pull-request.yml/badge.svg)](https://github.com/eriveltondasilva/result.js/actions/workflows/pull-request.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?logo=biome)](https://biomejs.dev)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)](https://www.npmjs.com/package/@eriveltondasilva/result.js)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
