@@ -4,7 +4,7 @@ import type { SettledResult } from '../types/settled';
 
 import { ERR_TAG, Err } from '../lib/err';
 import { OK_TAG, Ok } from '../lib/ok';
-import { ensureError, hasNoItems, ResultTypeError } from '../lib/utils';
+import { ensureError, hasNoItems, isRecord, ResultTypeError } from '../lib/utils';
 
 // #region Type Guards
 
@@ -29,7 +29,7 @@ import { ensureError, hasNoItems, ResultTypeError } from '../lib/utils';
  * // false
  */
 function isOk(value: unknown): value is Ok<unknown, never> {
-  return value != null && typeof value === 'object' && OK_TAG in value;
+  return isRecord(value) && OK_TAG in value;
 }
 
 /**
@@ -53,7 +53,7 @@ function isOk(value: unknown): value is Ok<unknown, never> {
  * // false
  */
 function isErr(value: unknown): value is Err<never, unknown> {
-  return value != null && typeof value === 'object' && ERR_TAG in value;
+  return isRecord(value) && ERR_TAG in value;
 }
 
 /**
@@ -83,7 +83,7 @@ function isErr(value: unknown): value is Err<never, unknown> {
  * // false
  */
 function isResult(value: unknown): value is Result<unknown, unknown> {
-  return value != null && typeof value === 'object' && (OK_TAG in value || ERR_TAG in value);
+  return isRecord(value) && (OK_TAG in value || ERR_TAG in value);
 }
 
 // #endregion
