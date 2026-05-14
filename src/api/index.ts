@@ -2,9 +2,8 @@ import type { AsyncResult, Result } from '../types';
 import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from '../types/inference';
 import type { SettledResult } from '../types/settled';
 
-import { TAG } from '../lib/brand';
-import { Err } from '../lib/err';
-import { Ok } from '../lib/ok';
+import { ERR_TAG, Err } from '../lib/err';
+import { OK_TAG, Ok } from '../lib/ok';
 import { ensureError, isEmptyArray, ResultTypeError } from '../lib/utils';
 
 // #region Type Guards
@@ -30,7 +29,7 @@ import { ensureError, isEmptyArray, ResultTypeError } from '../lib/utils';
  * // false
  */
 function isOk(value: unknown): value is Ok<unknown, never> {
-  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Ok;
+  return value != null && typeof value === 'object' && OK_TAG in value;
 }
 
 /**
@@ -54,7 +53,7 @@ function isOk(value: unknown): value is Ok<unknown, never> {
  * // false
  */
 function isErr(value: unknown): value is Err<never, unknown> {
-  return value != null && typeof value === 'object' && '_tag' in value && value._tag === TAG.Err;
+  return value != null && typeof value === 'object' && ERR_TAG in value;
 }
 
 /**
@@ -84,12 +83,7 @@ function isErr(value: unknown): value is Err<never, unknown> {
  * // false
  */
 function isResult(value: unknown): value is Result<unknown, unknown> {
-  return (
-    value != null &&
-    typeof value === 'object' &&
-    '_tag' in value &&
-    (value._tag === TAG.Ok || value._tag === TAG.Err)
-  );
+  return value != null && typeof value === 'object' && (OK_TAG in value || ERR_TAG in value);
 }
 
 // #endregion

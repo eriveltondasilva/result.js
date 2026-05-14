@@ -1,12 +1,13 @@
 import type { AsyncResult, Err as IErr, Ok as IOk, Result } from '../types';
 import type { MatchCases } from '../types/methods';
 
-import { TAG } from './brand';
 import { Err } from './err';
 import { formatForDisplay } from './utils';
 
+export const OK_TAG = Symbol('Result.Ok');
+
 export class Ok<T, E = never> implements IOk<T, E> {
-  readonly _tag = TAG.Ok;
+  readonly [OK_TAG] = true;
   readonly #value: T;
 
   constructor(value: T) {

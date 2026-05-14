@@ -1,11 +1,12 @@
 import type { AsyncResult, Err as IErr, Ok as IOk, Result } from '../types';
 import type { MatchCases } from '../types/methods';
 
-import { TAG } from './brand';
 import { formatForDisplay } from './utils';
 
+export const ERR_TAG = Symbol('Result.Err');
+
 export class Err<T = never, E = Error> implements IErr<T, E> {
-  readonly _tag = TAG.Err;
+  readonly [ERR_TAG] = true;
   readonly #error: E;
 
   constructor(error: E) {
