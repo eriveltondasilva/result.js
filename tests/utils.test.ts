@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ensureError, formatForDisplay, isEmptyArray, ResultTypeError } from '@/utils';
+import { ensureError, formatForDisplay, isEmptyArray, ResultTypeError } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // ResultTypeError

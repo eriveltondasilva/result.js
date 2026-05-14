@@ -1,4 +1,4 @@
-import type { TAG } from '@/brand';
+import type { TAG } from '@/lib/brand';
 import type { ResultMethods } from './methods';
 
 /**

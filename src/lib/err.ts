@@ -1,5 +1,5 @@
-import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types';
-import type { MatchCases } from './types/methods';
+import type { AsyncResult, Err as IErr, Ok as IOk, Result } from '../types';
+import type { MatchCases } from '../types/methods';
 
 import { TAG } from './brand';
 import { formatForDisplay } from './utils';
