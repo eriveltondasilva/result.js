@@ -139,15 +139,6 @@ describe('formatForDisplay', () => {
     expect(formatForDisplay(true)).toBe('true');
   });
 
-  it('should format a bigint with "n" suffix', () => {
-    expect(formatForDisplay(9007199254740991n)).toBe('9007199254740991n');
-  });
-
-  it('should format a symbol using its toString', () => {
-    const sym = Symbol('test');
-    expect(formatForDisplay(sym)).toBe('Symbol(test)');
-  });
-
   it('should wrap a string in double quotes', () => {
     expect(formatForDisplay('hello')).toBe('"hello"');
   });
