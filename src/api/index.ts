@@ -4,7 +4,7 @@ import type { SettledResult } from '../types/settled';
 
 import { ERR_TAG, Err } from '../lib/err';
 import { OK_TAG, Ok } from '../lib/ok';
-import { ensureError, isEmptyArray, ResultTypeError } from '../lib/utils';
+import { ensureError, hasNoItems, ResultTypeError } from '../lib/utils';
 
 // #region Type Guards
 
@@ -461,7 +461,7 @@ function validate<TValue, TError = Error>(
 function all<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Result<OkTuple<TResults>, ErrUnion<TResults>> {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return new Ok([]) as Result<OkTuple<TResults>, ErrUnion<TResults>>;
   }
 
@@ -517,7 +517,7 @@ function all<const TResults extends readonly Result<unknown, unknown>[]>(
 function allSettled<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Ok<SettledTuple<TResults>> {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return new Ok([]) as Ok<SettledTuple<TResults>>;
   }
 
@@ -582,7 +582,7 @@ function allSettled<const TResults extends readonly Result<unknown, unknown>[]>(
 function any<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
 ): Result<OkUnion<TResults>, ErrTuple<TResults>> {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return new Err([]) as Result<OkUnion<TResults>, ErrTuple<TResults>>;
   }
 
@@ -638,7 +638,7 @@ function any<const TResults extends readonly Result<unknown, unknown>[]>(
  * // => [[], []]
  */
 function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return [[], []];
   }
 
@@ -686,7 +686,7 @@ function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  * // []
  */
 function values<T, E>(results: readonly Result<T, E>[]): T[] {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return [];
   }
 
@@ -736,7 +736,7 @@ function values<T, E>(results: readonly Result<T, E>[]): T[] {
  * // => []
  */
 function errors<T, E>(results: readonly Result<T, E>[]): E[] {
-  if (isEmptyArray(results)) {
+  if (hasNoItems(results)) {
     return [];
   }
 

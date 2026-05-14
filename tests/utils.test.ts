@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ensureError, formatForDisplay, isEmptyArray, ResultTypeError } from '@/lib/utils';
+import { ensureError, formatForDisplay, hasNoItems, ResultTypeError } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // ResultTypeError
@@ -46,31 +46,31 @@ describe('ResultTypeError', () => {
 
 describe('isEmptyArray', () => {
   it('should return true for an empty array', () => {
-    expect(isEmptyArray([])).toBe(true);
+    expect(hasNoItems([])).toBe(true);
   });
 
   it('should return false for a non-empty array', () => {
-    expect(isEmptyArray([1, 2, 3])).toBe(false);
+    expect(hasNoItems([1, 2, 3])).toBe(false);
   });
 
   it('should throw TypeError when receiving a string', () => {
-    expect(() => isEmptyArray('hello')).toThrow(TypeError);
+    expect(() => hasNoItems('hello')).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving null', () => {
-    expect(() => isEmptyArray(null)).toThrow(TypeError);
+    expect(() => hasNoItems(null)).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving a number', () => {
-    expect(() => isEmptyArray(42)).toThrow(TypeError);
+    expect(() => hasNoItems(42)).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving a plain object', () => {
-    expect(() => isEmptyArray({ length: 0 })).toThrow(TypeError);
+    expect(() => hasNoItems({ length: 0 })).toThrow(TypeError);
   });
 
   it('should include the received type in the error message', () => {
-    expect(() => isEmptyArray('x')).toThrow('string');
+    expect(() => hasNoItems('x')).toThrow('string');
   });
 });
 
