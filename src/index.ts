@@ -1,6 +1,6 @@
 import type { Result as _Result } from './types';
 
-import result from './result';
+import result from './api';
 
 export type { AsyncResult, Err, Ok } from './types';
 

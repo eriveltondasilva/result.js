@@ -1,11 +1,11 @@
-import type { AsyncResult, Result } from './types';
-import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from './types/inference';
-import type { SettledResult } from './types/settled';
+import type { AsyncResult, Result } from '../types';
+import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from '../types/inference';
+import type { SettledResult } from '../types/settled';
 
-import { TAG } from './brand';
-import { Err } from './err';
-import { Ok } from './ok';
-import { ensureError, isEmptyArray, ResultTypeError } from './utils';
+import { TAG } from '../lib/brand';
+import { Err } from '../lib/err';
+import { Ok } from '../lib/ok';
+import { ensureError, isEmptyArray, ResultTypeError } from '../lib/utils';
 
 // #region Type Guards
 
