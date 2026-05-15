@@ -215,7 +215,7 @@ describe('Result#contains', () => {
   });
 
   it('should return false for Err regardless of value', () => {
-    expect(Result.err('x').contains('x')).toBe(false);
+    expect(Result.err('x').contains('x' as never)).toBe(false);
   });
 
   it('should use a custom comparator when provided', () => {
@@ -225,7 +225,7 @@ describe('Result#contains', () => {
 
   it('should deep-equal objects when no comparator is given', () => {
     expect(Result.ok({ a: 1 }).contains({ a: 1 })).toBe(true);
-    expect(Result.ok({ a: 1 }).contains({ a: '10' })).toBe(false);
+    expect(Result.ok({ a: 1 }).contains({ a: '10' as unknown as number })).toBe(false);
   });
 });
 
