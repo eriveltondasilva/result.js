@@ -1,4 +1,4 @@
-import type { AsyncResult, Err, Ok , Result } from '@/types';
+import type { AsyncResult, Err, Ok, Result } from '@/types';
 import type { MatchCases } from '@/types/methods';
 
 import { ErrClass } from './err';

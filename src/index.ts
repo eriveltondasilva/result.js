@@ -70,7 +70,7 @@ export { all, allSettled, any, errors, partition, values } from './api/collectio
 
 export { isErr, isOk, isResult } from './api/type-guards';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Other ───────────────────────────────────────────────────────────────────
 
 export type Result<T, E> = _Result<T, E>;
 
