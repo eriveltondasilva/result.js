@@ -1,10 +1,12 @@
-import { OkClass } from "@/lib/ok";
-import { hasNoItems, ResultTypeError } from "@/lib/utils";
-import type { Result } from "@/types";
-import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from "@/types/inference";
-import { isResult } from "./type-guards";
-import type { SettledResult } from "@/types/settled";
-import { ErrClass } from "@/lib/err";
+import type { Result } from '@/types';
+import type { ErrTuple, ErrUnion, OkTuple, OkUnion, SettledTuple } from '@/types/inference';
+import type { SettledResult } from '@/types/settled';
+
+import { isResult } from './type-guards';
+
+import { ErrClass } from '@/lib/err';
+import { OkClass } from '@/lib/ok';
+import { hasNoItems, ResultTypeError } from '@/lib/utils';
 
 /**
  * Combines multiple {@link Result} values into a single result containing a tuple of success values.
@@ -97,9 +99,9 @@ export function all<const TResults extends readonly Result<unknown, unknown>[]>(
  */
 export function allSettled<const TResults extends readonly Result<unknown, unknown>[]>(
   results: TResults,
-): OkClass<SettledTuple<TResults>> {
+): Result<SettledTuple<TResults>, ErrUnion<TResults>> {
   if (hasNoItems(results)) {
-    return new OkClass([]) as OkClass<SettledTuple<TResults>>;
+    return new OkClass([]) as Result<SettledTuple<TResults>, ErrUnion<TResults>>;
   }
 
   const settledResults: SettledResult<OkUnion<TResults>, ErrUnion<TResults>>[] = [];
