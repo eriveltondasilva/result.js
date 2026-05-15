@@ -37,14 +37,11 @@ bun add @eriveltondasilva/result.js
 ### Import
 
 ```typescript
-// Recommended
-import { Result } from '@eriveltondasilva/result.js'
+// Named imports (recommended — better tree-shaking)
+import { ok, err, ... } from '@eriveltondasilva/result.js'
 
 // Default Import
 import Result from '@eriveltondasilva/result.js'
-
-// Named Helpers - shortcuts for Result.ok() and Result.err()
-import { ok, err } from '@eriveltondasilva/result.js'
 
 // Types
 import type { Result, AsyncResult, Ok, Err } from '@eriveltondasilva/result.js'
