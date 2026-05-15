@@ -21,6 +21,8 @@ import { hasNoItems, ResultTypeError } from '@/lib/utils';
  *
  * @param {TResults} results - Collection of results to combine.
  *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
+ *
  * @example
  * Result.all([
  *   Result.ok(1),
@@ -83,6 +85,8 @@ export function all<const TResults extends readonly Result<unknown, unknown>[]>(
  *
  * @param results - Collection of results to inspect.
  *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
+ *
  * @example
  * const settled = Result.allSettled([
  *   Result.ok(1),
@@ -141,6 +145,8 @@ export function allSettled<const TResults extends readonly Result<unknown, unkno
  * @template TResults - Tuple of result types.
  *
  * @param results Collection of results to evaluate.
+ *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
  *
  * @example
  * Result.any([
@@ -207,6 +213,8 @@ export function any<const TResults extends readonly Result<unknown, unknown>[]>(
  *
  * @param results - Collection of results to partition.
  *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
+ *
  * @example
  * const [oks, errs] = Result.partition([
  *   Result.ok(1),
@@ -256,6 +264,8 @@ export function partition<T, E>(results: readonly Result<T, E>[]): [T[], E[]] {
  *
  * @param results - Collection of results.
  *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
+ *
  * @example
  * Result.values([
  *   Result.ok(1),
@@ -304,6 +314,8 @@ export function values<T, E>(results: readonly Result<T, E>[]): T[] {
  * @template E - Error value type
  *
  * @param results - Collection of results.
+ *
+ * @throws {ResultTypeError} - If any item in the collection is not a {@link Result}.
  *
  * @example
  * Result.errors([

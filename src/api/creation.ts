@@ -262,7 +262,7 @@ export function fromNullable<TValue, TError = Error>(
 ): Result<NonNullable<TValue>, TError | Error> {
   if (value == null) {
     return new ErrClass(
-      onNull ? onNull() : new Error('Value is null or undefined', { cause: value }),
+      onNull ? onNull() : new Error('Value is null or undefined.', { cause: value }),
     );
   }
 
@@ -332,7 +332,7 @@ export function validate<TValue, TError = Error>(
 ): Result<TValue, TError | Error> {
   if (!condition(value)) {
     return new ErrClass(
-      onFailure ? onFailure(value) : new Error('Validation failed for value', { cause: value }),
+      onFailure ? onFailure(value) : new Error('Validation failed for value.', { cause: value }),
     );
   }
 

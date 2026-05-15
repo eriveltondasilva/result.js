@@ -36,7 +36,7 @@ export class ErrClass<T = never, E = Error> implements Err<T, E> {
   // #region Extraction
 
   unwrap(): never {
-    throw new Error('Called unwrap on an Err value', { cause: this.#error });
+    throw new Error('Called unwrap on an Err value.', { cause: this.#error });
   }
 
   unwrapErr(): E {

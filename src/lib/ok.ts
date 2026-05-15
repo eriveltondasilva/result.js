@@ -41,7 +41,7 @@ export class OkClass<T, E = never> implements Ok<T, E> {
   }
 
   unwrapErr(): never {
-    throw new Error('Called unwrapErr on an Ok value', { cause: this.#value });
+    throw new Error('Called unwrapErr on an Ok value.', { cause: this.#value });
   }
 
   unwrapOr<U = T>(_defaultValue: U): T | U {
@@ -82,7 +82,7 @@ export class OkClass<T, E = never> implements Ok<T, E> {
 
   filter(condition: (value: T) => boolean, reason?: string): Result<T, Error> {
     if (!condition(this.#value)) {
-      return new ErrClass(new Error(reason ?? 'Filter predicate failed', { cause: this.#value }));
+      return new ErrClass(new Error(reason ?? 'Filter predicate failed.', { cause: this.#value }));
     }
 
     return this as unknown as Result<T, Error>;
