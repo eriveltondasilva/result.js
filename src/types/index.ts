@@ -1,4 +1,3 @@
-import type { TAG } from '@/brand';
 import type { ResultMethods } from './methods';
 
 /**
@@ -16,9 +15,6 @@ import type { ResultMethods } from './methods';
  * result.unwrap() // => Ok(42)
  */
 export interface Ok<TValue, TError = never> extends ResultMethods<TValue, TError> {
-  /** @internal */
-  readonly _tag: typeof TAG.Ok;
-
   unwrap(): TValue;
   unwrapErr(): never;
 
@@ -40,9 +36,6 @@ export interface Ok<TValue, TError = never> extends ResultMethods<TValue, TError
  * result.unwrapErr() // => Err("failed")
  */
 export interface Err<TValue = never, TError = Error> extends ResultMethods<TValue, TError> {
-  /** @internal */
-  readonly _tag: typeof TAG.Err;
-
   unwrap(): never;
   unwrapErr(): TError;
 

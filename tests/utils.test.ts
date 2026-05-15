@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ensureError, formatForDisplay, isEmptyArray, ResultTypeError } from '@/utils';
+import { ensureError, formatForDisplay, hasNoItems, ResultTypeError } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // ResultTypeError
@@ -46,31 +46,31 @@ describe('ResultTypeError', () => {
 
 describe('isEmptyArray', () => {
   it('should return true for an empty array', () => {
-    expect(isEmptyArray([])).toBe(true);
+    expect(hasNoItems([])).toBe(true);
   });
 
   it('should return false for a non-empty array', () => {
-    expect(isEmptyArray([1, 2, 3])).toBe(false);
+    expect(hasNoItems([1, 2, 3])).toBe(false);
   });
 
   it('should throw TypeError when receiving a string', () => {
-    expect(() => isEmptyArray('hello')).toThrow(TypeError);
+    expect(() => hasNoItems('hello')).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving null', () => {
-    expect(() => isEmptyArray(null)).toThrow(TypeError);
+    expect(() => hasNoItems(null)).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving a number', () => {
-    expect(() => isEmptyArray(42)).toThrow(TypeError);
+    expect(() => hasNoItems(42)).toThrow(TypeError);
   });
 
   it('should throw TypeError when receiving a plain object', () => {
-    expect(() => isEmptyArray({ length: 0 })).toThrow(TypeError);
+    expect(() => hasNoItems({ length: 0 })).toThrow(TypeError);
   });
 
   it('should include the received type in the error message', () => {
-    expect(() => isEmptyArray('x')).toThrow('string');
+    expect(() => hasNoItems('x')).toThrow('string');
   });
 });
 
@@ -137,15 +137,6 @@ describe('formatForDisplay', () => {
 
   it('should format a boolean as its string representation', () => {
     expect(formatForDisplay(true)).toBe('true');
-  });
-
-  it('should format a bigint with "n" suffix', () => {
-    expect(formatForDisplay(9007199254740991n)).toBe('9007199254740991n');
-  });
-
-  it('should format a symbol using its toString', () => {
-    const sym = Symbol('test');
-    expect(formatForDisplay(sym)).toBe('Symbol(test)');
   });
 
   it('should wrap a string in double quotes', () => {

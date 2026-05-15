@@ -10,7 +10,12 @@ export class ResultTypeError extends TypeError {
 }
 
 /** @internal */
-export function isEmptyArray(value: unknown): boolean {
+export function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** @internal */
+export function hasNoItems(value: unknown): boolean {
   if (!Array.isArray(value)) {
     throw new TypeError(
       `Expected an array, but received ${typeof value}. Make sure you are passing an array to the collection function.`,
@@ -49,10 +54,6 @@ export function formatForDisplay(value: unknown): string {
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
-
-  if (typeof value === 'bigint') return `${value}n`;
-
-  if (typeof value === 'symbol') return value.toString();
 
   if (Array.isArray(value)) {
     return value.length <= 5

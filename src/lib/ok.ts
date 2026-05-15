@@ -1,12 +1,13 @@
-import type { AsyncResult, Err as IErr, Ok as IOk, Result } from './types';
-import type { MatchCases } from './types/methods';
+import type { AsyncResult, Err, Ok, Result } from '@/types';
+import type { MatchCases } from '@/types/methods';
 
-import { TAG } from './brand';
-import { Err } from './err';
+import { ErrClass } from './err';
 import { formatForDisplay } from './utils';
 
-export class Ok<T, E = never> implements IOk<T, E> {
-  readonly _tag = TAG.Ok;
+export const OK_TAG = Symbol('Result.Ok');
+
+export class OkClass<T, E = never> implements Ok<T, E> {
+  readonly [OK_TAG] = true;
   readonly #value: T;
 
   constructor(value: T) {
@@ -15,19 +16,19 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   // #region Type Guards
 
-  isOk(): this is IOk<T, E> {
+  isOk(): this is Ok<T, E> {
     return true;
   }
 
-  isErr(): this is IErr<T, E> {
+  isErr(): this is Err<T, E> {
     return false;
   }
 
-  isOkAnd(condition: (value: T) => boolean): this is IOk<T, E> {
+  isOkAnd(condition: (value: T) => boolean): this is Ok<T, E> {
     return condition(this.#value);
   }
 
-  isErrAnd(_condition: (error: E) => boolean): this is IErr<T, E> {
+  isErrAnd(_condition: (error: E) => boolean): this is Err<T, E> {
     return false;
   }
 
@@ -40,7 +41,7 @@ export class Ok<T, E = never> implements IOk<T, E> {
   }
 
   unwrapErr(): never {
-    throw new Error('Called unwrapErr on an Ok value', { cause: this.#value });
+    throw new Error('Called unwrapErr on an Ok value.', { cause: this.#value });
   }
 
   unwrapOr<U = T>(_defaultValue: U): T | U {
@@ -64,7 +65,7 @@ export class Ok<T, E = never> implements IOk<T, E> {
   // #region Transformation
 
   map<U>(mapper: (value: T) => U): Result<U, E> {
-    return new Ok(mapper(this.#value));
+    return new OkClass(mapper(this.#value));
   }
 
   mapOr<U>(mapper: (value: T) => U, _defaultValue: U): U {
@@ -81,7 +82,7 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   filter(condition: (value: T) => boolean, reason?: string): Result<T, Error> {
     if (!condition(this.#value)) {
-      return new Err(new Error(reason ?? 'Filter predicate failed', { cause: this.#value }));
+      return new ErrClass(new Error(reason ?? 'Filter predicate failed.', { cause: this.#value }));
     }
 
     return this as unknown as Result<T, Error>;
@@ -92,13 +93,13 @@ export class Ok<T, E = never> implements IOk<T, E> {
     onFailure: (value: T) => E2,
   ): Result<T, E | E2> {
     if (!condition(this.#value)) {
-      return new Err(onFailure(this.#value)) as unknown as Result<T, E | E2>;
+      return new ErrClass(onFailure(this.#value)) as unknown as Result<T, E | E2>;
     }
 
     return this as unknown as Result<T, E | E2>;
   }
 
-  flatten<U, E2>(this: IOk<Result<U, E2>, E>): Result<U, E | E2> {
+  flatten<U, E2>(this: Ok<Result<U, E2>, E>): Result<U, E | E2> {
     return this.unwrap();
   }
 
@@ -128,10 +129,10 @@ export class Ok<T, E = never> implements IOk<T, E> {
 
   zip<U, E2>(other: Result<U, E2>): Result<[T, U], E | E2> {
     if (other.isErr()) {
-      return new Err<[T, U], E | E2>(other.unwrapErr());
+      return new ErrClass<[T, U], E | E2>(other.unwrapErr());
     }
 
-    return new Ok<[T, U], E | E2>([this.#value, other.unwrap()]);
+    return new OkClass<[T, U], E | E2>([this.#value, other.unwrap()]);
   }
 
   zipWith<U, R, E2>(
@@ -139,10 +140,10 @@ export class Ok<T, E = never> implements IOk<T, E> {
     combine: (value: T, otherValue: U) => R,
   ): Result<R, E | E2> {
     if (other.isErr()) {
-      return new Err<R, E | E2>(other.unwrapErr());
+      return new ErrClass<R, E | E2>(other.unwrapErr());
     }
 
-    return new Ok<R, E | E2>(combine(this.#value, other.unwrap()));
+    return new OkClass<R, E | E2>(combine(this.#value, other.unwrap()));
   }
 
   // #endregion
@@ -184,7 +185,7 @@ export class Ok<T, E = never> implements IOk<T, E> {
   // #region Async Transformation
 
   async mapAsync<U>(mapper: (value: T) => Promise<U>): AsyncResult<U, E> {
-    return new Ok(await mapper(this.#value));
+    return new OkClass(await mapper(this.#value));
   }
 
   mapErrAsync<E2>(_mapper: (error: E) => Promise<E2>): AsyncResult<T, E2> {

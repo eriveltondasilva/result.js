@@ -1,8 +1,8 @@
 import type { Result as _Result } from './types';
 
-import result from './result';
+import * as api from './api';
 
-export type { AsyncResult, Err, Ok } from './types';
+// ─── Namespace API ───────────────────────────────────────────────────────────
 
 /**
  * Utilities for creating and composing {@link Result} values.
@@ -56,10 +56,24 @@ export type { AsyncResult, Err, Ok } from './types';
  * )
  * // => Ok(user) | Err(Error)
  */
-export const Result = Object.freeze(result);
+export const Result: typeof api = Object.freeze({ ...api });
 
-export const { err, ok } = result;
+// ─── Creation ────────────────────────────────────────────────────────────────
+
+export { err, fromNullable, fromPromise, fromTry, ok, validate } from './api/creation';
+
+// ─── Collection ──────────────────────────────────────────────────────────────
+
+export { all, allSettled, any, errors, partition, values } from './api/collection';
+
+// ─── Type Guards ─────────────────────────────────────────────────────────────
+
+export { isErr, isOk, isResult } from './api/type-guards';
+
+// ─── Other ───────────────────────────────────────────────────────────────────
 
 export type Result<T, E> = _Result<T, E>;
+
+export type { AsyncResult, Err, Ok } from './types';
 
 export default Result;

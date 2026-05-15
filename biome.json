@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -17,12 +17,24 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "correctness": { "recommended": true },
-      "style": { "recommended": true },
+      "correctness": {
+        "recommended": true,
+        "useSingleJsDocAsterisk": "error"
+      },
+      "style": {
+        "recommended": true,
+        "useImportType": {
+          "level": "on",
+          "options": {
+            "style": "separatedType"
+          }
+        }
+      },
       "complexity": { "recommended": true },
       "suspicious": {
         "recommended": true,
-        "noConsole": { "level": "on", "options": { "allow": ["error"] } }
+        "noConsole": { "level": "on", "options": { "allow": ["error"] } },
+        "noImportCycles": "error"
       }
     }
   },
@@ -47,7 +59,8 @@
               ":BLANK_LINE:",
               { "type": true },
               ":BLANK_LINE:",
-              ":PATH:"
+              ":PATH:",
+              ":BLANK_LINE:"
             ]
           }
         }

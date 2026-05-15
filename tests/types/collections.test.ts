@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
-import type { Ok, Result } from '@/types';
+import type { Result } from '@/types';
 import type { SettledResult } from '@/types/settled';
 
 import { Result as R } from '@/index';
@@ -42,12 +42,15 @@ describe('Result.allSettled — type inference', () => {
     const b: Result<boolean, Error> = R.err(new Error());
     const result = R.allSettled([a, b]);
     expectTypeOf(result).toExtend<
-      Ok<readonly [SettledResult<number, string>, SettledResult<boolean, Error>]>
+      Result<
+        readonly [SettledResult<number, string>, SettledResult<boolean, Error>],
+        string | Error
+      >
     >();
   });
 
   it('should infer Ok<[]> for empty array', () => {
-    expectTypeOf(R.allSettled([])).toExtend<Ok<readonly []>>();
+    expectTypeOf(R.allSettled([])).toExtend<Result<readonly [], never>>();
   });
 });
 
