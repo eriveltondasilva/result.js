@@ -1,11 +1,11 @@
-import type { AsyncResult, Err as IErr, Ok as IOk, Result } from '../types';
-import type { MatchCases } from '../types/methods';
+import type { AsyncResult, Err, Ok, Result } from '@/types';
+import type { MatchCases } from '@/types/methods';
 
 import { formatForDisplay } from './utils';
 
 export const ERR_TAG = Symbol('Result.Err');
 
-export class Err<T = never, E = Error> implements IErr<T, E> {
+export class ErrClass<T = never, E = Error> implements Err<T, E> {
   readonly [ERR_TAG] = true;
   readonly #error: E;
 
@@ -15,19 +15,19 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
 
   // #region Type Guards
 
-  isOk(): this is IOk<T, E> {
+  isOk(): this is Ok<T, E> {
     return false;
   }
 
-  isErr(): this is IErr<T, E> {
+  isErr(): this is Err<T, E> {
     return true;
   }
 
-  isOkAnd(_condition: (value: T) => boolean): this is IOk<T, E> {
+  isOkAnd(_condition: (value: T) => boolean): this is Ok<T, E> {
     return false;
   }
 
-  isErrAnd(condition: (error: E) => boolean): this is IErr<T, E> {
+  isErrAnd(condition: (error: E) => boolean): this is Err<T, E> {
     return condition(this.#error);
   }
 
@@ -76,7 +76,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   }
 
   mapErr<E2>(mapper: (error: E) => E2): Result<T, E2> {
-    return new Err(mapper(this.#error));
+    return new ErrClass(mapper(this.#error));
   }
 
   filter(_condition: (value: T) => boolean, _reason?: string): Result<T, Error> {
@@ -90,7 +90,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
     return this as unknown as Result<T, E | E2>;
   }
 
-  flatten<U, E2>(this: IErr<Result<U, E2>, E>): Result<U, E | E2> {
+  flatten<U, E2>(this: Err<Result<U, E2>, E>): Result<U, E | E2> {
     return this as unknown as Result<U, E | E2>;
   }
 
@@ -159,7 +159,7 @@ export class Err<T = never, E = Error> implements IErr<T, E> {
   }
 
   async mapErrAsync<E2>(mapper: (error: E) => Promise<E2>): AsyncResult<T, E2> {
-    return new Err(await mapper(this.#error));
+    return new ErrClass(await mapper(this.#error));
   }
 
   mapOrAsync<U>(_mapper: (value: T) => Promise<U>, defaultValue: U): Promise<U> {
